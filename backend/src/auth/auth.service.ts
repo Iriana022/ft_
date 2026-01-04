@@ -1,4 +1,31 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
-export class AuthService {}
+export class AuthService {
+  constructor(private prisma: PrismaService) {}
+
+  async validateUser(profile: any) {
+    // On cherche l'utilisateur par son ID 42
+    let user = await this.prisma.user.findUnique({
+      where: { fortyTwoId: Number(profile.fortyTwoId) },
+    });
+
+    // S'il n'existe pas, on le crée !
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          fortyTwoId: Number(profile.fortyTwoId),
+          login: profile.login,
+          email: profile.email,
+          avatar: profile.avatar,
+        },
+      });
+      console.log('Nouvel utilisateur créé:', user.login);
+    } else {
+      console.log('Utilisateur existant connecté:', user.login);
+    }
+
+    return user;
+  }
+}
