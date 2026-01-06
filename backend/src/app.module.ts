@@ -14,5 +14,6 @@ import { UserModule } from './user/user.module';
     }), AuthModule, UserModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
+  exports: [PrismaService]
 })
 export class AppModule {}

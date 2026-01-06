@@ -20,6 +20,7 @@ services:
     restart: always
     ports:
       - "3000:3000"
+      - "5555:5555"
     environment:
       DATABASE_URL: "postgresql://user:password@db:5432/transcendence_db"
     depends_on:
