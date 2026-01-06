@@ -1,17 +1,29 @@
-
 services:
+  # database
   db:
-    image: postgres:15-alpine
-    container_name: transcendence_db
+    image: postgres:15
+    container_name: postgres_db
     restart: always
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: transcendence
+      POSTGRES_DB: transcendence_db
     ports:
-      -  "5432:5432"
+      - "5432:5432"
     volumes:
-      -  db_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
+
+  # Backend NestJS
+  backend:
+    build: ./backend
+    container_name: nest_backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://user:password@db:5432/transcendence_db"
+    depends_on:
+      - db
 
 volumes:
-  db_data:
+  pgdata:
