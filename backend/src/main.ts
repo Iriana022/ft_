@@ -25,6 +25,11 @@ async function bootstrap() {
     console.error('❌ Erreur Prisma :', error);
   } */
   // -------------------
+  app.enableCors({
+    origin: true, // Autorise toutes les sources pour le moment (plus simple pour l'équipe)
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
 
   await app.listen(3000);
 }

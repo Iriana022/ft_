@@ -14,5 +14,13 @@ model User {
 	email	String	@unique
 	avatar	String?
 	createdAt DateTime @default(now())
-	
+	matches Match[]
+}
+
+model Match {
+	id	Int	@id @default(autoincrement())
+	scoreA Int
+	scoreB	Int
+	winner User	@relation(fields: [winnerId], references: [id])
+	winnerId Int
 }
