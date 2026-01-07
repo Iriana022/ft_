@@ -1,9 +1,12 @@
 import { Controller, Get, UseGuards, Req } from '@nestjs/common';
 import { FortyTwoAuthGuard } from './fortytwo.guard';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
   
+  constructor(private authService: AuthService){}
+
   @Get('42')
   @UseGuards(FortyTwoAuthGuard)
   login42() {
@@ -12,9 +15,7 @@ export class AuthController {
 
   @Get('42/callback')
   @UseGuards(FortyTwoAuthGuard)
-  callback42(@Req() req) {
-    // Ici, l'utilisateur revient de 42. 
-    // Ses infos sont dans req.user grâce à la stratégie !
-    return req.user;
+  async callback42(@Req() req) {
+    return this.authService.login(req.user);
   }
 }
