@@ -1,4 +1,4 @@
-# 🏓 ft_transcendence
+# ft_transcendence
 
 Bienvenue sur nos projet **ft_transcendence**, le dernier défi du tronc commun de 42.  
 Il s'agit d'une plateforme web complète permettant de jouer au Pong en temps réel, de chatter avec d'autres utilisateurs et de suivre ses statistiques.
@@ -6,7 +6,7 @@ Il s'agit d'une plateforme web complète permettant de jouer au Pong en temps r�
 ---
 
 ## 🏗 Architecture du Projet
-Le projet est architecturé en **monorepo** pour simplifier le déploiement et la gestion des environnements :
+Le projet est architecturé en **ft_** pour simplifier le déploiement et la gestion des environnements :
 - **Backend**: NestJS avec Prisma ORM.
 - **Frontend**: React (ou Next.js).
 - **Base de données**: PostgreSQL.
@@ -18,7 +18,7 @@ Le projet est architecturé en **monorepo** pour simplifier le déploiement et l
 
 ### 1. Cloner le projet
 ```bash
-git clone <URL_DE_TON_REPO> ft_transcendence
+git clone https://github.com/Iriana022/ft_ ft_transcendence
 cd ft_transcendence
 
 # Dans le dossier backend
