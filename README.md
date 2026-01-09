@@ -1,7 +1,7 @@
 # ft_transcendence
 
 Bienvenue sur nos projet **ft_transcendence**, le dernier défi du tronc commun de 42.  
-Il s'agit d'une plateforme web complète permettant de jouer au Pong en temps réel, de chatter avec d'autres utilisateurs et de suivre ses statistiques.
+Il s'agit d'une plateforme web complète permettant de gerer des tickets de service de dev en temps reel.
 
 ---
 
