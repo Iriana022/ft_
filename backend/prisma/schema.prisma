@@ -7,20 +7,44 @@ datasource db{
 	url	 = env("DATABASE_URL")
 }
 
-model User {
-	id	Int	@id @default(autoincrement())
-	fortyTwoId Int  @unique
-	login	String	@unique
-	email	String	@unique
-	avatar	String?
-	createdAt DateTime @default(now())
-	matches Match[]
+enum TicketStatus{
+	OPEN 
+	IN_PROGRESS
+	RESOLVED
+	CLOSED
 }
 
-model Match {
+enum Priority{
+	LOW
+	MEDIUM
+	HIGH
+	URGENT
+}
+
+model User {
 	id	Int	@id @default(autoincrement())
-	scoreA Int
-	scoreB	Int
-	winner User	@relation(fields: [winnerId], references: [id])
-	winnerId Int
+	fortyTwoId 		Int  		@unique
+	login			String		@unique
+	email			String		@unique
+	avatar			String?
+	role			String		@default("USER")
+	createdAt		DateTime	@default(now())
+	ticketsCreated	Ticket[]	@relation("CreatedBy")
+	ticketsAssigned	Ticket[]	@relation("AssignedTo")
+}
+
+model Ticket {
+	id 				Int 			@id @default(autoincrement())
+	title 			String
+	description 	String
+	status			TicketStatus	@default(OPEN)
+	priority		Priority		@default(MEDIUM)
+	createdAt		DateTime		@default(now())
+	updatedAt		DateTime		@updatedAt
+
+	author			User			@relation("CreatedBy", fields: [authorId], references: [id])
+	authorId		Int
+
+	AssignedTo		User?			@relation("AssignedTo", fields: [AssignedToId], references: [id])
+	AssignedToId	Int?
 }
