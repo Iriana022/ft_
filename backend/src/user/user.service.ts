@@ -9,10 +9,10 @@ export class UserService {
         return this.prisma.user.create({data})
     }
 
-    async findOne(id: number){
+    /* async findOne(id: number){
         return this.prisma.user.findUnique({
             where :{id},
-            include : {matches: true}
+            include : {tickets: true}
         })
-    }
+    } */
 }

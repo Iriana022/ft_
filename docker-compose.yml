@@ -25,6 +25,14 @@ services:
       DATABASE_URL: "postgresql://user:password@db:5432/transcendence_db"
     depends_on:
       - db
-
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules # Important : pour ne pas écraser les modules node du container
+    environment:
+      - CHOKIDAR_USEPOLLING=true # Pour que le rafraîchissement auto fonctionne sous Docker
 volumes:
   pgdata:
