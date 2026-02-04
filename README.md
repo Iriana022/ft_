@@ -7,9 +7,11 @@ Il s'agit d'une plateforme web complète permettant de gerer des tickets de serv
 
 ## 🏗 Architecture du Projet
 Le projet est architecturé en **ft_** pour simplifier le déploiement et la gestion des environnements :
-- **Backend**: NestJS avec Prisma ORM.
+- **Backend**: NestJS.
 - **Frontend**: React (ou Next.js).
 - **Base de données**: PostgreSQL.
+- **ORM**: Prisma
+- **CSS Library**: TailwindCSS
 - **Conteneurisation**: Docker & Docker Compose.
 
 ---
