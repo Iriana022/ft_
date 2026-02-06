@@ -1,11 +1,10 @@
 import React from 'react';
-import { Link } from 'react-router-dom'
 
-export default function Login() {
+export default function SignUp() {
 	return (
 		<div className="flex justify-center items-center h-screen">
 			<fieldset className="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
-				<legend className="fieldset-legend">Login</legend>
+				<legend className="fieldset-legend">Sign Up</legend>
 
 				<label className="label">Email</label>
 				<input type="email" className="input" placeholder="Email" />
@@ -14,10 +13,6 @@ export default function Login() {
 				<input type="password" className="input" placeholder="Password" />
 
 				<button className="btn btn-neutral mt-4">Login</button>
-				<p className="mt-2">
-					Don’t have an account yet? <Link to="/signup" className="text-blue-500">Create one</Link>&nbsp;
-					in seconds and start tracking your tickets easily.
-				</p>
 			</fieldset>
 		</div>
 	);
