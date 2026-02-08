@@ -1,26 +1,48 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt'
 
 @Injectable()
 export class AuthService {
   constructor(private prisma: PrismaService, private jwt: JwtService) {}
   
-  async login(user: any){
-    const payload = { username:user.login, sub: user.id}
+  async login(user: any) {
+    const payload = { 
+      username: user.login, 
+      sub: user.id, 
+      role: user.role 
+    };
     return {
-      access_token: this.jwt.sign(payload)
-    }
+      access_token: this.jwt.sign(payload),
+    };
+  }
+
+
+  
+  async register(dto: any) {
+    const userExists = await this.prisma.user.findUnique({
+      where: { email: dto.email }
+    });
+    if (userExists) throw new ConflictException('Email déjà utilisé');
+
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+    return this.prisma.user.create({
+      data: {
+        email: dto.email,
+        password: hashedPassword,
+        login: dto.login,
+        role: 'CLIENT', // Rôle par défaut de ton enum
+      },
+    });
   }
 
   async validateUser(profile: any) {
-    // On cherche l'utilisateur par son ID 42
     let user = await this.prisma.user.findUnique({
       where: { fortyTwoId: Number(profile.fortyTwoId) },
     });
 
-
-    // S'il n'existe pas, on le crée !
     if (!user) {
       user = await this.prisma.user.create({
         data: {
@@ -28,13 +50,10 @@ export class AuthService {
           login: profile.login,
           email: profile.email,
           avatar: profile.avatar,
+          role: 'CLIENT', // On assure le rôle ici aussi
         },
       });
-      console.log('Nouvel utilisateur créé:', user.login);
-    } else {
-      console.log('Utilisateur existant connecté:', user.login);
     }
-
     return user;
   }
 }

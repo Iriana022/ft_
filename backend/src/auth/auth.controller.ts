@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, UseGuards, Req, Body, Post } from '@nestjs/common';
 import { FortyTwoAuthGuard } from './fortytwo.guard';
 import { AuthService } from './auth.service';
 
@@ -17,5 +17,16 @@ export class AuthController {
   @UseGuards(FortyTwoAuthGuard)
   async callback42(@Req() req) {
     return this.authService.login(req.user);
+  }
+
+  @Post('register')
+  async register(@Body() dto: any) {
+    return this.authService.register(dto);
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  getProfile(@Req() req) {
+    return req.user; // Retournera le payload décodé (id, username, role)
   }
 }
