@@ -1,6 +1,6 @@
 # ft_transcendence
 
-Bienvenue sur nos projet **ft_transcendence**, le dernier défi du tronc commun de 42.  
+Bienvenue sur notre projet **ft_transcendence**, le dernier défi du tronc commun de 42.  
 Il s'agit d'une plateforme web complète permettant de gerer des tickets de service de dev en temps reel.
 
 ---
@@ -39,3 +39,13 @@ npx prisma migrate dev --name init
 
 # Ouvrir l'interface visuelle de la DB
 npx prisma studio
+```
+
+
+
+## Les membres de l'équipe (Team members)
+Pour la réalisation de ce projet, nous sommes quatres personnes. Voici nos contributions respéctives :
+- **Product Owner(PO) and developer**: Mihangy(Pmihangy)
+- **Product Manager(PM)/Scrum Master and developer**: Sahaza(Srasolom).
+- **Technical Lead / Architect and developper**: Iriana(Irazafim).
+- **Developper**: Finaritra(Vmpianim)
