@@ -61,7 +61,7 @@ export default function Login() {
 
 				<button className="btn btn-neutral mt-4" type="submit">Login</button>
 				<p className="mt-2">
-					Don’t have an account yet? <Link to="/signup" className="text-blue-500">Create one</Link>&nbsp;
+					Don’t have an account yet? <Link to="/register" className="text-blue-500">Create one</Link>&nbsp;
 					in seconds and start tracking your tickets easily.
 				</p>
 			</fieldset>

@@ -20,36 +20,18 @@ export class AuthService {
 
 
   
-  /* async register(dto: any) {
-    const userExists = await this.prisma.user.findUnique({
-      where: { email: dto.email }
-    });
-    if (userExists) throw new ConflictException('Email déjà utilisé');
-
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
-
-    return this.prisma.user.create({
-      data: {
-        email: dto.email,
-        password: hashedPassword,
-        login: dto.login,
-        role: 'CLIENT', // Rôle par défaut de ton enum
-      },
-    });
-  } */
-
     async register(dto: any) {
-      // 1. Vérifier si l'user existe déjà
-      const userExists = await this.prisma.user.findUnique({
+      // 1. if user eists
+        const userExists = await this.prisma.user.findUnique({
         where: { email: dto.email }
       });
       if (userExists) throw new ConflictException('Email déjà utilisé');
 
-      // 2. Hasher le mot de passe proprement
+      // 2. Hash password
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(dto.password, salt);
 
-      // 3. Création en base
+      // 3. Base create
       return this.prisma.user.create({
         data: {
           email: dto.email,
@@ -60,32 +42,14 @@ export class AuthService {
       });
     }
 
-  // auth.service.ts
-
-  /* async validateLocalUser(email: string, pass: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
-    
-    if (!user || !user.password) {
-      throw new UnauthorizedException('Identifiants invalides');
-    }
-
-    const isMatch = await bcrypt.compare(pass, user.password);
-    if (!isMatch) {
-      throw new UnauthorizedException('Identifiants invalides');
-    }
-
-    return user;
-  } */
 
     async validateLocalUser(email: string, pass: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
     
-    // 1. On vérifie l'existence de l'user ET du password
     if (!user || !user.password) {
         throw new UnauthorizedException('Identifiants invalides');
     }
 
-    // 2. Maintenant TypeScript sait que user.password est forcément une string
     const isMatch = await bcrypt.compare(pass, user.password);
     
     if (!isMatch) {
@@ -107,7 +71,7 @@ export class AuthService {
           login: profile.login,
           email: profile.email,
           avatar: profile.avatar,
-          role: 'CLIENT', // On assure le rôle ici aussi
+          role: 'CLIENT', // Role here
         },
       });
     }

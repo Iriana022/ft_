@@ -1,5 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-import { UserRole } from '@prisma/client'; // Utilise l'enum de ton schéma
+import { UserRole } from '@prisma/client'; // Use schema enum
 
 export const ROLES_KEY = 'roles';
 export const Roles = (...roles: UserRole[]) => SetMetadata(ROLES_KEY, roles);

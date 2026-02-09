@@ -20,8 +20,6 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
   }
 
   async validate(accessToken: string, refreshToken: string, profile: any): Promise<any> {
-    // C'est ici que tu reçois les infos de 42 (login, email, image)
-    // On va les envoyer à notre service pour les enregistrer ou les vérifier
     const userData = {
       fortyTwoId: profile.id,
       email: profile.emails[0].value,

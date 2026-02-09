@@ -2,23 +2,41 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import './App.css'
 import Login from './components/Login.tsx'
 import SignUp from './components/SignUp.tsx'
+import Register from './components/Register.tsx'
+import ProtectedRoute from './components/ProtectedRoute'
+import PublicRoute from './components/PublicRoute'
+import MainLayout from './components/MainLayout'
 
 const router = createBrowserRouter([
     {
         path: '/', 
-        element: <Login/>
+        element: <PublicRoute><Login/></PublicRoute>
     },
     {
         path: '/login',
-        element: <Login/>
+        element: <PublicRoute><Login/></PublicRoute>
     },
     {
         path: '/signup',
-        element: <SignUp/>
+        element: <PublicRoute><SignUp/></PublicRoute>
+    },
+    {
+        path: '/register',
+        element: <PublicRoute><Register /></PublicRoute>
     },
     {
         path: '/dashboard',
-        element: <div>Bienvenue sur le Dashboard !</div>
+        element: (
+            <ProtectedRoute>
+                <MainLayout />
+            </ProtectedRoute>
+        ),
+        children: [
+            {
+                path: 'dashboard',
+                element: <div>Bienvenue sur le Dashboard ! (Contenu dynamique)</div>
+            },
+        ]
     }
 ])
 
