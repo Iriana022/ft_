@@ -20,7 +20,7 @@ export class AuthService {
 
 
   
-  async register(dto: any) {
+  /* async register(dto: any) {
     const userExists = await this.prisma.user.findUnique({
       where: { email: dto.email }
     });
@@ -36,7 +36,29 @@ export class AuthService {
         role: 'CLIENT', // Rôle par défaut de ton enum
       },
     });
-  }
+  } */
+
+    async register(dto: any) {
+      // 1. Vérifier si l'user existe déjà
+      const userExists = await this.prisma.user.findUnique({
+        where: { email: dto.email }
+      });
+      if (userExists) throw new ConflictException('Email déjà utilisé');
+
+      // 2. Hasher le mot de passe proprement
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(dto.password, salt);
+
+      // 3. Création en base
+      return this.prisma.user.create({
+        data: {
+          email: dto.email,
+          password: hashedPassword,
+          login: dto.login,
+          role: 'CLIENT', 
+        },
+      });
+    }
 
   // auth.service.ts
 
@@ -56,25 +78,22 @@ export class AuthService {
   } */
 
     async validateLocalUser(email: string, pass: string) {
-        const user = await this.prisma.user.findUnique({ where: { email } });
-        
-        if (!user) {
-            console.log('Utilisateur non trouvé');
-            throw new UnauthorizedException('Identifiants invalides');
-        }
-
-        // --- LE BYPASS DE SECOURS ---
-        if (email === 'test@test.fr' && pass === 'password') {
-            console.log('🚀 BYPASS RÉUSSI : Connexion forcée pour test@test.fr');
-            return user;
-        }
-        // ----------------------------
-
-        const isMatch = await bcrypt.compare(pass, user.password as string);
-        if (!isMatch) throw new UnauthorizedException('Identifiants invalides');
-
-        return user;
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    
+    // 1. On vérifie l'existence de l'user ET du password
+    if (!user || !user.password) {
+        throw new UnauthorizedException('Identifiants invalides');
     }
+
+    // 2. Maintenant TypeScript sait que user.password est forcément une string
+    const isMatch = await bcrypt.compare(pass, user.password);
+    
+    if (!isMatch) {
+        throw new UnauthorizedException('Identifiants invalides');
+    }
+
+    return user;
+  }
 
   async validateUser(profile: any) {
     let user = await this.prisma.user.findUnique({
