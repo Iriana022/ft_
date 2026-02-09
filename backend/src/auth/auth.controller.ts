@@ -1,5 +1,6 @@
 import { Controller, Get, UseGuards, Req, Body, Post } from '@nestjs/common';
 import { FortyTwoAuthGuard } from './fortytwo.guard';
+import { JwtAuthGuard } from './jwt-auth.guard';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
@@ -29,4 +30,18 @@ export class AuthController {
   getProfile(@Req() req) {
     return req.user; // Retournera le payload décodé (id, username, role)
   }
+
+  // auth.controller.ts
+
+  @Post('login')
+  async login(@Body() dto: any) {
+    // Ici, on valide l'utilisateur (email/password)
+    console.log('DTO reçu du front:', dto);
+    const user = await this.authService.validateLocalUser(dto.email, dto.password);
+    
+    // Si c'est bon, on génère le token
+    return this.authService.login(user);
+  }
+
+ 
 }

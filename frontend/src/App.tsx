@@ -4,14 +4,22 @@ import Login from './components/Login.tsx'
 import SignUp from './components/SignUp.tsx'
 
 const router = createBrowserRouter([
-	{
-		path: '/',
-		element: <Login/>
-	},
-	{
-		path: '/signup',
-		element: <SignUp/>
-	}
+    {
+        path: '/', 
+        element: <Login/>
+    },
+    {
+        path: '/login',
+        element: <Login/>
+    },
+    {
+        path: '/signup',
+        element: <SignUp/>
+    },
+    {
+        path: '/dashboard',
+        element: <div>Bienvenue sur le Dashboard !</div>
+    }
 ])
 
 function App() {
