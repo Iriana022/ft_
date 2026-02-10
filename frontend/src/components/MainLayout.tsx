@@ -3,10 +3,13 @@ import { useNavigate, Outlet } from 'react-router-dom';
 const MainLayout = () => {
   const navigate = useNavigate();
 
+
   const token = localStorage.getItem('access_token');
 
   const userString = localStorage.getItem('user');
   const user = userString ? JSON.parse(userString) : { login: 'Profil' };
+
+
 
   const getLoginFromToken = (tokenStr: string | null) => {
     if (!token) return 'Profil';

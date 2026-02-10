@@ -1,6 +1,10 @@
 import React from 'react';
+import { useTheme } from '../context/ThemeContext';
 
 const Settings = () => {
+    
+    const { theme, toggleTheme } = useTheme();
+
   return (
     <div className="max-w-4xl mx-auto space-y-6 text-left">
       <div>
@@ -20,7 +24,10 @@ const Settings = () => {
                   <span className="label-text font-bold">Mode Sombre</span>
                   <p className="text-xs opacity-50">Activer le thème sombre automatiquement</p>
                 </div>
-                <input type="checkbox" className="toggle toggle-primary" defaultChecked />
+                <input type="checkbox" className="toggle toggle-primary" 
+                    checked={theme === 'dark'} 
+                    onChange={toggleTheme}
+                />
               </label>
             </div>
 

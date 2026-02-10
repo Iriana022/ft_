@@ -9,6 +9,7 @@ import MainLayout from './components/MainLayout'
 import Profile from './components/Profile'
 import DashboardHome from './components/DashboardHome'
 import Settings from './components/Settings'
+import { ThemeProvider } from './context/ThemeContext'
 
 
 const router = createBrowserRouter([
@@ -46,15 +47,18 @@ const router = createBrowserRouter([
             },
             {
                 path: 'settings',
-                element : <Settings/>
+                element : <Settings />
             }
         ]
     }
 ])
 
 function App() {
-  return <RouterProvider router={router} />
- 
+  return (
+    <ThemeProvider>
+        <RouterProvider router={router} />
+    </ThemeProvider>
+    )
 }
 
 export default App
