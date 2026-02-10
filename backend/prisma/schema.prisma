@@ -39,6 +39,8 @@ model User {
   createdAt       DateTime @default(now())
   ticketsCreated  Ticket[] @relation("CreatedBy")
   ticketsAssigned Ticket[] @relation("AssignedTo")
+  twoFactorSecret   String?
+  isTwoFactorEnabled Boolean  @default(false)
 }
 
 model Ticket {
