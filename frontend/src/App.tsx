@@ -8,6 +8,7 @@ import PublicRoute from './components/PublicRoute'
 import MainLayout from './components/MainLayout'
 import Profile from './components/Profile'
 import DashboardHome from './components/DashboardHome'
+import Settings from './components/Settings'
 
 
 const router = createBrowserRouter([
@@ -42,6 +43,10 @@ const router = createBrowserRouter([
             {
                 path: 'profile', 
                 element: <Profile />
+            },
+            {
+                path: 'settings',
+                element : <Settings/>
             }
         ]
     }

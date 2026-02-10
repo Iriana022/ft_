@@ -34,7 +34,9 @@ const MainLayout = () => {
     <div className="min-h-screen bg-base-200">
       <div className="navbar bg-base-100 shadow-md px-4">
         <div className="flex-1">
-          <a className="btn btn-ghost normal-case text-xl font-bold text-primary">Manage Tickets</a>
+          <span className="btn btn-ghost normal-case text-xl font-bold text-primary">
+            <button onClick={() => navigate('/')}>Manage Tickets</button>
+          </span>
         </div>
         <div className="flex-none gap-2">
           <div className="dropdown dropdown-end">
@@ -45,7 +47,7 @@ const MainLayout = () => {
             </label>
             <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
               <li><button onClick={() => navigate('/profile')}>Mon profil</button></li>
-              <li><a>Settings</a></li>
+              <li><button onClick={() => navigate('/settings')}>Settings</button></li>
               <hr className="my-1 opacity-20" />
               <li>
                 <button onClick={handleLogout} className="text-error font-bold">
