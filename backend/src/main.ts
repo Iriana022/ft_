@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 //import { PrismaService } from './prisma.service';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -25,6 +26,12 @@ async function bootstrap() {
     console.error('❌ Erreur Prisma :', error);
   } */
   // -------------------
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,         // Ignore les champs qui ne sont pas dans le DTO
+    forbidNonWhitelisted: true, // Rejette la requête si des champs inconnus sont présents
+    transform: true,         // Transforme les types automatiquement
+  }));
+
   app.enableCors({
     origin: true, // Autorise toutes les sources pour le moment (plus simple pour l'équipe)
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
