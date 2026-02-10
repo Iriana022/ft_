@@ -6,6 +6,9 @@ import Register from './components/Register.tsx'
 import ProtectedRoute from './components/ProtectedRoute'
 import PublicRoute from './components/PublicRoute'
 import MainLayout from './components/MainLayout'
+import Profile from './components/Profile'
+import DashboardHome from './components/DashboardHome'
+
 
 const router = createBrowserRouter([
     {
@@ -25,7 +28,7 @@ const router = createBrowserRouter([
         element: <PublicRoute><Register /></PublicRoute>
     },
     {
-        path: '/dashboard',
+        path: '/',
         element: (
             <ProtectedRoute>
                 <MainLayout />
@@ -34,8 +37,12 @@ const router = createBrowserRouter([
         children: [
             {
                 path: 'dashboard',
-                element: <div>Bienvenue sur le Dashboard ! (Contenu dynamique)</div>
+                element: <DashboardHome />
             },
+            {
+                path: 'profile', 
+                element: <Profile />
+            }
         ]
     }
 ])
