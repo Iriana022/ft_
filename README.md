@@ -2,7 +2,6 @@
 
 Bienvenue sur notre projet **ft_transcendence**, le dernier défi du tronc commun de 42.  
 Il s'agit d'une plateforme web complète permettant de gerer des tickets de service de dev en temps reel.
-Test
 
 ---
 
