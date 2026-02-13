@@ -23,22 +23,13 @@ Le projet est architecturé en **ft_** pour simplifier le déploiement et la ges
 git clone https://github.com/Iriana022/ft_ ft_transcendence
 cd ft_transcendence
 
-# Dans le dossier backend
-cd backend
-npm install   # ou pnpm install
+# Root
+docker compose up --build -d
 
-# Dans le dossier frontend
-cd ../frontend
-npm install
-
-# Générer le client Prisma
-npx prisma generate
-
-# Appliquer les migrations
-npx prisma migrate dev --name init
-
-# Ouvrir l'interface visuelle de la DB
-npx prisma studio
+#config env
+cd backend 
+cp .env.example .env
+=> fill env var(client ID and client secret)
 ```
 
 
