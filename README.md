@@ -22,16 +22,29 @@ Le projet est architecturé en **ft_** pour simplifier le déploiement et la ges
 ```bash
 git clone https://github.com/Iriana022/ft_ ft_transcendence
 cd ft_transcendence
-
-# Root
 docker compose up --build -d
-
-#config env
-cd backend 
-cp .env.example .env
-=> fill env var(client ID and client secret)
 ```
 
+### 2. Config env
+```bash
+cd backend 
+cp .env.example .env
+```
++ fill env var(client ID and client secret)
+
+### 3. Migration
+```bash
+docker exec -it nest_backend npx prisma migrate dev --name <migration name>
+docker exec -it nest_backend npx prisma db push
+```
+
+## 🚀 Démarrage sur navigateur
++ Allez sur votre navigateur
++ Taper http://localhost:5173
++ Inscrivez vous dans register
++ Connectez-vous dans l'interface de connexion
++ Enjoy it <br>
+![alt text](kermit.png)
 
 
 ## Les membres de l'équipe (Team members)
