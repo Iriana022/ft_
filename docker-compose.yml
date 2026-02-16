@@ -15,6 +15,7 @@ services:
 
   # Backend NestJS
   backend:
+    image: backend:1
     build: ./backend
     container_name: nest_backend
     restart: always
@@ -30,6 +31,7 @@ services:
     depends_on:
       - db
   frontend:
+    image: frontend:1
     build: ./frontend
     ports:
       - "5173:5173"
