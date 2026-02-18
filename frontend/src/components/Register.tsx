@@ -21,8 +21,21 @@ const Register = () => {
     setError(''); // On réinitialise l'erreur à chaque tentative
 
     try {
+      // Inscription
       await api.post('/auth/register', formData);
-      navigate('/login');
+      
+      // Connexion automatique après inscription
+      const loginResponse = await api.post('/auth/login', {
+        email: formData.email,
+        password: formData.password
+      });
+      
+      // Stockage du token
+      const { access_token } = loginResponse.data;
+      localStorage.setItem('access_token', access_token);
+      
+      // Redirection vers le dashboard
+      navigate('/dashboard');
     } catch (err: any) {
       // Error from backend
       const backendMessage = err.response?.data?.message;
