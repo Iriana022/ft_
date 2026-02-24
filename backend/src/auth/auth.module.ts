@@ -7,6 +7,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtStrategy } from './jwt.strategy';
 import { RolesGuard } from './roles.guard';
+import { GoogleModule } from './google/google.module';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { RolesGuard } from './roles.guard';
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'secret',
       signOptions: { expiresIn: '1d' },
-    }),
+    }), GoogleModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, FortyTwoStrategy, PrismaService, JwtStrategy, RolesGuard],
