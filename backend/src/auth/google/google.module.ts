@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
 import { GoogleController } from './google.controller';
 import { GoogleService } from './google.service';
 import { PrismaModule } from '../../../prisma/prisma.module'
