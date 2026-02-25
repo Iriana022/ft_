@@ -20,17 +20,13 @@ api.interceptors.request.use(
   }
 );
 
-// 3. L'intercepteur de RÉPONSE : Gère les erreurs globales (ex: token expiré)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Si on est déconnecté (Unauthorized), on nettoie et on redirige
       localStorage.removeItem('access_token');
-      window.location.href = '/login';
     }
     return Promise.reject(error);
   }
 );
-
 export default api;

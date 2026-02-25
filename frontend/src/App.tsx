@@ -1,8 +1,6 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import './App.css'
-import Login from './components/Login.tsx'
-import SignUp from './components/SignUp.tsx'
-import Register from './components/Register.tsx'
+import Login from './components/Login'
 import ProtectedRoute from './components/ProtectedRoute'
 import PublicRoute from './components/PublicRoute'
 import MainLayout from './components/MainLayout'
@@ -10,20 +8,13 @@ import Profile from './components/Profile'
 import DashboardHome from './components/DashboardHome'
 import Settings from './components/Settings'
 import { ThemeProvider } from './context/ThemeContext'
+import Register from './components/Register'
 
 
 const router = createBrowserRouter([
     {
-        path: '/', 
-        element: <PublicRoute><Login/></PublicRoute>
-    },
-    {
         path: '/login',
         element: <PublicRoute><Login/></PublicRoute>
-    },
-    {
-        path: '/signup',
-        element: <PublicRoute><SignUp/></PublicRoute>
     },
     {
         path: '/register',
@@ -37,6 +28,10 @@ const router = createBrowserRouter([
             </ProtectedRoute>
         ),
         children: [
+            {
+                path: '',
+                element: <DashboardHome />
+            },
             {
                 path: 'dashboard',
                 element: <DashboardHome />
