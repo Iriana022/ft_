@@ -21,25 +21,44 @@ export class AuthService {
 
   
     async register(dto: any) {
-      // 1. if user eists
-        const userExists = await this.prisma.user.findUnique({
+      // 1. If user exists (email or login)
+      const userByEmail = await this.prisma.user.findUnique({
         where: { email: dto.email }
       });
-      if (userExists) throw new ConflictException('Email déjà utilisé');
+      if (userByEmail) throw new ConflictException('Email déjà utilisé');
+
+      const userByLogin = await this.prisma.user.findUnique({
+        where: { login: dto.login }
+      });
+      if (userByLogin) throw new ConflictException('Login déjà utilisé');
 
       // 2. Hash password
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(dto.password, salt);
 
       // 3. Base create
-      return this.prisma.user.create({
-        data: {
-          email: dto.email,
-          password: hashedPassword,
-          login: dto.login,
-          role: 'CLIENT', 
-        },
-      });
+      try {
+        return await this.prisma.user.create({
+          data: {
+            email: dto.email,
+            password: hashedPassword,
+            login: dto.login,
+            role: 'CLIENT',
+          },
+        });
+      } catch (error: any) {
+        if (error?.code === 'P2002') {
+          const target = Array.isArray(error?.meta?.target) ? error.meta.target : [];
+          if (target.includes('email')) {
+            throw new ConflictException('Email déjà utilisé');
+          }
+          if (target.includes('login')) {
+            throw new ConflictException('Login déjà utilisé');
+          }
+          throw new ConflictException('Données déjà utilisées');
+        }
+        throw error;
+      }
     }
 
 
