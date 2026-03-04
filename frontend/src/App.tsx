@@ -3,15 +3,16 @@ import './App.css'
 import Login from './components/Login'
 import ProtectedRoute from './components/ProtectedRoute'
 import PublicRoute from './components/PublicRoute'
-import MainLayout from './components/MainLayout'
-import Profile from './components/Profile'
-import DashboardHome from './components/DashboardHome'
-import Settings from './components/Settings'
+import { DashboardLayout } from './components/DashboardLayout'
 import { ThemeProvider } from './context/ThemeContext'
 import Register from './components/Register'
 
 
 const router = createBrowserRouter([
+    {
+        path: '/',
+        element: <PublicRoute><Login/></PublicRoute>
+    },
     {
         path: '/login',
         element: <PublicRoute><Login/></PublicRoute>
@@ -21,30 +22,12 @@ const router = createBrowserRouter([
         element: <PublicRoute><Register /></PublicRoute>
     },
     {
-        path: '/',
+        path: '/dashboard',
         element: (
             <ProtectedRoute>
-                <MainLayout />
+                <DashboardLayout />
             </ProtectedRoute>
-        ),
-        children: [
-            {
-                path: '',
-                element: <DashboardHome />
-            },
-            {
-                path: 'dashboard',
-                element: <DashboardHome />
-            },
-            {
-                path: 'profile', 
-                element: <Profile />
-            },
-            {
-                path: 'settings',
-                element : <Settings />
-            }
-        ]
+        )
     }
 ])
 
