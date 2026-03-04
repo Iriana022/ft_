@@ -1,5 +1,5 @@
 import React from 'react';
 
 export default function Agent() {
-  return <h1>Agent</h1>;
+	return <h1>Agent</h1>;
 }
