@@ -8,23 +8,23 @@ import Register from '../components/Register';
 export const router = createBrowserRouter([
 	{
 		path: '/',
+		element: <PublicRoute><Login /></PublicRoute>,
+	},
+	{
+		path: 'login',
 		element: <PublicRoute><Login /></PublicRoute>
 	},
 	{
-		path: '/login',
-		element: <PublicRoute><Login /></PublicRoute>
-	},
-	{
-		path: '/register',
+		path: 'register',
 		element: <PublicRoute><Register /></PublicRoute>
 	},
 	{
-		path: '/dashboard',
+		path: 'dashboard',
 		element: (
 			<ProtectedRoute>
 				<DashboardLayout />
-			</ProtectedRoute>
-		)
+			</ProtectedRoute >
+		),
 	}
 ])
 

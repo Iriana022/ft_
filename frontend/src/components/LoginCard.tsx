@@ -3,8 +3,7 @@ import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {Button} from './ui/button';
 import {Input} from './ui/input';
-import {Label} from './ui/label';
-import {Separator} from './ui/separator';
+import Separator from './Separator';
 import {useTheme} from '../context/ThemeContext';
 import api from '../services/api';
 
@@ -91,12 +90,12 @@ export function LoginCard() {
 			<form onSubmit={handleSubmit}>
 				{/* Email Field */}
 				<div className="mb-4">
-					<Label
+					<label
 						htmlFor={`email-${theme}`}
-						className={`mb-2 block ${isDark ? 'text-gray-300' : 'text-gray-700'}`}
+						className={`label mb-2 block ${isDark ? 'text-gray-300' : 'text-gray-700'}`}
 					>
 						Email
-					</Label>
+					</label>
 					<div className="relative">
 						<Mail
 							className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-gray-500' : 'text-gray-400'
@@ -119,12 +118,12 @@ export function LoginCard() {
 
 				{/* Password Field */}
 				<div className="mb-2">
-					<Label
+					<label
 						htmlFor={`password-${theme}`}
-						className={`mb-2 block ${isDark ? 'text-gray-300' : 'text-gray-700'}`}
+						className={`label mb-2 block ${isDark ? 'text-gray-300' : 'text-gray-700'}`}
 					>
 						Password
-					</Label>
+					</label>
 					<div className="relative">
 						<Lock
 							className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-gray-500' : 'text-gray-400'
@@ -179,7 +178,7 @@ export function LoginCard() {
 
 			{/* Separator */}
 			<div className="relative mb-6">
-				<Separator className={isDark ? 'bg-[#2a2a2a]' : 'bg-gray-200'} />
+				<Separator />
 				<span
 					className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-3 text-sm ${isDark ? 'bg-[#121212] text-gray-500' : 'bg-white text-gray-500'
 						}`}
