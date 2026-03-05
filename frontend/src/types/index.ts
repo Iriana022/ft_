@@ -1,6 +1,9 @@
+export type HeroIconType = React.ForwardRefExoticComponent<React.PropsWithoutRef<React.SVGProps<SVGSVGElement>> & {title?: string, titleId?: string} & React.RefAttributes<SVGSVGElement>>;
+
 export enum TicketStatus {
 	OPEN = 'OPEN',
 	IN_PROGRESS = 'IN_PROGRESS',
+	PENDING = 'PENDING',
 	RESOLVED = 'RESOLVED',
 	CLOSED = 'CLOSED'
 }
@@ -11,7 +14,7 @@ export enum UserRole {
 	ADMIN = 'ADMIN'
 }
 
-export enum Priority {
+export enum TicketPriority {
 	LOW = 'LOW',
 	MEDIUM = 'MEDIUM',
 	HIGH = 'HIGH',
@@ -32,7 +35,7 @@ export interface Ticket {
 	title: string;
 	description: string;
 	status: TicketStatus;
-	priority: Priority;
+	priority: TicketPriority;
 	createdAt: Date;
 	updatedAt: Date;
 	author: User;
@@ -40,3 +43,15 @@ export interface Ticket {
 	assignedTo?: User;
 	assignedToId?: number;
 }
+
+import React from 'react';
+
+
+
+export interface TicketType {
+	title: string,
+	description: string,
+	status: TicketStatus,
+	priority: TicketPriority,
+}
+

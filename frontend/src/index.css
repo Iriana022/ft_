@@ -1,4 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 @import "tailwindcss";
+
+@plugin "daisyui";
 
 :root {
 	--logo-color: #355872;
@@ -40,6 +43,31 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+}
+
+@theme {
+	--color-cream: #F7F8F0;
+	--color-dark: #111827;
+	--color-navy: #355872;
+	--color-sky: #7AAACE;
+	--color-light-blue: #9CD5FF;
+	--color-status-open: #3B82F6;
+	--color-status-in-progress: #F59E0B;
+	--color-status-pending: #6B7280;
+	--color-status-resolved: #10B981;
+
+	--font-inter: "Inter", sans-serif;
+	--font-poppins: "Poppins", sans-serif;
+}
+
+body {
+	background-color: var(--color-cream);
+	color: var(--color-dark);
+	font-family: var(--font-poppins);
+}
+
+header .active > * {
+	color: var(--color-navy);
 }
 
 .dark {

@@ -1,5 +1,5 @@
 import type { Ticket } from '../types';
-import { TicketStatus, Priority } from '../types';
+import { TicketStatus, TicketPriority } from '../types';
 import { Clock, User, AlertCircle } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
@@ -16,10 +16,10 @@ const statusConfig = {
 };
 
 const priorityConfig = {
-  [Priority.LOW]: { label: 'Basse', color: 'text-green-600' },
-  [Priority.MEDIUM]: { label: 'Moyenne', color: 'text-blue-600' },
-  [Priority.HIGH]: { label: 'Haute', color: 'text-orange-600' },
-  [Priority.URGENT]: { label: 'Urgent', color: 'text-red-600' }
+  [TicketPriority.LOW]: { label: 'Basse', color: 'text-green-600' },
+  [TicketPriority.MEDIUM]: { label: 'Moyenne', color: 'text-blue-600' },
+  [TicketPriority.HIGH]: { label: 'Haute', color: 'text-orange-600' },
+  [TicketPriority.URGENT]: { label: 'Urgent', color: 'text-red-600' }
 };
 
 export function TicketList({ tickets, maxItems }: TicketListProps) {

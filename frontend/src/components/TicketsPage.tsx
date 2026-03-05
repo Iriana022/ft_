@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Search, Filter, Plus } from 'lucide-react';
 import type { Ticket } from '../types';
-import { TicketStatus, Priority } from '../types';
+import { TicketStatus, TicketPriority } from '../types';
 import { mockTickets } from '../data/mockData';
 import { TicketList } from './TicketList';
 import { ThemeToggle } from './ThemeToggle';
