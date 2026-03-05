@@ -1,5 +1,5 @@
 import type { User, Ticket } from '../types';
-import { UserRole, TicketStatus, Priority } from '../types';
+import { UserRole, TicketStatus, TicketPriority } from '../types';
 
 // Users fictifs
 export const mockUsers: User[] = [
@@ -60,7 +60,7 @@ export const mockTickets: Ticket[] = [
     title: 'Impossible de se connecter à mon compte',
     description: 'Je reçois une erreur 401 à chaque tentative de connexion depuis ce matin.',
     status: TicketStatus.IN_PROGRESS,
-    priority: Priority.HIGH,
+    priority: TicketPriority.HIGH,
     createdAt: new Date('2024-02-20T09:30:00'),
     updatedAt: new Date('2024-02-20T14:20:00'),
     author: mockUsers[3],
@@ -73,7 +73,7 @@ export const mockTickets: Ticket[] = [
     title: 'Erreur 500 lors du téléchargement de fichiers',
     description: 'Impossible de télécharger des fichiers PDF supérieurs à 5MB.',
     status: TicketStatus.OPEN,
-    priority: Priority.URGENT,
+    priority: TicketPriority.URGENT,
     createdAt: new Date('2024-02-23T10:15:00'),
     updatedAt: new Date('2024-02-23T10:15:00'),
     author: mockUsers[4],
@@ -84,7 +84,7 @@ export const mockTickets: Ticket[] = [
     title: 'Question sur la fonctionnalité de export',
     description: 'Comment exporter mes données en format CSV ?',
     status: TicketStatus.RESOLVED,
-    priority: Priority.LOW,
+    priority: TicketPriority.LOW,
     createdAt: new Date('2024-02-18T15:45:00'),
     updatedAt: new Date('2024-02-19T09:30:00'),
     author: mockUsers[5],
@@ -97,7 +97,7 @@ export const mockTickets: Ticket[] = [
     title: 'La page de profil ne charge pas correctement',
     description: 'Les informations personnelles ne s\'affichent pas. J\'ai vidé le cache sans succès.',
     status: TicketStatus.IN_PROGRESS,
-    priority: Priority.MEDIUM,
+    priority: TicketPriority.MEDIUM,
     createdAt: new Date('2024-02-21T11:20:00'),
     updatedAt: new Date('2024-02-22T16:00:00'),
     author: mockUsers[3],
@@ -110,7 +110,7 @@ export const mockTickets: Ticket[] = [
     title: 'Demande de fonctionnalité: Mode sombre',
     description: 'Serait-il possible d\'ajouter un mode sombre à l\'application ?',
     status: TicketStatus.OPEN,
-    priority: Priority.LOW,
+    priority: TicketPriority.LOW,
     createdAt: new Date('2024-02-22T14:30:00'),
     updatedAt: new Date('2024-02-22T14:30:00'),
     author: mockUsers[4],
@@ -121,7 +121,7 @@ export const mockTickets: Ticket[] = [
     title: 'Notifications push ne fonctionnent pas',
     description: 'Je ne reçois plus les notifications sur Chrome depuis la dernière mise à jour.',
     status: TicketStatus.RESOLVED,
-    priority: Priority.MEDIUM,
+    priority: TicketPriority.MEDIUM,
     createdAt: new Date('2024-02-19T08:00:00'),
     updatedAt: new Date('2024-02-20T10:30:00'),
     author: mockUsers[5],
@@ -134,7 +134,7 @@ export const mockTickets: Ticket[] = [
     title: 'Problème de performance sur mobile',
     description: 'L\'application est très lente sur mon iPhone 12. Le chargement prend plus de 10 secondes.',
     status: TicketStatus.OPEN,
-    priority: Priority.HIGH,
+    priority: TicketPriority.HIGH,
     createdAt: new Date('2024-02-23T16:45:00'),
     updatedAt: new Date('2024-02-23T16:45:00'),
     author: mockUsers[3],
@@ -145,7 +145,7 @@ export const mockTickets: Ticket[] = [
     title: 'Réinitialisation du mot de passe impossible',
     description: 'Le lien de réinitialisation expire avant que je puisse l\'utiliser.',
     status: TicketStatus.IN_PROGRESS,
-    priority: Priority.URGENT,
+    priority: TicketPriority.URGENT,
     createdAt: new Date('2024-02-23T12:00:00'),
     updatedAt: new Date('2024-02-23T13:15:00'),
     author: mockUsers[4],
@@ -158,7 +158,7 @@ export const mockTickets: Ticket[] = [
     title: 'Les emails de confirmation ne sont pas reçus',
     description: 'Après inscription, aucun email de confirmation n\'arrive dans ma boîte.',
     status: TicketStatus.RESOLVED,
-    priority: Priority.MEDIUM,
+    priority: TicketPriority.MEDIUM,
     createdAt: new Date('2024-02-17T10:00:00'),
     updatedAt: new Date('2024-02-18T11:00:00'),
     author: mockUsers[5],
@@ -171,7 +171,7 @@ export const mockTickets: Ticket[] = [
     title: 'Bug d\'affichage sur Firefox',
     description: 'Le menu de navigation est décalé sur Firefox version 122.',
     status: TicketStatus.OPEN,
-    priority: Priority.LOW,
+    priority: TicketPriority.LOW,
     createdAt: new Date('2024-02-23T09:30:00'),
     updatedAt: new Date('2024-02-23T09:30:00'),
     author: mockUsers[3],
@@ -182,7 +182,7 @@ export const mockTickets: Ticket[] = [
     title: 'Erreur lors du paiement',
     description: 'Transaction refusée malgré des fonds suffisants sur ma carte.',
     status: TicketStatus.IN_PROGRESS,
-    priority: Priority.URGENT,
+    priority: TicketPriority.URGENT,
     createdAt: new Date('2024-02-23T11:00:00'),
     updatedAt: new Date('2024-02-23T14:30:00'),
     author: mockUsers[4],
@@ -195,7 +195,7 @@ export const mockTickets: Ticket[] = [
     title: 'Suggestion: Amélioration de l\'interface',
     description: 'Il serait intéressant d\'ajouter des raccourcis clavier pour les actions fréquentes.',
     status: TicketStatus.RESOLVED,
-    priority: Priority.LOW,
+    priority: TicketPriority.LOW,
     createdAt: new Date('2024-02-16T14:20:00'),
     updatedAt: new Date('2024-02-17T09:00:00'),
     author: mockUsers[5],
@@ -212,10 +212,10 @@ export const getTicketStats = () => {
   const inProgress = mockTickets.filter(t => t.status === TicketStatus.IN_PROGRESS).length;
   const resolved = mockTickets.filter(t => t.status === TicketStatus.RESOLVED).length;
   
-  const urgent = mockTickets.filter(t => t.priority === Priority.URGENT).length;
-  const high = mockTickets.filter(t => t.priority === Priority.HIGH).length;
-  const medium = mockTickets.filter(t => t.priority === Priority.MEDIUM).length;
-  const low = mockTickets.filter(t => t.priority === Priority.LOW).length;
+  const urgent = mockTickets.filter(t => t.priority === TicketPriority.URGENT).length;
+  const high = mockTickets.filter(t => t.priority === TicketPriority.HIGH).length;
+  const medium = mockTickets.filter(t => t.priority === TicketPriority.MEDIUM).length;
+  const low = mockTickets.filter(t => t.priority === TicketPriority.LOW).length;
 
   return {
     total,

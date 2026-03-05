@@ -4,6 +4,10 @@ import ProtectedRoute from '../components/ProtectedRoute'
 import PublicRoute from '../components/PublicRoute'
 import {DashboardLayout} from '../components/DashboardLayout';
 import Register from '../components/Register';
+import ClientLayout from "../layout/ClientLayout";
+import ClientHome from "../views/client_view/pages/ClientHome";
+import ClientMyTickets from "../views/client_view/pages/ClientMyTickets";
+import ClientSettings from "../views/client_view/pages/ClientSettings";
 
 export const router = createBrowserRouter([
 	{
@@ -25,6 +29,24 @@ export const router = createBrowserRouter([
 				<DashboardLayout />
 			</ProtectedRoute >
 		),
+	},
+	{
+		path: 'client_view',
+		element: <ClientLayout />,
+				children: [
+			{
+				path: '',
+				element: <ClientHome />
+			},
+			{
+				path: 'my_tickets',
+				element: <ClientMyTickets />
+			},
+			{
+				path: 'settings',
+				element: <ClientSettings />
+			}
+		]
 	}
 ])
 
