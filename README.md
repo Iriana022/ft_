@@ -53,3 +53,19 @@ Pour la réalisation de ce projet, nous sommes quatres personnes. Voici nos cont
 - **Product Manager(PM)/Scrum Master and developer**: Sahaza(Srasolom).
 - **Technical Lead / Architect and developper**: Iriana(Irazafim).
 - **Developper**: Finaritra(Vmpianim)
+
+## Commit message convention
+
+| Type     | Description |
+|----------|-------------|
+| feat     | A new feature |
+| fix      | A bug fix |
+| docs     | Documentation changes (e.g., README, comments) |
+| style    | Code style changes (e.g., formatting, missing semicolons) |
+| refactor | Code refactoring (no new features or bug fixes) |
+| perf     | Performance improvements |
+| test     | Adding or modifying tests |
+| build    | Build system or dependency changes (e.g., npm, Docker, CI/CD) |
+| ci       | CI/CD configuration changes |
+| chore    | Maintenance tasks (e.g., updating configs, cleaning up files) |
+| revert   | Reverts a previous commit |
