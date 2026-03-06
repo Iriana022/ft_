@@ -32,7 +32,7 @@ function Header() {
 							<TikeoLogo />
 						</div>
 						<nav className="hidden md:flex gap-5">
-							<NavItem icon={HomeIcon} href="/client_view" text="Acceuil" color="text-gray-600" />
+							<NavItem icon={HomeIcon} href="/client_view" text="Acceuil" color="text-gray-500" />
 							<NavItem icon={TicketIcon} href="/client_view/my_tickets" text="Mes Tickets" color="text-gray-600" />
 							<NavItem icon={Cog8ToothIcon} href="/client_view/settings" text="Parametres" color="text-gray-600" />
 						</nav>

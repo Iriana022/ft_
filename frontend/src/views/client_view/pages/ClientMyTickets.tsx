@@ -1,8 +1,8 @@
 function ClientMyTickets() {
 	return (
-		<div className="w-screen h-screen flex items-center justify-center">
-			<h1 className="font-poppins">
-				My Tickets Page
+		<div className="">
+			<h1 className="font-poppins text-navy">
+				Mes Tickets
 			</h1>
 		</div>
 	);
