@@ -18,7 +18,7 @@ function NavItem({icon: Icon, href, text, color, textColor, textSize}: NavItemPr
 			<span className={`font-poppins ${textSize ? textSize : "text-sm"} ${textColor ? textColor : ''} transition group-hover:text-navy`}>
 				{text}
 			</span>
-		</NavLink >
+		</NavLink>
 	);
 }
 
