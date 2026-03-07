@@ -30,7 +30,7 @@ function TicketFilterByStatus() {
 
 	return (
 		<div
-			className="relative flex items-center w-[150px] justify-between border py-2 px-3 bg-gray-100 cursor-pointer rounded"
+			className="relative flex items-center justify-between w-[150px] gap-2 border py-2 px-3 bg-gray-100 cursor-pointer rounded"
 			onClick={() => setOpen(!open)}
 		>
 			<div className="flex items-center gap-2">
