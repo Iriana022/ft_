@@ -30,13 +30,15 @@ function TicketFilterByStatus() {
 
 	return (
 		<div
-			className="relative flex items-center gap-2 border py-2 px-3 bg-gray-100 cursor-pointer rounded"
+			className="relative flex items-center w-[150px] justify-between border py-2 px-3 bg-gray-100 cursor-pointer rounded"
 			onClick={() => setOpen(!open)}
 		>
-			<FunnelIcon className="w-5 h-5 text-gray-500" />
-			<span className="text-sm">
-				{currentFilterStatus}
-			</span>
+			<div className="flex items-center gap-2">
+				<FunnelIcon className="w-5 h-5 text-gray-500" />
+				<span className="text-sm">
+					{currentFilterStatus}
+				</span>
+			</div>
 			<ChevronDownIcon className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
 			<div className={`absolute top-full left-0 w-full z-50 border bg-white rounded-b shadow-md
         transition-all duration-200 origin-top

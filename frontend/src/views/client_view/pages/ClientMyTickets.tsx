@@ -13,12 +13,12 @@ function ClientMyTickets() {
 					<h1 className="font-poppins text-navy font-semibold mb-7">
 						Mes Tickets
 					</h1>
-					<div className="flex items-center gap-20">
+					<div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-20">
 						<SearchInput />
 						<TicketFilterByStatus />
 					</div>
 					<p className="my-4">Tous les tickets</p>
-					<div className="grid grid-cols-4 gap-4">
+					<div className="grid md:grid-cols-4 gap-4">
 						{
 							tickets.map((t, i) => (
 								<Ticket title={t.title} description={t.description} status={t.status} priority={t.priority} key={i} />
