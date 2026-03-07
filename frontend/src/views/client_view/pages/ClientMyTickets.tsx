@@ -3,6 +3,7 @@ import Separator from "../../../components/client_components/Separator";
 import Ticket from "../../../components/client_components/Ticket";
 import {tickets} from "../../../data";
 import SearchInput from "../../../components/client_components/SearchInput";
+import TicketFilterByStatus from "../../../components/client_components/TicketFilterByStatus";
 
 function ClientMyTickets() {
 	return (
@@ -12,8 +13,9 @@ function ClientMyTickets() {
 					<h1 className="font-poppins text-navy font-semibold mb-7">
 						Mes Tickets
 					</h1>
-					<div>
+					<div className="flex items-center gap-20">
 						<SearchInput />
+						<TicketFilterByStatus />
 					</div>
 					<p className="my-4">Tous les tickets</p>
 					<div className="grid grid-cols-4 gap-4">
