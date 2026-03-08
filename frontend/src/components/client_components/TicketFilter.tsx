@@ -2,12 +2,12 @@ import React, {useState} from 'react';
 import {FunnelIcon} from '@heroicons/react/24/outline';
 import {ChevronDownIcon} from '@heroicons/react/24/outline';
 
-interface TicketFilterByStatusElementProps {
+interface TicketFilterElementProps {
 	name: string,
 	onClick: (e: React.MouseEvent) => void,
 }
 
-function TicketFilterByStatusElement(props: TicketFilterByStatusElementProps) {
+function TicketFilterElement(props: TicketFilterElementProps) {
 	return (
 		<div className="text-sm py-2 border-b pl-2"
 			onClick={props.onClick}
@@ -17,10 +17,13 @@ function TicketFilterByStatusElement(props: TicketFilterByStatusElementProps) {
 	);
 }
 
-function TicketFilterByStatus() {
-	const status = ["Tous", "Ouvert", "En cours", "En attente", "Resolu"];
+interface TicketFilterProps {
+	list: string[],
+}
+
+function TicketFilter(props: TicketFilterProps) {
 	const [open, setOpen] = useState(false);
-	const [currentFilterStatus, setCurrentFilterStatus] = useState('Tous');
+	const [currentFilterStatus, setCurrentFilterStatus] = useState(props.list[0]);
 
 	const handleSelect = (e: React.MouseEvent, element: string) => {
 		e.stopPropagation();
@@ -44,8 +47,8 @@ function TicketFilterByStatus() {
         transition-all duration-200 origin-top
         ${open ? "opacity-100 scale-y-100" : "opacity-0 scale-y-0 pointer-events-none"}`}
 			>
-				{status.map((element, index) => (
-					<TicketFilterByStatusElement
+				{props.list.map((element, index) => (
+					<TicketFilterElement
 						name={element}
 						key={index}
 						onClick={(e: React.MouseEvent) => handleSelect(e, element)}
@@ -56,4 +59,4 @@ function TicketFilterByStatus() {
 	);
 }
 
-export default TicketFilterByStatus;
+export default TicketFilter;
