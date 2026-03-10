@@ -9,7 +9,7 @@ interface HamburgerMenuProps {
 
 function HamburgerMenu(props: HamburgerMenuProps) {
 	return (
-		<div className="block md:hidden z-6969" onClick={props.onClick}>
+		<div className="block md:hidden z-30" onClick={props.onClick}>
 			{
 				!props.isMenuOpened ?
 					<Bars2Icon className="w-10 h-10 text-gray-600" /> :
