@@ -22,7 +22,7 @@ function ClientMyTickets() {
 						<TicketFilter list={priorities} />
 					</div>
 					<p className="my-4">Tous les tickets</p>
-					<div className="grid md:grid-cols-4 gap-4">
+					<div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
 						{
 							tickets.map((t, i) => (
 								<Ticket title={t.title} description={t.description} status={t.status} priority={t.priority} key={i} />
