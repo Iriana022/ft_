@@ -23,7 +23,7 @@ function CreateTicketView(props: CreateTicketViewProps) {
 				</div>
 			</div>
 			<Separator />
-			<div className="my-3">
+			<div className="my-4">
 				<label className="text-base block" htmlFor="title">Titre</label>
 				<input
 					type="text"
@@ -32,8 +32,8 @@ function CreateTicketView(props: CreateTicketViewProps) {
 					className="border py-3 px-3 text-sm w-full rounded mt-2"
 				/>
 			</div>
-			<div className="my-3">
-				<h3 className="text-base mb-2">Priorite</h3>
+			<div className="my-4">
+				<h3 className="text-base mb-3">Priorite</h3>
 				<div className="flex items-center gap-5">
 					<PriorityChoice priority={TicketPriority.LOW} />
 					<PriorityChoice priority={TicketPriority.HIGH} />
@@ -41,7 +41,7 @@ function CreateTicketView(props: CreateTicketViewProps) {
 					<PriorityChoice priority={TicketPriority.URGENT} />
 				</div>
 			</div>
-			<div className="my-3">
+			<div className="my-4">
 				<h3 className="text-base mb-2">Description</h3>
 				<div>
 					<textarea
