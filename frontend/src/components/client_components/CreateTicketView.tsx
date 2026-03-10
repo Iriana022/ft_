@@ -3,14 +3,24 @@ import Separator from './Separator';
 import CloseButtonX from './CloseButtonX';
 import PriorityChoice from './PriorityChoice';
 import {TicketPriority} from '../../types';
-import Button from './Button';
 
-function CreateTicketView() {
+interface CreateTicketViewProps {
+	isOpen: boolean,
+	onClose: () => void,
+}
+
+function CreateTicketView(props: CreateTicketViewProps) {
 	return (
-		<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 shadow bg-white min-w-[600px] py-3 px-5 rounded">
+		<div
+			className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
+				shadow bg-white min-w-[600px] py-6 px-5 rounded
+				transition ${props.isOpen ? "" : "opacity-0 scale-75"}`}
+		>
 			<div className="flex items-center justify-between">
 				<h3 className="text-base">Creer un ticket</h3>
-				<CloseButtonX />
+				<div onClick={props.onClose}>
+					<CloseButtonX />
+				</div>
 			</div>
 			<Separator />
 			<div className="my-3">
@@ -41,10 +51,10 @@ function CreateTicketView() {
 				</div>
 			</div>
 			<div className="flex items-center justify-between mt-7 mb-3">
-				<button className="btn btn-soft">Annuler</button>
-				<button className="btn btn-info">Creer un ticket</button>
+				<button className="btn btn-soft" onClick={props.onClose}>Annuler</button>
+				<button className="btn btn-info" onClick={props.onClose}>Creer un ticket</button>
 			</div>
-		</div >
+		</ div >
 	);
 }
 
