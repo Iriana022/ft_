@@ -37,7 +37,7 @@ function PriorityChoice(props: PriorityChoiceProps) {
 	}
 
 	return (
-		<div className={`w-[150px] ${bgColor} ${textColor} text-sm text-center py-3 rounded-full`}>
+		<div className={`w-[150px] ${bgColor} ${textColor} text-xs md:text-sm text-center py-2 md:py-3 rounded-full`}>
 			{text}
 		</div>
 	);

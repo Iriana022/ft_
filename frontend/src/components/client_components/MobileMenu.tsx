@@ -19,7 +19,7 @@ function MobileMenu() {
 					<NavItem icon={Cog8ToothIcon} href="/settings" text="Parametres" color="text-cream" textColor="text-cream" textSize="text-lg" />
 				</nav>
 			</div>
-		</div >
+		</div>
 	);
 }
 

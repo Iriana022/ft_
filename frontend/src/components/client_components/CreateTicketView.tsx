@@ -12,13 +12,13 @@ interface CreateTicketViewProps {
 function CreateTicketView(props: CreateTicketViewProps) {
 	return (
 		<div
-			className={`fixed inset-0 z-50 flex items-center justify-center
+			className={`fixed inset-0 z-50 px-3 flex items-center justify-center
 			transition-all duration-200
 			${props.isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
 			bg-black/20 backdrop-blur-sm`}
 		>
 			<div
-				className={`shadow bg-cream min-w-[600px] p-5 rounded
+				className={`shadow bg-cream w-full max-w-xl  p-5 rounded
 				transition-all duration-200
 				${props.isOpen ? "scale-100 opacity-100" : "scale-75 opacity-0"}`}
 			>
