@@ -25,7 +25,7 @@ function ClientMyTickets() {
 					<div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
 						{
 							tickets.map((t, i) => (
-								<Ticket title={t.title} description={t.description} status={t.status} priority={t.priority} key={i} />
+								<Ticket ticket={t} key={i} />
 							))
 						}
 					</div>

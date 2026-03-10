@@ -14,7 +14,7 @@ function ClientHomeMyTicketsSection() {
 				<div className="md:w-[60%] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5">
 					{
 						tickets.slice(0, 4).map((t, i) =>
-							(<Ticket key={i} title={t.title} description={t.description} status={t.status} priority={t.priority} />))
+							(<Ticket key={i} ticket={t} />))
 					}
 				</div>
 				<div className="w-full md:w-[40%] md:ps-15 order-first md:order-none">
