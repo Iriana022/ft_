@@ -1,45 +1,54 @@
-import React from 'react';
 import {TicketPriority} from '../../types';
 
 interface PriorityChoiceProps {
 	priority: TicketPriority,
+	active: boolean,
+	onClick: (priority: TicketPriority) => void,
 }
 
 function PriorityChoice(props: PriorityChoiceProps) {
 	let text: string | undefined = undefined;
 	let textColor: string | undefined = undefined;
 	let bgColor: string | undefined = undefined;
+	let borderColor: string | undefined = undefined;
 
 	switch (props.priority) {
 		case TicketPriority.LOW: {
 			text = "Basse";
 			bgColor = "bg-[#E6F4EA]";
 			textColor = "text-[#1B5E20]";
+			borderColor = "border-[#A5D6A7]";
 		} break;
 
 		case TicketPriority.MEDIUM: {
 			text = "Moyenne";
 			bgColor = "bg-[#FFF4E5]";
 			textColor = "text-[#8A4B00]";
+			borderColor = "border-[#FFCC80]";
 		} break;
 
 		case TicketPriority.HIGH: {
 			text = "Haute";
 			bgColor = "bg-[#FDECEA]";
 			textColor = "text-[#B71C1C]";
+			borderColor = "border-[#EF9A9A]";
 		} break;
 
 		case TicketPriority.URGENT: {
 			text = "Urgent";
 			bgColor = "bg-[#D32F2F]/80";
 			textColor = "text-[#FFFFFF]";
+			borderColor = "border-[#B71C1C]";
 		} break;
 	}
 
 	return (
-		<div className={`w-[150px] ${bgColor} ${textColor} text-xs md:text-sm text-center py-2 md:py-3 rounded-full`}>
+		<div
+			className={`w-[150px] ${bgColor} ${textColor} ${props.active ? `border ${borderColor}` : ""} text-xs md:text-sm text-center py-2 md:py-3 rounded-full cursor-pointer`}
+			onClick={() => props.onClick(props.priority)}
+		>
 			{text}
-		</div>
+		</ div>
 	);
 }
 

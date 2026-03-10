@@ -1,4 +1,4 @@
-import React from 'react';
+import {useState} from 'react';
 import Separator from './Separator';
 import CloseButtonX from './CloseButtonX';
 import PriorityChoice from './PriorityChoice';
@@ -10,6 +10,12 @@ interface CreateTicketViewProps {
 }
 
 function CreateTicketView(props: CreateTicketViewProps) {
+	const [activePriority, setActivePriority] = useState<TicketPriority | undefined>(undefined);
+
+	const handlePriorityChoice = (priority: TicketPriority) => {
+		setActivePriority(priority);
+	}
+
 	return (
 		<div
 			className={`fixed inset-0 z-50 px-3 flex items-center justify-center
@@ -18,7 +24,7 @@ function CreateTicketView(props: CreateTicketViewProps) {
 			bg-black/20 backdrop-blur-sm`}
 		>
 			<div
-				className={`shadow bg-cream w-full max-w-xl  p-5 rounded
+				className={`shadow bg-cream w-full max-w-xl p-5 rounded-md
 				transition-all duration-200
 				${props.isOpen ? "scale-100 opacity-100" : "scale-75 opacity-0"}`}
 			>
@@ -48,10 +54,10 @@ function CreateTicketView(props: CreateTicketViewProps) {
 					<h3 className="text-base mb-3">Priorité</h3>
 
 					<div className="flex items-center gap-5">
-						<PriorityChoice priority={TicketPriority.LOW} />
-						<PriorityChoice priority={TicketPriority.MEDIUM} />
-						<PriorityChoice priority={TicketPriority.HIGH} />
-						<PriorityChoice priority={TicketPriority.URGENT} />
+						<PriorityChoice priority={TicketPriority.LOW} active={activePriority === TicketPriority.LOW} onClick={handlePriorityChoice} />
+						<PriorityChoice priority={TicketPriority.MEDIUM} active={activePriority === TicketPriority.MEDIUM} onClick={handlePriorityChoice} />
+						<PriorityChoice priority={TicketPriority.HIGH} active={activePriority === TicketPriority.HIGH} onClick={handlePriorityChoice} />
+						<PriorityChoice priority={TicketPriority.URGENT} active={activePriority === TicketPriority.URGENT} onClick={handlePriorityChoice} />
 					</div>
 				</div>
 
