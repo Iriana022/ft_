@@ -22,7 +22,7 @@ function TicketInformation(props: TicketInformationProps) {
 			bg-black/20 backdrop-blur-sm`}
 		>
 			<div
-				className={`shadow bg-cream w-full max-w-xl  p-5 rounded
+				className={`shadow bg-cream w-full max-w-xl  p-5 rounded-md
 				transition-all duration-200
 				${props.isOpen ? "scale-100 opacity-100" : "scale-75 opacity-0"}`}
 			>
@@ -55,7 +55,7 @@ function TicketInformation(props: TicketInformationProps) {
 
 					<div className="flex items-center gap-5">
 						{/* TODO: allow changement on priority */}
-						<PriorityChoice priority={props.ticket.priority} />
+						<PriorityChoice priority={props.ticket.priority} active={true} onClick={() => {}} />
 					</div>
 				</div>
 
