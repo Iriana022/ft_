@@ -16,7 +16,7 @@ function ClientHomeHeroSection() {
 	}
 
 	return (
-		<section className="relative flex items-center pt-15 pb-7">
+		<section className="flex items-center pt-15 pb-7">
 			<CreateTicketView isOpen={isTicketViewOpen} onClose={onClose} />
 			<div className="w-[100%] md:w-[50%] flex items-center md:items-start flex-col gap-5">
 				<h1 className="text-4xl font-bold font-inter">Bonjour, <span className="text-navy">Dontoman</span></h1>
