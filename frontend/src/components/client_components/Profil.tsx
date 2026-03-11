@@ -36,7 +36,7 @@ function Profil() {
 						Changer l'avatar
 					</button>
 				</div>
-				<h3 className="mt-8 mb-5 text-md md:text-xl font-semibold text-navy text-center">Informations personnelles:</h3>
+				<h3 className="mt-8 mb-5 text-md md:text-xl font-semibold text-navy text-center md:text-start">Informations personnelles:</h3>
 				<div className="flex flex-col gap-6">
 					<div>
 						<label className="block mb-2">Nom</label>
