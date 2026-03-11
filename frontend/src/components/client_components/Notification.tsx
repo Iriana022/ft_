@@ -1,11 +1,46 @@
 import {BellIcon} from '@heroicons/react/24/outline';
-import {Link} from 'react-router-dom';
+import NotificationView from './NotificationView';
 
 function Notification() {
 	return (
-		<Link to='/client_view' className="w-8 h-8 border border-gray-300 transition hover:border-navy/30 flex items-center justify-center rounded shadow-sm shadow-navy/40 group">
-			<BellIcon className="w-6 h-6 text-gray-600 transition group-hover:scale-108" />
-		</Link>
+		<div className="dropdown dropdown-end">
+			<div
+				tabIndex={0}
+				role="button"
+				className="
+					w-9 h-9
+					border border-gray-300
+					hover:border-navy/40
+					transition
+					flex items-center justify-center
+					rounded-lg
+					bg-cream
+					shadow-sm
+					hover:shadow-md
+					cursor-pointer
+				"
+			>
+				<BellIcon className="w-5 h-5 text-gray-600 transition hover:scale-110" />
+			</div>
+
+			<div
+				tabIndex={0}
+				className="
+					dropdown-content
+					z-50
+					mt-3
+					w-80
+					bg-cream
+					border
+					border-gray-400
+					rounded-xl
+					shadow-lg
+					p-2
+				"
+			>
+				<NotificationView />
+			</div>
+		</div>
 	);
 }
 

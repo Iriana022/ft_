@@ -14,9 +14,9 @@ function MobileMenu() {
 					<h3 className="text-cream font-poppins pt-3">Jennifer Lawrence</h3>
 				</div>
 				<nav className="flex flex-col gap-4">
-					<NavItem icon={HomeIcon} href="/" text="Accueil" color="text-cream" textColor="text-cream" textSize="text-lg" />
-					<NavItem icon={TicketIcon} href="/my_tickets" text="Mes Tickets" color="text-cream" textColor="text-cream" textSize="text-lg" />
-					<NavItem icon={Cog8ToothIcon} href="/settings" text="Parametres" color="text-cream" textColor="text-cream" textSize="text-lg" />
+					<NavItem icon={HomeIcon} href="/client_view" text="Accueil" color="text-cream" textColor="text-cream" textSize="text-lg" />
+					<NavItem icon={TicketIcon} href="/client_view/my_tickets" text="Mes Tickets" color="text-cream" textColor="text-cream" textSize="text-lg" />
+					<NavItem icon={Cog8ToothIcon} href="/client_view/settings" text="Parametres" color="text-cream" textColor="text-cream" textSize="text-lg" />
 				</nav>
 			</div>
 		</div>

@@ -1,10 +1,15 @@
 import React from 'react';
+import {Link} from 'react-router-dom';
 
-function TikeoLogo() {
+interface TikeoLogoProps {
+	href: string,
+}
+
+function TikeoLogo(props: TikeoLogoProps) {
 	return (
-		<h1 className="font-inter text-4xl text-navy font-bold">
+		<Link to={props.href} className="font-inter text-4xl text-navy font-bold">
 			Tikeo
-		</h1>
+		</Link>
 	);
 }
 
