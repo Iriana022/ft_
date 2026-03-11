@@ -27,14 +27,16 @@ function Profil() {
 			</ContainerComp>
 			<Separator />
 			<ContainerComp>
-				<div className="flex items-center gap-8 pt-10 mb-4">
+				<div className="flex items-center flex-col md:flex-row gap-4 md:gap-8 pt-10 mb-4">
 					<Avatar src={avatar1} size={24} />
-					<h3 className="text-xl">{firstname} {lastname}</h3>
+					<h3 className="text-md md:text-xl">{firstname} {lastname}</h3>
 				</div>
-				<button className="btn btn-info">
-					Changer l'avatar
-				</button>
-				<h3 className="mt-8 mb-5 text-xl font-semibold text-navy">Informations personnelles:</h3>
+				<div className="flex justify-center md:block">
+					<button className="btn btn-info">
+						Changer l'avatar
+					</button>
+				</div>
+				<h3 className="mt-8 mb-5 text-md md:text-xl font-semibold text-navy text-center">Informations personnelles:</h3>
 				<div className="flex flex-col gap-6">
 					<div>
 						<label className="block mb-2">Nom</label>
@@ -42,7 +44,7 @@ function Profil() {
 							type="text"
 							value={firstname}
 							onChange={(e) => setFirstname(e.target.value)}
-							className="border px-3 py-3 rounded w-1/3 bg-gray-100"
+							className="border px-3 py-3 rounded w-full md:w-1/3 bg-gray-100 text-sm md:text-base"
 						/>
 					</div>
 					<div>
@@ -51,7 +53,7 @@ function Profil() {
 							type="text"
 							value={lastname}
 							onChange={(e) => setLastname(e.target.value)}
-							className="border px-3 py-3 rounded w-1/3 bg-gray-100"
+							className="border px-3 py-3 rounded w-full md:w-1/3 bg-gray-100 text-sm md:text-base"
 						/>
 					</div>
 					<div>
@@ -60,7 +62,7 @@ function Profil() {
 							type="text"
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
-							className="border px-3 py-3 rounded w-1/3 bg-gray-100"
+							className="border px-3 py-3 rounded w-full md:w-1/3 bg-gray-100 text-sm md:text-base"
 						/>
 					</div>
 				</div>
