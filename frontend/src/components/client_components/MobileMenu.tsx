@@ -10,7 +10,7 @@ function MobileMenu() {
 		<div className="flex mt-[50%] justify-center h-full">
 			<div className="flex flex-col gap-10 items-center">
 				<div className="flex flex-col items-center">
-					<Avatar src={avatar1} />
+					<Avatar src={avatar1} size={12} />
 					<h3 className="text-cream font-poppins pt-3">Jennifer Lawrence</h3>
 				</div>
 				<nav className="flex flex-col gap-4">
