@@ -44,14 +44,11 @@ export interface Ticket {
 	assignedToId?: number;
 }
 
-import React from 'react';
-
-
-
 export interface TicketType {
 	title: string,
 	description: string,
 	status: TicketStatus,
 	priority: TicketPriority,
+	hasMessage: boolean,
 }
 

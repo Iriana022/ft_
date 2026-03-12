@@ -10,7 +10,7 @@ function Footer() {
 			<ContainerComp>
 				<section className="flex flex-col md:flex-row md:justify-between py-3">
 					<div className="flex gap-4 items-center md:block">
-						<TikeoLogo />
+						<TikeoLogo href="/client_view" />
 						<p className="text-xs md:text-sm max-w-[500px] mt-3 text-gray-700">
 							Vos problèmes méritent une réponse claire et rapide. Créez vos tickets en quelques clics, suivez leur avancement en temps réel et échangez facilement avec l’équipe.
 						</p>

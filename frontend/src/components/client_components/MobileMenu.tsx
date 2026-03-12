@@ -10,13 +10,13 @@ function MobileMenu() {
 		<div className="flex mt-[50%] justify-center h-full">
 			<div className="flex flex-col gap-10 items-center">
 				<div className="flex flex-col items-center">
-					<Avatar src={avatar1} />
+					<Avatar src={avatar1} size={12} />
 					<h3 className="text-cream font-poppins pt-3">Jennifer Lawrence</h3>
 				</div>
 				<nav className="flex flex-col gap-4">
-					<NavItem icon={HomeIcon} href="/" text="Accueil" color="text-cream" textColor="text-cream" textSize="text-lg" />
-					<NavItem icon={TicketIcon} href="/my_tickets" text="Mes Tickets" color="text-cream" textColor="text-cream" textSize="text-lg" />
-					<NavItem icon={Cog8ToothIcon} href="/settings" text="Parametres" color="text-cream" textColor="text-cream" textSize="text-lg" />
+					<NavItem icon={HomeIcon} href="/client_view" text="Accueil" color="text-cream" textColor="text-cream" textSize="text-lg" />
+					<NavItem icon={TicketIcon} href="/client_view/my_tickets" text="Mes Tickets" color="text-cream" textColor="text-cream" textSize="text-lg" />
+					<NavItem icon={Cog8ToothIcon} href="/client_view/settings" text="Parametres" color="text-cream" textColor="text-cream" textSize="text-lg" />
 				</nav>
 			</div>
 		</div>

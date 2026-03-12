@@ -11,6 +11,7 @@ import Avatar from '../components/client_components/Avatar';
 import avatar1 from '../assets/avatars/avatar1.jpg';
 import ContainerComp from './Container';
 import MobileMenu from '../components/client_components/MobileMenu';
+import {Link} from 'react-router-dom';
 
 function Header() {
 	const [isMenuOpened, setIsMenuOpened] = useState(false);
@@ -29,7 +30,7 @@ function Header() {
 					<div className="flex gap-[100px]">
 						<HamburgerMenu onClick={() => setIsMenuOpened(s => !s)} isMenuOpened={isMenuOpened} />
 						<div className="absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0">
-							<TikeoLogo />
+							<TikeoLogo href="/client_view" />
 						</div>
 						<nav className="hidden md:flex gap-5">
 							<NavItem icon={HomeIcon} href="/client_view" text="Acceuil" color="text-gray-500" />
@@ -39,9 +40,9 @@ function Header() {
 					</div>
 					<div className="flex items-center gap-8">
 						<Notification />
-						<div className="hidden md:block">
-							<Avatar src={avatar1} />
-						</div>
+						<Link to='profil' className="hidden md:block">
+							<Avatar src={avatar1} size={12} />
+						</Link>
 					</div>
 				</header>
 			</ContainerComp >
