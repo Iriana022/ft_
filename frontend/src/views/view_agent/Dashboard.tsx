@@ -1,7 +1,7 @@
 import { Ticket, AlertCircle, CheckCircle2, Clock, TrendingUp } from 'lucide-react';
-import { StatCard } from '../../components/StatCard';
+import { StatCard } from '../../components/agent_components/StatCard';
 import { TicketList } from './TicketList';
-import { ThemeToggle } from '../../components/ThemeToggle';
+import { ThemeToggle } from '../../components/agent_components/ThemeToggle';
 import { mockTickets, getTicketStats, getChartData } from '../../data/mockData';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { useTheme } from '../../context/ThemeContext';

@@ -3,7 +3,7 @@ import { Search, Filter } from 'lucide-react';
 import { TicketStatus, TicketPriority } from '../../types';
 import { mockTickets } from '../../data/mockData';
 import { TicketList } from './TicketList';
-import { ThemeToggle } from '../../components/ThemeToggle';
+import { ThemeToggle } from '../../components/agent_components/ThemeToggle';
 import { useTheme } from '../../context/ThemeContext';
 
 export function TicketsPage() {

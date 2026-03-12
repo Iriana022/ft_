@@ -1,17 +1,16 @@
-import {Mail, Lock, Eye, EyeOff, Sun, Moon, User} from 'lucide-react';
+import {Mail, Lock, Eye, EyeOff, Sun, Moon} from 'lucide-react';
 import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {Button} from './ui/button';
-import {Input} from './ui/input';
-import Separator from './Separator';
-import {useTheme} from '../context/ThemeContext';
-import api from '../services/api';
+import {Button} from '../../components/login_components/button';
+import {Input} from '../../components/login_components/input';
+import Separator from '../../components/login_components/Separator';
+import {useTheme} from '../../context/ThemeContext';
+import api from '../../services/api';
 
-export function RegisterCard() {
+export function LoginCard() {
 	const [showPassword, setShowPassword] = useState(false);
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
-	const [username, setUsername] = useState('');
 	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
 	const {theme, setTheme} = useTheme();
@@ -25,36 +24,24 @@ export function RegisterCard() {
 		setLoading(true);
 
 		try {
-			// Inscription
-			await api.post('/auth/register', {
-				email,
-				password,
-				login: username
-			});
+			// Appel au backend NestJS
+			const response = await api.post('/auth/login', {email, password});
+			// console.log("Hello")
 
-			// Connexion automatique après inscription
-			const loginResponse = await api.post('/auth/login', {
-				email,
-				password
-			});
+			// Extraction du token
+			const {access_token} = response.data;
 
-			const {access_token} = loginResponse.data;
+			// Stockage du token
 			localStorage.setItem('access_token', access_token);
 
-			console.log('Inscription réussie !');
+			console.log('Connexion réussie ! Token stocké.');
 
 			// Redirection vers le dashboard
 			navigate('/dashboard');
 
 		} catch (err: any) {
-			console.error("Erreur lors de l'inscription :", err.response?.data?.message || err.message);
-			const backendMessage = err.response?.data?.message;
-
-			if (Array.isArray(backendMessage)) {
-				setError(backendMessage[0]);
-			} else {
-				setError(backendMessage || "Erreur lors de l'inscription");
-			}
+			console.error("Erreur lors de la connexion :", err.response?.data?.message || err.message);
+			setError(err.response?.data?.message || "Identifiants incorrects");
 		} finally {
 			setLoading(false);
 		}
@@ -85,10 +72,10 @@ export function RegisterCard() {
 					className={`text-2xl font-bold mb-2 ${isDark ? 'text-gray-100' : 'text-gray-900'
 						}`}
 				>
-					CREATE ACCOUNT
+					LOGIN
 				</h1>
 				<p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-					Sign up to get started
+					Sign in to your account to continue
 				</p>
 			</div>
 
@@ -101,34 +88,6 @@ export function RegisterCard() {
 			)}
 
 			<form onSubmit={handleSubmit}>
-				{/* Username Field */}
-				<div className="mb-4">
-					<label
-						htmlFor={`username-${theme}`}
-						className={`label mb-2 block ${isDark ? 'text-gray-300' : 'text-gray-700'}`}
-					>
-						Username
-					</label>
-					<div className="relative">
-						<User
-							className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-gray-500' : 'text-gray-400'
-								}`}
-						/>
-						<Input
-							id={`username-${theme}`}
-							type="text"
-							placeholder="Enter your username"
-							value={username}
-							onChange={(e) => setUsername(e.target.value)}
-							required
-							className={`pl-10 h-11 ${isDark
-								? 'bg-[#1a1a1a] border-[#2a2a2a] text-gray-100 placeholder:text-gray-600 focus:border-indigo-500'
-								: 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-indigo-600'
-								}`}
-						/>
-					</div>
-				</div>
-
 				{/* Email Field */}
 				<div className="mb-4">
 					<label
@@ -191,27 +150,35 @@ export function RegisterCard() {
 							{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
 						</button>
 					</div>
-					<p className={`text-xs mt-1 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
-						Min. 8 characters with uppercase and number
-					</p>
 				</div>
 
-				{/* Sign Up Button */}
+				{/* Forgot Password Link */}
+				<div className="mb-6 text-right">
+					<a
+						href="#"
+						className={`text-sm hover:underline ${isDark ? 'text-indigo-400 hover:text-indigo-300' : 'text-indigo-600 hover:text-indigo-700'
+							}`}
+					>
+						Forgot Password?
+					</a>
+				</div>
+
+				{/* Sign In Button */}
 				<Button
 					type="submit"
 					disabled={loading}
-					className={`w-full h-11 mt-4 mb-6 font-semibold ${isDark
+					className={`w-full h-11 mb-6 font-semibold ${isDark
 						? 'bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50'
 						: 'bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50'
 						}`}
 				>
-					{loading ? 'Creating account...' : 'Sign Up'}
+					{loading ? 'Signing in...' : 'Sign In'}
 				</Button>
 			</form>
 
 			{/* Separator */}
 			<div className="relative mb-6">
-				<Separator className={isDark ? 'bg-[#2a2a2a]' : 'bg-gray-200'} />
+				<Separator />
 				<span
 					className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-3 text-sm ${isDark ? 'bg-[#121212] text-gray-500' : 'bg-white text-gray-500'
 						}`}
@@ -221,6 +188,7 @@ export function RegisterCard() {
 			</div>
 
 			{/* Social Auth Buttons */}
+			{/* <div className="bg-red-500 rounded-lg w-full"> */}
 			<button
 				className={`flex items-center justify-center gap-2 py-2 w-full bg-red ${isDark
 					? 'border-[#2a2a2a] hover:bg-[#1a1a1a] text-gray-300'
@@ -247,16 +215,17 @@ export function RegisterCard() {
 				</svg>
 				<span>Google</span>
 			</button>
+			{/* </div> */}
 
-			{/* Login Link */}
-			<div className={`text-center text-sm mt-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-				Already have an account?{' '}
+			{/* Create Account Link */}
+			<div className={`text-center text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+				Don't have an account?{' '}
 				<a
-					href="/login"
+					href="/register"
 					className={`font-semibold hover:underline ${isDark ? 'text-indigo-400 hover:text-indigo-300' : 'text-indigo-600 hover:text-indigo-700'
 						}`}
 				>
-					Sign in
+					Create an account
 				</a>
 			</div>
 		</div>

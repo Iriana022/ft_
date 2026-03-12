@@ -1,4 +1,4 @@
-import ContainerComp from "../../../layout/Container";
+import ContainerComp from "../../../layout/layout_client/Container";
 import Separator from "../../../components/client_components/Separator";
 import Ticket from "../../../components/client_components/Ticket";
 import {tickets} from "../../../data";

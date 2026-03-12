@@ -1,5 +1,5 @@
-import ContainerComp from '../../../layout/Container';
-import Separator from '../../../components/Separator';
+import ContainerComp from '../../../layout/layout_client/Container';
+import Separator from '../../../components/login_components/Separator';
 import ClientHomeHeroSection from '../../../components/client_components/ClientHomeHeroSection';
 import ClientHomeMyTicketsSection from '../../../components/client_components/ClientHomeMyTicketsSection';
 

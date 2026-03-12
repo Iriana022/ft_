@@ -1,7 +1,7 @@
 import { LayoutDashboard, Ticket, Users, Settings, LogOut, BarChart3, Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { UserRole } from '../types';
-import { useTheme } from '../context/ThemeContext';
+import { UserRole } from '../../types';
+import { useTheme } from '../../context/ThemeContext';
 
 interface SidebarProps {
   currentRole: UserRole;

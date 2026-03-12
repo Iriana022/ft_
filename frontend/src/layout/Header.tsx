@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import Separator from '../components/Separator';
+import Separator from '../components/login_components/Separator';
 import TikeoLogo from '../components/client_components/TikeoLogo';
 import NavItem from '../components/client_components/NavItem';
 import {HomeIcon} from '@heroicons/react/24/outline';
@@ -9,7 +9,7 @@ import HamburgerMenu from '../components/client_components/HamburgerMenu';
 import Notification from '../components/client_components/Notification';
 import Avatar from '../components/client_components/Avatar';
 import avatar1 from '../assets/avatars/avatar1.jpg';
-import ContainerComp from './Container';
+import ContainerComp from './layout_client/Container';
 import MobileMenu from '../components/client_components/MobileMenu';
 import {Link} from 'react-router-dom';
 

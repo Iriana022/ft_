@@ -1,7 +1,7 @@
 import React from 'react';
-import Separator from '../components/Separator';
+import Separator from '../components/login_components/Separator';
 import {Link} from 'react-router-dom';
-import ContainerComp from './Container';
+import ContainerComp from './layout_client/Container';
 import TikeoLogo from '../components/client_components/TikeoLogo';
 
 function Footer() {
