@@ -1,10 +1,10 @@
 import { Ticket, AlertCircle, CheckCircle2, Clock, TrendingUp } from 'lucide-react';
-import { StatCard } from './StatCard';
+import { StatCard } from '../../components/StatCard';
 import { TicketList } from './TicketList';
-import { ThemeToggle } from './ThemeToggle';
-import { mockTickets, getTicketStats, getChartData } from '../data/mockData';
+import { ThemeToggle } from '../../components/ThemeToggle';
+import { mockTickets, getTicketStats, getChartData } from '../../data/mockData';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 
 export function Dashboard() {
   const { theme } = useTheme();

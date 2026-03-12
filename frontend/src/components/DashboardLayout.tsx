@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Sidebar } from './Sidebar';
-import { Dashboard } from './Dashboard';
-import { TicketsPage } from './TicketsPage';
+import { Dashboard } from '../views/view_agent/Dashboard';
+import { TicketsPage } from '../views/view_agent/TicketsPage';
 import { UserRole } from '../types';
 
 export function DashboardLayout() {

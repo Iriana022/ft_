@@ -40,7 +40,6 @@ services:
       - /app/node_modules # Important : pour ne pas écraser les modules node du container
     environment:
       - CHOKIDAR_USEPOLLING=true # Pour que le rafraîchissement auto fonctionne sous Docker
-      - VITE_PORT=5173
     tty: true
     stdin_open: true
 volumes:

@@ -1,7 +1,7 @@
-import type { Ticket } from '../types';
-import { TicketStatus, TicketPriority } from '../types';
+import type { Ticket } from '../../types';
+import { TicketStatus, TicketPriority } from '../../types';
 import { Clock, User, AlertCircle } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 
 interface TicketListProps {
   tickets: Ticket[];

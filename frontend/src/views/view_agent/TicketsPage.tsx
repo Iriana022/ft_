@@ -1,18 +1,17 @@
 import { useState } from 'react';
-import { Search, Filter, Plus } from 'lucide-react';
-import type { Ticket } from '../types';
-import { TicketStatus, TicketPriority } from '../types';
-import { mockTickets } from '../data/mockData';
+import { Search, Filter } from 'lucide-react';
+import { TicketStatus, TicketPriority } from '../../types';
+import { mockTickets } from '../../data/mockData';
 import { TicketList } from './TicketList';
-import { ThemeToggle } from './ThemeToggle';
-import { useTheme } from '../context/ThemeContext';
+import { ThemeToggle } from '../../components/ThemeToggle';
+import { useTheme } from '../../context/ThemeContext';
 
 export function TicketsPage() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<TicketStatus | 'ALL'>('OPEN');
-  const [priorityFilter, setPriorityFilter] = useState<Priority | 'ALL'>('ALL');
+  const [statusFilter, setStatusFilter] = useState<TicketStatus | 'ALL'>(TicketStatus.OPEN);
+  const [priorityFilter, setPriorityFilter] = useState<TicketPriority | 'ALL'>('ALL');
 
   // Filter tickets
   const filteredTickets = mockTickets.filter(ticket => {
@@ -85,7 +84,7 @@ export function TicketsPage() {
           {/* Priority Filter */}
           <select
             value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value as Priority | 'ALL')}
+            onChange={(e) => setPriorityFilter(e.target.value as TicketPriority | 'ALL')}
             className={`px-4 py-2 rounded-lg border transition-colors ${
               isDark
                 ? 'bg-[#1a1a1a] border-[#2a2a2a] text-gray-100 focus:border-indigo-500'
@@ -93,10 +92,10 @@ export function TicketsPage() {
             } focus:outline-none focus:ring-2 focus:ring-indigo-500/20`}
           >
             <option value="ALL">Toutes les priorités</option>
-            <option value={Priority.URGENT}>Urgent</option>
-            <option value={Priority.HIGH}>Haute</option>
-            <option value={Priority.MEDIUM}>Moyenne</option>
-            <option value={Priority.LOW}>Basse</option>
+            <option value={TicketPriority.URGENT}>Urgent</option>
+            <option value={TicketPriority.HIGH}>Haute</option>
+            <option value={TicketPriority.MEDIUM}>Moyenne</option>
+            <option value={TicketPriority.LOW}>Basse</option>
           </select>
         </div>
       </div>
