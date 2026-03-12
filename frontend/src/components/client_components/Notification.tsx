@@ -30,7 +30,7 @@ function Notification() {
 					z-50
 					mt-3
 					w-80
-					bg-cream
+					bg-[#F7F7F7]
 					border
 					border-gray-400
 					rounded-xl
