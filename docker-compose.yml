@@ -30,7 +30,10 @@ services:
       CHOKIDAR_USEPOLLING: "true"
     depends_on:
       - db
+
+  # Frontend
   frontend:
+    container_name: frontend
     image: frontend:1
     build: ./frontend
     ports:
