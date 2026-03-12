@@ -2,6 +2,7 @@ import type { Ticket } from '../../types';
 import { TicketStatus, TicketPriority } from '../../types';
 import { Clock, User, AlertCircle } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { useNavigate } from 'react-router-dom';
 
 interface TicketListProps {
   tickets: Ticket[];
@@ -25,6 +26,7 @@ const priorityConfig = {
 export function TicketList({ tickets, maxItems }: TicketListProps) {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const navigate = useNavigate();
   const displayTickets = maxItems ? tickets.slice(0, maxItems) : tickets;
 
   const formatDate = (date: Date) => {
@@ -53,6 +55,13 @@ export function TicketList({ tickets, maxItems }: TicketListProps) {
             className={`p-6 transition-colors cursor-pointer ${
               isDark ? 'hover:bg-[#242424]' : 'hover:bg-gray-50'
             }`}
+            onClick={() =>
+              navigate(`/chat_ticket?ticketId=${ticket.id}`, {
+                state: {
+                  ticket,
+                },
+              })
+            }
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
