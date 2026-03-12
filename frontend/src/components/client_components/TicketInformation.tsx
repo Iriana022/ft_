@@ -3,6 +3,7 @@ import Separator from './Separator';
 import CloseButtonX from './CloseButtonX';
 import PriorityChoice from './PriorityChoice';
 import {type TicketType} from '../../types';
+import {ChatBubbleLeftEllipsisIcon} from '@heroicons/react/24/outline';
 
 interface TicketInformationProps {
 	ticket: TicketType,
@@ -34,6 +35,18 @@ function TicketInformation(props: TicketInformationProps) {
 				</div>
 
 				<Separator />
+
+				<div>
+					<h4 className="text-base mb-1">Messages</h4>
+					<button className="btn btn-sm btn-soft relative">
+						<ChatBubbleLeftEllipsisIcon className="w-5 h-5" />
+						{
+							props.ticket.hasMessage ?
+								(<span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />) :
+								""
+						}
+					</button>
+				</div>
 
 				<div className="my-4">
 					<label className="text-base block" htmlFor="title">
