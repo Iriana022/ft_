@@ -9,6 +9,7 @@ import ClientHome from "../views/client_view/pages/ClientHome";
 import ClientMyTickets from "../views/client_view/pages/ClientMyTickets";
 import ClientSettings from "../views/client_view/pages/ClientSettings";
 import Profil from "../components/client_components/Profil";
+import ChatTicketView from '../views/chat_ticket/ChatTicketView';
 
 export const router = createBrowserRouter([
 	{
@@ -52,6 +53,14 @@ export const router = createBrowserRouter([
 	{
 		path: 'client_view/profil',
 		element: <Profil />
+	},
+	{
+		path: 'chat_ticket',
+		element: (
+			<ProtectedRoute>
+				<ChatTicketView />
+			</ProtectedRoute>
+		)
 	}
 ])
 
