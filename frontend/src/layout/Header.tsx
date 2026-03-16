@@ -41,7 +41,7 @@ function Header() {
 					<div className="flex items-center gap-8">
 						<Notification />
 						<Link to='profil' className="hidden md:block">
-							<Avatar src={avatar1} size={12} />
+							<Avatar src={avatar1} size="md" />
 						</Link>
 					</div>
 				</header>
