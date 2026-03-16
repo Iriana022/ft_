@@ -1,17 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CreateTicketDto } from './dto/create-ticket.dto';
 
 @Injectable()
 export class TicketsService {
     constructor(private prisma: PrismaService){}
 
-    async createTicket(title: string, description: string, authorId: number){
+    async createTicket(dto: CreateTicketDto, authorId: number){
         return this.prisma.ticket.create({
             data: {
-                title,
-                description,
+                title: dto.title,
+                description: dto.description,
+                priority: dto.priority,
                 authorId
-            }
+            },
+            include: { author: true }
         })
     }
 

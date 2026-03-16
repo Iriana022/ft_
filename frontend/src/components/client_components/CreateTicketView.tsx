@@ -3,6 +3,7 @@ import Separator from './Separator';
 import CloseButtonX from './CloseButtonX';
 import PriorityChoice from './PriorityChoice';
 import {TicketPriority} from '../../types';
+import api from '../../services/api';
 
 interface CreateTicketViewProps {
 	isOpen: boolean,
@@ -11,10 +12,62 @@ interface CreateTicketViewProps {
 
 function CreateTicketView(props: CreateTicketViewProps) {
 	const [activePriority, setActivePriority] = useState<TicketPriority | undefined>(undefined);
+	const [title, setTitle] = useState('');
+	const [description, setDescription] = useState('');
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [errorMessage, setErrorMessage] = useState('');
+	const [successMessage, setSuccessMessage] = useState('');
 
 	const handlePriorityChoice = (priority: TicketPriority) => {
 		setActivePriority(priority);
 	}
+
+	const resetForm = () => {
+		setTitle('');
+		setDescription('');
+		setActivePriority(undefined);
+		setErrorMessage('');
+		setSuccessMessage('');
+	};
+
+	const handleClose = () => {
+		resetForm();
+		props.onClose();
+	};
+
+	const handleCreateTicket = async () => {
+		setErrorMessage('');
+		setSuccessMessage('');
+
+		if (title.trim().length < 3) {
+			setErrorMessage('Le titre doit contenir au moins 3 caractères.');
+			return;
+		}
+
+		if (description.trim().length < 10) {
+			setErrorMessage('La description doit contenir au moins 10 caractères.');
+			return;
+		}
+
+		setIsSubmitting(true);
+
+		try {
+			await api.post('/tickets', {
+				title: title.trim(),
+				description: description.trim(),
+				priority: activePriority ?? TicketPriority.MEDIUM,
+			});
+
+			setSuccessMessage('Ticket créé avec succès.');
+			setTimeout(() => {
+				handleClose();
+			}, 700);
+		} catch (error) {
+			setErrorMessage('Impossible de créer le ticket. Vérifie que tu es connecté.');
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
 
 	return (
 		<div
@@ -30,7 +83,7 @@ function CreateTicketView(props: CreateTicketViewProps) {
 			>
 				<div className="flex items-center justify-between">
 					<h3 className="text-base">Créer un ticket</h3>
-					<div onClick={props.onClose}>
+					<div onClick={handleClose}>
 						<CloseButtonX />
 					</div>
 				</div>
@@ -47,6 +100,8 @@ function CreateTicketView(props: CreateTicketViewProps) {
 						id="title"
 						placeholder="Entrer le titre de votre ticket ici ..."
 						className="border py-3 px-3 text-sm w-full rounded mt-2"
+						value={title}
+						onChange={(e) => setTitle(e.target.value)}
 					/>
 				</div>
 
@@ -67,22 +122,33 @@ function CreateTicketView(props: CreateTicketViewProps) {
 					<textarea
 						placeholder="Entrer la description de votre ticket ici ..."
 						className="border py-3 px-3 min-h-[120px] text-sm w-full rounded"
+						value={description}
+						onChange={(e) => setDescription(e.target.value)}
 					/>
 				</div>
+
+				{errorMessage && (
+					<p className="text-red-500 text-sm mb-2">{errorMessage}</p>
+				)}
+				{successMessage && (
+					<p className="text-green-600 text-sm mb-2">{successMessage}</p>
+				)}
 
 				<div className="flex items-center justify-between mt-7 mb-3">
 					<button
 						className="btn btn-soft"
-						onClick={props.onClose}
+						onClick={handleClose}
+						disabled={isSubmitting}
 					>
 						Annuler
 					</button>
 
 					<button
 						className="btn btn-info"
-						onClick={props.onClose}
+						onClick={handleCreateTicket}
+						disabled={isSubmitting}
 					>
-						Créer un ticket
+						{isSubmitting ? 'Création...' : 'Créer un ticket'}
 					</button>
 				</div>
 			</div>
