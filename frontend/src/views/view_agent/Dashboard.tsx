@@ -1,14 +1,41 @@
 import { Ticket, AlertCircle, Clock } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { StatCard } from '../../components/agent_components/StatCard';
 import { TicketList } from './TicketList';
 import { ThemeToggle } from '../../components/agent_components/ThemeToggle';
-import { mockTickets, getTicketStats } from '../../data/mockData';
 import { useTheme } from '../../context/ThemeContext';
+import api from '../../services/api';
+import type { Ticket as TicketType } from '../../types';
+import { TicketStatus } from '../../types';
 
 export function Dashboard() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const stats = getTicketStats();
+  const [tickets, setTickets] = useState<TicketType[]>([]);
+
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const response = await api.get('/tickets');
+        const normalizedTickets: TicketType[] = (response.data ?? []).map((ticket: TicketType & { AssignedTo?: TicketType['assignedTo'] }) => ({
+          ...ticket,
+          assignedTo: ticket.assignedTo ?? ticket.AssignedTo,
+        }));
+
+        setTickets(normalizedTickets);
+      } catch (error) {
+        console.error('Erreur chargement tickets:', error);
+      }
+    };
+
+    fetchTickets();
+  }, []);
+
+  const stats = useMemo(() => ({
+    total: tickets.length,
+    open: tickets.filter((ticket: TicketType) => ticket.status === TicketStatus.OPEN).length,
+    inProgress: tickets.filter((ticket: TicketType) => ticket.status === TicketStatus.IN_PROGRESS).length,
+  }), [tickets]);
 
   return (
     <div className={`flex-1 overflow-auto ${isDark ? 'bg-[#0a0a0a]' : 'bg-gray-50'}`}>
@@ -52,7 +79,7 @@ export function Dashboard() {
         </div>
 
         {/* Recent Tickets */}
-        <TicketList tickets={mockTickets} maxItems={4} />
+        <TicketList tickets={tickets} maxItems={4} />
       </div>
     </div>
   );
