@@ -52,3 +52,8 @@ export interface TicketType {
 	hasMessage: boolean,
 }
 
+export interface Message {
+	client: string,
+	agent: string,
+}
+
