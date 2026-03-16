@@ -1,20 +1,38 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Search, Filter } from 'lucide-react';
 import { TicketStatus, TicketPriority } from '../../types';
-import { mockTickets } from '../../data/mockData';
+import type { Ticket } from '../../types';
 import { TicketList } from './TicketList';
 import { ThemeToggle } from '../../components/agent_components/ThemeToggle';
 import { useTheme } from '../../context/ThemeContext';
+import { fetchTickets } from '../../services/tickets';
 
 export function TicketsPage() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<TicketStatus | 'ALL'>(TicketStatus.OPEN);
   const [priorityFilter, setPriorityFilter] = useState<TicketPriority | 'ALL'>('ALL');
 
+  useEffect(() => {
+    const loadTickets = async () => {
+      try {
+        const data = await fetchTickets();
+        setTickets(data);
+      } catch (error) {
+        console.error('Erreur chargement tickets:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTickets();
+  }, []);
+
   // Filter tickets
-  const filteredTickets = mockTickets.filter(ticket => {
+  const filteredTickets = tickets.filter(ticket => {
     const matchesSearch = ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'ALL' || ticket.status === statusFilter;
@@ -102,6 +120,14 @@ export function TicketsPage() {
 
       {/* Content */}
       <div className="p-8">
+        {isLoading ? (
+          <div className={`rounded-xl border p-12 text-center ${
+            isDark ? 'bg-[#1a1a1a] border-[#2a2a2a]' : 'bg-white border-gray-200'
+          }`}>
+            <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>Chargement des tickets...</p>
+          </div>
+        ) : (
+          <>
         {/* Results Count */}
         <div className={`mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
           {filteredTickets.length} ticket{filteredTickets.length > 1 ? 's' : ''} trouvé{filteredTickets.length > 1 ? 's' : ''}
@@ -126,6 +152,8 @@ export function TicketsPage() {
               Essayez de modifier vos filtres ou votre recherche
             </p>
           </div>
+        )}
+          </>
         )}
       </div>
     </div>
