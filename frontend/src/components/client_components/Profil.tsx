@@ -28,7 +28,7 @@ function Profil() {
 			<Separator />
 			<ContainerComp>
 				<div className="flex items-center flex-col md:flex-row gap-4 md:gap-8 pt-10 mb-4">
-					<Avatar src={avatar1} size={24} />
+					<Avatar src={avatar1} size="xl" />
 					<h3 className="text-md md:text-xl">{firstname} {lastname}</h3>
 				</div>
 				<div className="flex justify-center md:block">
@@ -69,10 +69,10 @@ function Profil() {
 				<div className="mt-10 mb-8 flex justify-end">
 					<button className="btn btn-primary">Sauvegarder</button>
 				</div>
-			</ContainerComp>
+			</ContainerComp >
 			<Separator />
 			<Footer />
-		</div>
+		</div >
 	);
 }
 
