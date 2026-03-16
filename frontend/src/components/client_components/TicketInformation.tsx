@@ -4,6 +4,7 @@ import CloseButtonX from './CloseButtonX';
 import PriorityChoice from './PriorityChoice';
 import {type TicketType} from '../../types';
 import {ChatBubbleLeftEllipsisIcon} from '@heroicons/react/24/outline';
+import {useNavigate} from 'react-router-dom';
 
 interface TicketInformationProps {
 	ticket: TicketType,
@@ -14,6 +15,7 @@ interface TicketInformationProps {
 function TicketInformation(props: TicketInformationProps) {
 	const [title, setTitle] = useState(props.ticket.title);
 	const [description, setDescription] = useState(props.ticket.description);
+	const navigate = useNavigate();
 
 	return (
 		<div
@@ -38,7 +40,10 @@ function TicketInformation(props: TicketInformationProps) {
 
 				<div>
 					<h4 className="text-base mb-1">Messages</h4>
-					<button className="btn btn-sm btn-soft relative">
+					<button
+						className="btn btn-sm btn-soft relative"
+						onClick={() => navigate('/client_view/ticket_message', {state: props.ticket})}
+					>
 						<ChatBubbleLeftEllipsisIcon className="w-5 h-5" />
 						{
 							props.ticket.hasMessage ?
