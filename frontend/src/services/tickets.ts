@@ -40,8 +40,15 @@ export const fetchTickets = async (): Promise<Ticket[]> => {
   return rawTickets.map(normalizeTicket);
 };
 
+export const updateTicketStatus = async (ticketId: number, status: TicketStatus): Promise<Ticket> => {
+  const response = await api.patch(`/tickets/${ticketId}/status`, { status });
+
+  return normalizeTicket(response.data as RawTicket);
+};
+
 export const getTicketStats = (tickets: Ticket[]) => ({
   total: tickets.length,
   open: tickets.filter((ticket) => ticket.status === TicketStatus.OPEN).length,
+  pending: tickets.filter((ticket) => ticket.status === TicketStatus.PENDING).length,
   inProgress: tickets.filter((ticket) => ticket.status === TicketStatus.IN_PROGRESS).length,
 });

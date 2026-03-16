@@ -94,6 +94,7 @@ export function TicketsPage() {
               <option value="ALL">Tous les statuts</option>
               <option value={TicketStatus.OPEN}>Ouvert</option>
               <option value={TicketStatus.IN_PROGRESS}>En cours</option>
+              <option value={TicketStatus.PENDING}>En attente</option>
               <option value={TicketStatus.RESOLVED}>Résolu</option>
               <option value={TicketStatus.CLOSED}>Fermé</option>
             </select>

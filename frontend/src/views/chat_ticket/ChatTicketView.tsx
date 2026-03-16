@@ -16,6 +16,7 @@ import {
 import { ThemeToggle } from '../../components/agent_components/ThemeToggle';
 import { useTheme } from '../../context/ThemeContext';
 import { TicketPriority, TicketStatus, type Ticket } from '../../types';
+import { updateTicketStatus } from '../../services/tickets';
 
 type ChatMessage = {
   id: number;
@@ -35,6 +36,8 @@ type InternalNote = {
 type LocationState = {
   ticket?: Ticket;
 };
+
+type StatusModalContext = 'response' | 'note' | null;
 
 const statusConfig = {
   [TicketStatus.OPEN]: {
@@ -105,7 +108,13 @@ function ChatTicketView() {
     authorId: 0,
   };
 
-  const ticket = location.state?.ticket ?? fallbackTicket;
+  const initialTicket = location.state?.ticket ?? fallbackTicket;
+  const [ticket, setTicket] = useState<Ticket>(initialTicket);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [statusModalContext, setStatusModalContext] = useState<StatusModalContext>(null);
+  const [selectedStatus, setSelectedStatus] = useState<TicketStatus>(initialTicket.status);
+  const [isSavingStatus, setIsSavingStatus] = useState(false);
+  const [statusError, setStatusError] = useState<string | null>(null);
 
   const [responses, setResponses] = useState<ChatMessage[]>([
     {
@@ -169,6 +178,9 @@ function ChatTicketView() {
       },
     ]);
     setNewResponse('');
+    setSelectedStatus(ticket.status);
+    setStatusModalContext('response');
+    setIsStatusModalOpen(true);
   };
 
   const handleSendNote = () => {
@@ -185,7 +197,38 @@ function ChatTicketView() {
       },
     ]);
     setNewNote('');
+    setSelectedStatus(ticket.status);
+    setStatusModalContext('note');
+    setIsStatusModalOpen(true);
   };
+
+  const closeStatusModal = () => {
+    if (isSavingStatus) {
+      return;
+    }
+
+    setIsStatusModalOpen(false);
+    setStatusModalContext(null);
+    setStatusError(null);
+  };
+
+  const handleUpdateStatus = async () => {
+    setIsSavingStatus(true);
+    setStatusError(null);
+
+    try {
+      const updatedTicket = await updateTicketStatus(ticket.id, selectedStatus);
+      setTicket(updatedTicket);
+      closeStatusModal();
+    } catch (error) {
+      console.error('Erreur mise à jour statut ticket:', error);
+      setStatusError('Impossible de mettre à jour le statut du ticket pour le moment.');
+    } finally {
+      setIsSavingStatus(false);
+    }
+  };
+
+  const statusModalLabel = statusModalContext === 'response' ? 'réponse' : 'note interne';
 
   return (
     <div className={`min-h-screen ${isDark ? 'bg-[#0a0a0a]' : 'bg-gray-50'}`}>
@@ -413,6 +456,20 @@ function ChatTicketView() {
             <div className="space-y-4">
               <div>
                 <div className={`mb-2 flex items-center gap-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  <Clock className="h-4 w-4" />
+                  <span className="font-medium">Statut actuel</span>
+                </div>
+                <div
+                  className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 ${
+                    isDark ? statusConfig[ticket.status].colorDark : statusConfig[ticket.status].color
+                  }`}
+                >
+                  <span className="font-medium">{statusConfig[ticket.status].label}</span>
+                </div>
+              </div>
+
+              <div>
+                <div className={`mb-2 flex items-center gap-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                   <Tag className="h-4 w-4" />
                   <span className="font-medium">Priorité</span>
                 </div>
@@ -464,6 +521,68 @@ function ChatTicketView() {
 
         </div>
       </div>
+
+      {isStatusModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className={`w-full max-w-md rounded-2xl border p-6 shadow-xl ${isDark ? 'bg-[#121212] border-[#2a2a2a]' : 'bg-white border-gray-200'}`}>
+            <div className="mb-4">
+              <h2 className={`text-lg font-bold ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>Mettre à jour le statut</h2>
+              <p className={`mt-1 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                Votre {statusModalLabel} a bien été ajoutée. Voulez-vous aussi modifier le statut du ticket ?
+              </p>
+            </div>
+
+            <div className="mb-6 space-y-2">
+              <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`} htmlFor="ticket-status-select">
+                Nouveau statut
+              </label>
+              <select
+                id="ticket-status-select"
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value as TicketStatus)}
+                className={`w-full rounded-lg border px-4 py-3 transition-colors ${
+                  isDark
+                    ? 'bg-[#1a1a1a] border-[#2a2a2a] text-gray-100 focus:border-indigo-500'
+                    : 'bg-white border-gray-300 text-gray-900 focus:border-indigo-600'
+                } focus:outline-none focus:ring-2 focus:ring-indigo-500/20`}
+              >
+                <option value={TicketStatus.OPEN}>Ouvert</option>
+                <option value={TicketStatus.IN_PROGRESS}>En cours</option>
+                <option value={TicketStatus.PENDING}>En attente</option>
+                <option value={TicketStatus.RESOLVED}>Résolu</option>
+                <option value={TicketStatus.CLOSED}>Fermé</option>
+              </select>
+            </div>
+
+            {statusError && (
+              <p className={`mb-4 text-sm ${isDark ? 'text-red-400' : 'text-red-600'}`}>
+                {statusError}
+              </p>
+            )}
+
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={closeStatusModal}
+                disabled={isSavingStatus}
+                className={`rounded-lg px-4 py-2 font-medium transition-colors ${
+                  isDark ? 'bg-[#1a1a1a] text-gray-300 hover:bg-[#242424]' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Plus tard
+              </button>
+              <button
+                type="button"
+                onClick={handleUpdateStatus}
+                disabled={isSavingStatus}
+                className="rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSavingStatus ? 'Mise à jour...' : 'Mettre à jour'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
