@@ -1,11 +1,12 @@
 import {Mail, Lock, Eye, EyeOff, Sun, Moon} from 'lucide-react';
-import {useState} from 'react';
+import {useState, type FormEvent} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {Button} from '../../components/login_components/button';
 import {Input} from '../../components/login_components/input';
 import Separator from '../../components/login_components/Separator';
 import {useTheme} from '../../context/ThemeContext';
 import api from '../../services/api';
+import { getHomeRouteByRole, getRoleFromToken } from '../../services/auth';
 
 export function LoginCard() {
 	const [showPassword, setShowPassword] = useState(false);
@@ -18,7 +19,7 @@ export function LoginCard() {
 
 	const isDark = theme === 'dark';
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
 		setError('');
 		setLoading(true);
@@ -34,9 +35,32 @@ export function LoginCard() {
 			// Stockage du token
 			localStorage.setItem('access_token', access_token);
 
+			// Récupération du profil utilisateur connecté
+			try {
+				const meResponse = await api.get('/auth/me');
+				const username = meResponse.data?.username;
+				const role = meResponse.data?.role ?? getRoleFromToken(access_token);
+				if (username) {
+					localStorage.setItem('username', username);
+				}
+				if (role) {
+					localStorage.setItem('user_role', role);
+				}
+				navigate(getHomeRouteByRole(role));
+				return;
+			} catch (profileErr) {
+				console.warn('Impossible de récupérer le profil utilisateur après login:', profileErr);
+				const role = getRoleFromToken(access_token);
+				if (role) {
+					localStorage.setItem('user_role', role);
+				}
+				navigate(getHomeRouteByRole(role));
+				return;
+			}
+
 			console.log('Connexion réussie ! Token stocké.');
 
-			// Redirection vers le dashboard
+			// Redirection par défaut
 			navigate('/dashboard');
 
 		} catch (err: any) {

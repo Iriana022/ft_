@@ -20,6 +20,8 @@ api.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('access_token');
+      localStorage.removeItem('username');
+      localStorage.removeItem('user_role');
     }
     return Promise.reject(error);
   },

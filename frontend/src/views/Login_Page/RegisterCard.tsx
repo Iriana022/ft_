@@ -1,17 +1,20 @@
 import {Mail, Lock, Eye, EyeOff, Sun, Moon, User} from 'lucide-react';
-import {useState} from 'react';
+import {useState, type FormEvent} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {Button} from '../../components/login_components/button';
 import {Input} from '../../components/login_components/input';
 import Separator from '../../components/login_components/Separator';
 import {useTheme} from '../../context/ThemeContext';
 import api from '../../services/api';
+import { getHomeRouteByRole, getRoleFromToken } from '../../services/auth';
 
 export function RegisterCard() {
 	const [showPassword, setShowPassword] = useState(false);
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 	const [username, setUsername] = useState('');
+	const [selectedRole, setSelectedRole] = useState<'CLIENT' | 'AGENT'>('CLIENT');
+	const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
 	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
 	const {theme, setTheme} = useTheme();
@@ -19,8 +22,12 @@ export function RegisterCard() {
 
 	const isDark = theme === 'dark';
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
+		setIsRoleModalOpen(true);
+	};
+
+	const handleCreateAccount = async () => {
 		setError('');
 		setLoading(true);
 
@@ -29,7 +36,8 @@ export function RegisterCard() {
 			await api.post('/auth/register', {
 				email,
 				password,
-				login: username
+				login: username,
+				role: selectedRole,
 			});
 
 			// Connexion automatique après inscription
@@ -41,10 +49,33 @@ export function RegisterCard() {
 			const {access_token} = loginResponse.data;
 			localStorage.setItem('access_token', access_token);
 
+			try {
+				const meResponse = await api.get('/auth/me');
+				const profileUsername = meResponse.data?.username;
+				const role = meResponse.data?.role ?? getRoleFromToken(access_token);
+
+				localStorage.setItem('username', profileUsername || username);
+				if (role) {
+					localStorage.setItem('user_role', role);
+				}
+
+				setIsRoleModalOpen(false);
+
+				navigate(getHomeRouteByRole(role));
+				return;
+			} catch (profileErr) {
+				console.warn('Impossible de récupérer le profil utilisateur après inscription:', profileErr);
+				const role = getRoleFromToken(access_token) ?? selectedRole;
+				localStorage.setItem('username', username);
+				localStorage.setItem('user_role', role);
+			}
+
+			setIsRoleModalOpen(false);
+
 			console.log('Inscription réussie !');
 
-			// Redirection vers le dashboard
-			navigate('/dashboard');
+			// Redirection par défaut
+			navigate(getHomeRouteByRole(selectedRole));
 
 		} catch (err: any) {
 			console.error("Erreur lors de l'inscription :", err.response?.data?.message || err.message);
@@ -208,6 +239,70 @@ export function RegisterCard() {
 					{loading ? 'Creating account...' : 'Sign Up'}
 				</Button>
 			</form>
+
+			{isRoleModalOpen && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+					<div className={`w-full max-w-md rounded-2xl border p-6 ${
+						isDark ? 'bg-[#121212] border-[#2a2a2a]' : 'bg-white border-gray-200'
+					}`}>
+						<h2 className={`text-xl font-bold mb-2 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+							Choisir un rôle
+						</h2>
+						<p className={`mb-4 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+							Sélectionnez le type de compte à créer.
+						</p>
+
+						<div className="grid grid-cols-2 gap-3 mb-5">
+							<button
+								type="button"
+								onClick={() => setSelectedRole('CLIENT')}
+								className={`rounded-lg border px-4 py-3 text-sm font-semibold transition-colors ${
+									selectedRole === 'CLIENT'
+										? 'border-indigo-600 bg-indigo-600 text-white'
+										: isDark
+											? 'border-[#2a2a2a] text-gray-300 hover:bg-[#1a1a1a]'
+											: 'border-gray-300 text-gray-700 hover:bg-gray-50'
+								}`}
+							>
+								Client
+							</button>
+							<button
+								type="button"
+								onClick={() => setSelectedRole('AGENT')}
+								className={`rounded-lg border px-4 py-3 text-sm font-semibold transition-colors ${
+									selectedRole === 'AGENT'
+										? 'border-indigo-600 bg-indigo-600 text-white'
+										: isDark
+											? 'border-[#2a2a2a] text-gray-300 hover:bg-[#1a1a1a]'
+											: 'border-gray-300 text-gray-700 hover:bg-gray-50'
+								}`}
+							>
+								Agent
+							</button>
+						</div>
+
+						<div className="flex justify-end gap-2">
+							<button
+								type="button"
+								onClick={() => setIsRoleModalOpen(false)}
+								className={`rounded-lg px-4 py-2 text-sm font-medium ${
+									isDark ? 'text-gray-300 hover:bg-[#1a1a1a]' : 'text-gray-700 hover:bg-gray-100'
+								}`}
+							>
+								Annuler
+							</button>
+							<button
+								type="button"
+								onClick={handleCreateAccount}
+								disabled={loading}
+								className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+							>
+								{loading ? 'Création...' : 'Confirmer'}
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 
 			{/* Separator */}
 			<div className="relative mb-6">

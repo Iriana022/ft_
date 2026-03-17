@@ -1,8 +1,12 @@
-import { IsString, MinLength, Matches, IsEmail } from 'class-validator';
+import { IsString, MinLength, Matches, IsEmail, IsOptional, IsIn } from 'class-validator';
 
 export class RegisterDto {
   @IsString()
   login: string;
+
+  @IsOptional()
+  @IsIn(['CLIENT', 'AGENT'], { message: 'Le rôle doit être CLIENT ou AGENT.' })
+  role?: 'CLIENT' | 'AGENT';
 
   @IsEmail({}, { message: 'Email invalide' }) 
   email: string;

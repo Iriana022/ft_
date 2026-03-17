@@ -11,10 +11,18 @@ import Avatar from '../components/client_components/Avatar';
 import avatar1 from '../assets/avatars/avatar1.jpg';
 import ContainerComp from './layout_client/Container';
 import MobileMenu from '../components/client_components/MobileMenu';
-import {Link} from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 
 function Header() {
 	const [isMenuOpened, setIsMenuOpened] = useState(false);
+	const navigate = useNavigate();
+
+	const handleLogout = () => {
+		localStorage.removeItem('access_token');
+		localStorage.removeItem('username');
+		localStorage.removeItem('user_role');
+		navigate('/login');
+	};
 
 	return (
 		<>
@@ -40,6 +48,12 @@ function Header() {
 					</div>
 					<div className="flex items-center gap-8">
 						<Notification />
+						<button
+							onClick={handleLogout}
+							className="hidden md:block text-sm font-medium text-gray-600 hover:text-navy"
+						>
+							Déconnexion
+						</button>
 						<Link to='profil' className="hidden md:block">
 							<Avatar src={avatar1} size="md" />
 						</Link>

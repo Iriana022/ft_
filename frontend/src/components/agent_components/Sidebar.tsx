@@ -13,9 +13,12 @@ export function Sidebar({ currentRole, activePage, onNavigate }: SidebarProps) {
   const { theme } = useTheme();
   const navigate = useNavigate();
   const isDark = theme === 'dark';
+  const username = localStorage.getItem('username') || 'Utilisateur';
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
+    localStorage.removeItem('username');
+    localStorage.removeItem('user_role');
     navigate('/login');
   };
   
@@ -82,7 +85,7 @@ export function Sidebar({ currentRole, activePage, onNavigate }: SidebarProps) {
             className="w-10 h-10 rounded-full"
           />
           <div className="flex-1">
-            <p className={`font-medium text-sm ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>Jean Dupont</p>
+            <p className={`font-medium text-sm ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>{username}</p>
             <p className={`text-xs capitalize ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{currentRole.toLowerCase()}</p>
           </div>
         </div>

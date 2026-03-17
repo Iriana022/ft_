@@ -4,7 +4,7 @@ import { StatCard } from '../../components/agent_components/StatCard';
 import { TicketList } from './TicketList';
 import { ThemeToggle } from '../../components/agent_components/ThemeToggle';
 import { useTheme } from '../../context/ThemeContext';
-import type { Ticket as TicketType } from '../../types';
+import { UserRole, type Ticket as TicketType } from '../../types';
 import { fetchTickets, getTicketStats } from '../../services/tickets';
 
 export function Dashboard() {
@@ -16,7 +16,7 @@ export function Dashboard() {
     const loadTickets = async () => {
       try {
         const data = await fetchTickets();
-        setTickets(data);
+        setTickets(data.filter((ticket) => ticket.author.role === UserRole.CLIENT));
       } catch (error) {
         console.error('Erreur chargement tickets:', error);
       }

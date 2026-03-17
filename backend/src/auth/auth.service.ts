@@ -35,6 +35,7 @@ export class AuthService {
       // 2. Hash password
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(dto.password, salt);
+      const selectedRole = dto.role === 'AGENT' ? 'AGENT' : 'CLIENT';
 
       // 3. Base create
       try {
@@ -43,7 +44,7 @@ export class AuthService {
             email: dto.email,
             password: hashedPassword,
             login: dto.login,
-            role: 'CLIENT',
+            role: selectedRole,
           },
         });
       } catch (error: any) {

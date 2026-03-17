@@ -3,6 +3,7 @@ import Login from '../views/Login_Page/Login';
 import ProtectedRoute from '../components/ProtectedRoute'
 import PublicRoute from '../components/PublicRoute'
 import {DashboardLayout} from '../layout/layout_agent/DashboardLayout';
+import { UserRole } from '../types';
 import Register from '../views/Login_Page/Register';
 import ClientLayout from "../layout/layout_client/ClientLayout";
 import ClientHome from "../views/client_view/pages/ClientHome";
@@ -28,14 +29,18 @@ export const router = createBrowserRouter([
 	{
 		path: 'dashboard',
 		element: (
-			<ProtectedRoute>
+			<ProtectedRoute allowedRoles={[UserRole.AGENT, UserRole.ADMIN]}>
 				<DashboardLayout />
 			</ProtectedRoute >
 		),
 	},
 	{
 		path: 'client_view',
-		element: <ClientLayout />,
+		element: (
+			<ProtectedRoute allowedRoles={[UserRole.CLIENT]}>
+				<ClientLayout />
+			</ProtectedRoute>
+		),
 		children: [
 			{
 				path: '',
@@ -53,20 +58,32 @@ export const router = createBrowserRouter([
 	},
 	{
 		path: 'client_view/profil',
-		element: <Profil />
+		element: (
+			<ProtectedRoute allowedRoles={[UserRole.CLIENT]}>
+				<Profil />
+			</ProtectedRoute>
+		)
 	},
 	{
 		path: 'client_view/ticket_message',
-		element: <ChatTicketViewClient />
+		element: (
+			<ProtectedRoute allowedRoles={[UserRole.CLIENT]}>
+				<ChatTicketViewClient />
+			</ProtectedRoute>
+		)
 	},
 	{
 		path: 'chat_ticket_client',
-		element: <ChatTicketViewClient />
+		element: (
+			<ProtectedRoute allowedRoles={[UserRole.CLIENT]}>
+				<ChatTicketViewClient />
+			</ProtectedRoute>
+		)
 	},
 	{
 		path: 'chat_ticket',
 		element: (
-			<ProtectedRoute>
+			<ProtectedRoute allowedRoles={[UserRole.AGENT, UserRole.ADMIN]}>
 				<ChatTicketView />
 			</ProtectedRoute>
 		)

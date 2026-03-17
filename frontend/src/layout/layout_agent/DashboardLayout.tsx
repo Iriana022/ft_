@@ -3,10 +3,11 @@ import { Sidebar } from '../../components/agent_components/Sidebar';
 import { Dashboard } from '../../views/view_agent/Dashboard';
 import { TicketsPage } from '../../views/view_agent/TicketsPage';
 import { UserRole } from '../../types';
+import { getStoredUserRole } from '../../services/auth';
 
 export function DashboardLayout() {
   const [activePage, setActivePage] = useState('dashboard');
-  const [currentRole] = useState<UserRole>(UserRole.AGENT);
+  const [currentRole] = useState<UserRole>(getStoredUserRole() ?? UserRole.AGENT);
 
   return (
     <div className="flex h-screen bg-gray-50">

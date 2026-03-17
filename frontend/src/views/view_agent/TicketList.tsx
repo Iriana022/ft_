@@ -86,7 +86,7 @@ export function TicketList({ tickets, maxItems }: TicketListProps) {
                 <div className={`flex items-center gap-4 text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
                   <div className="flex items-center gap-1">
                     <User className="w-4 h-4" />
-                    <span>{ticket.author.login}</span>
+                    <span>Créé par {ticket.author.login || ticket.author.email}</span>
                   </div>
                   
                   <div className="flex items-center gap-1">

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Search, Filter } from 'lucide-react';
-import { TicketStatus, TicketPriority } from '../../types';
+import { TicketStatus, TicketPriority, UserRole } from '../../types';
 import type { Ticket } from '../../types';
 import { TicketList } from './TicketList';
 import { ThemeToggle } from '../../components/agent_components/ThemeToggle';
@@ -20,7 +20,7 @@ export function TicketsPage() {
     const loadTickets = async () => {
       try {
         const data = await fetchTickets();
-        setTickets(data);
+        setTickets(data.filter((ticket) => ticket.author.role === UserRole.CLIENT));
       } catch (error) {
         console.error('Erreur chargement tickets:', error);
       } finally {
