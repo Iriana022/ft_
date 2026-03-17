@@ -25,6 +25,14 @@ export class TicketsService {
         })
     }
 
+    async getMyTickets(authorId: number){
+        return this.prisma.ticket.findMany({
+            where: { authorId },
+            include: { author: true, AssignedTo: true },
+            orderBy: { createdAt: 'desc' },
+        })
+    }
+
     async updateTicketStatus(ticketId: number, dto: UpdateTicketStatusDto){
         const ticket = await this.prisma.ticket.findUnique({
             where: { id: ticketId },

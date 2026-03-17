@@ -1,5 +1,6 @@
 import api from './api';
 import { TicketStatus, type Ticket, type User } from '../types';
+import { TicketPriority, type TicketType } from '../types';
 
 type RawUser = Omit<User, 'createdAt'> & {
   createdAt: string | Date;
@@ -44,6 +45,32 @@ export const updateTicketStatus = async (ticketId: number, status: TicketStatus)
   const response = await api.patch(`/tickets/${ticketId}/status`, { status });
 
   return normalizeTicket(response.data as RawTicket);
+};
+
+const mapTicketToClientTicket = (ticket: Ticket): TicketType => ({
+  title: ticket.title,
+  description: ticket.description,
+  status: ticket.status,
+  priority: ticket.priority,
+  hasMessage: false,
+});
+
+export const fetchMyTicketsForClientView = async (): Promise<TicketType[]> => {
+  const response = await api.get('/tickets/my');
+  const rawTickets = (response.data ?? []) as RawTicket[];
+
+  return rawTickets.map(normalizeTicket).map(mapTicketToClientTicket);
+};
+
+export const createClientTicket = async (payload: {
+  title: string;
+  description: string;
+  priority?: TicketPriority;
+}): Promise<TicketType> => {
+  const response = await api.post('/tickets', payload);
+  const normalized = normalizeTicket(response.data as RawTicket);
+
+  return mapTicketToClientTicket(normalized);
 };
 
 export const getTicketStats = (tickets: Ticket[]) => ({

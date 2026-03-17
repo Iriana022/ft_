@@ -1,6 +1,5 @@
 import React from 'react';
-import {tickets} from '../../data';
-import {TicketStatus} from '../../types';
+import {TicketStatus, type TicketType} from '../../types';
 
 interface StatItemProps {
 	title: string,
@@ -38,7 +37,12 @@ function StatItem(props: StatItemProps) {
 	);
 }
 
-function TicketsStat() {
+interface TicketsStatProps {
+	tickets: TicketType[];
+}
+
+function TicketsStat(props: TicketsStatProps) {
+	const { tickets } = props;
 	const openTicketsCount = tickets.filter(t => t.status === TicketStatus.OPEN).length;
 	const inProgressTicketsCount = tickets.filter(t => t.status === TicketStatus.IN_PROGRESS).length;
 	const pendingTicketsCount = tickets.filter(t => t.status === TicketStatus.PENDING).length;

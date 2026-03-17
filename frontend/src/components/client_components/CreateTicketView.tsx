@@ -3,11 +3,12 @@ import Separator from './Separator';
 import CloseButtonX from './CloseButtonX';
 import PriorityChoice from './PriorityChoice';
 import {TicketPriority} from '../../types';
-import api from '../../services/api';
+import { createClientTicket } from '../../services/tickets';
 
 interface CreateTicketViewProps {
 	isOpen: boolean,
 	onClose: () => void,
+	onTicketCreated?: () => void,
 }
 
 function CreateTicketView(props: CreateTicketViewProps) {
@@ -52,13 +53,14 @@ function CreateTicketView(props: CreateTicketViewProps) {
 		setIsSubmitting(true);
 
 		try {
-			await api.post('/tickets', {
+			await createClientTicket({
 				title: title.trim(),
 				description: description.trim(),
 				priority: activePriority ?? TicketPriority.MEDIUM,
 			});
 
 			setSuccessMessage('Ticket créé avec succès.');
+			props.onTicketCreated?.();
 			setTimeout(() => {
 				handleClose();
 			}, 700);

@@ -42,7 +42,7 @@ function TicketInformation(props: TicketInformationProps) {
 					<h4 className="text-base mb-1">Messages</h4>
 					<button
 						className="btn btn-sm btn-soft relative"
-						onClick={() => navigate('/client_view/ticket_message', {state: props.ticket})}
+						onClick={() => navigate('/chat_ticket_client', {state: props.ticket})}
 					>
 						<ChatBubbleLeftEllipsisIcon className="w-5 h-5" />
 						{

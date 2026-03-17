@@ -22,6 +22,14 @@ export class TicketsController {
         return this.ticketsService.getAllTickets()
     }
 
+    @Get('my')
+    @UseGuards(JwtAuthGuard)
+    async findMine(
+        @Req() req: { user: { userId: number } },
+    ){
+        return this.ticketsService.getMyTickets(req.user.userId)
+    }
+
     @Patch(':id/status')
     @UseGuards(JwtAuthGuard)
     async updateStatus(

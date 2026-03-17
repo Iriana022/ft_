@@ -4,7 +4,11 @@ import Button from './Button';
 import {PlusCircleIcon} from '@heroicons/react/24/outline';
 import CreateTicketView from './CreateTicketView';
 
-function ClientHomeHeroSection() {
+interface ClientHomeHeroSectionProps {
+	onTicketCreated?: () => void;
+}
+
+function ClientHomeHeroSection(props: ClientHomeHeroSectionProps) {
 	const [isTicketViewOpen, setIsTicketViewOpen] = useState(false);
 
 	const handleClick = () => {
@@ -17,7 +21,7 @@ function ClientHomeHeroSection() {
 
 	return (
 		<section className="flex items-center pt-15 pb-7">
-			<CreateTicketView isOpen={isTicketViewOpen} onClose={onClose} />
+			<CreateTicketView isOpen={isTicketViewOpen} onClose={onClose} onTicketCreated={props.onTicketCreated} />
 			<div className="w-[100%] md:w-[50%] flex items-center md:items-start flex-col gap-5">
 				<h1 className="text-4xl font-bold font-inter">Bonjour, <span className="text-navy">Dontoman</span></h1>
 				<p className="text-center md:text-start">
