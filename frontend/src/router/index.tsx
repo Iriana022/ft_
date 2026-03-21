@@ -3,7 +3,7 @@ import Login from '../views/Login_Page/Login';
 import ProtectedRoute from '../components/ProtectedRoute'
 import PublicRoute from '../components/PublicRoute'
 import {DashboardLayout} from '../layout/layout_agent/DashboardLayout';
-import { UserRole } from '../types';
+import {UserRole} from '../types';
 import Register from '../views/Login_Page/Register';
 import ClientLayout from "../layout/layout_client/ClientLayout";
 import ClientHome from "../views/client_view/pages/ClientHome";
@@ -12,8 +12,13 @@ import ClientSettings from "../views/client_view/pages/ClientSettings";
 import Profil from "../components/client_components/Profil";
 import ChatTicketView from '../views/chat_ticket/ChatTicketView';
 import ChatTicketViewClient from '../views/chat_ticket/ChatTicketViewClient';
+import AdminView from "../views/admin_view/AdminView";
 
 export const router = createBrowserRouter([
+	{
+		path: 'admin',
+		element: <AdminView />
+	},
 	{
 		path: '/',
 		element: <PublicRoute><Login /></PublicRoute>,
