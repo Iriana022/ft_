@@ -38,7 +38,7 @@ function Header() {
 					<div className="flex gap-[100px]">
 						<HamburgerMenu onClick={() => setIsMenuOpened(s => !s)} isMenuOpened={isMenuOpened} />
 						<div className="absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0">
-							<TikeoLogo href="/client_view" />
+							<TikeoLogo href="/client_view" color="text-navy" size="text-4xl" />
 						</div>
 						<nav className="hidden md:flex gap-5">
 							<NavItem icon={HomeIcon} href="/client_view" text="Acceuil" color="text-gray-500" />
