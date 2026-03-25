@@ -1,5 +1,4 @@
 services:
-  # database
   db:
     image: postgres:15
     container_name: postgres_db
@@ -8,42 +7,43 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: transcendence_db
-    ports:
-      - "5432:5432"
+    # On ne publie plus le port 5432 sur l'hôte pour plus de sécurité
     volumes:
       - pgdata:/var/lib/postgresql/data
 
-  # Backend NestJS
   backend:
-    image: backend:1
     build: ./backend
     container_name: nest_backend
     restart: always
-    ports:
-      - "3000:3000"
-      - "5555:5555"
-    volumes:
-      - ./backend:/usr/src/app
-      - /usr/src/app/node_modules
+    # On expose en interne, mais pas sur l'hôte
+    expose:
+      - "3000"
     environment:
       DATABASE_URL: "postgresql://user:password@db:5432/transcendence_db"
-      CHOKIDAR_USEPOLLING: "true"
     depends_on:
       - db
 
-  # Frontend
   frontend:
     container_name: frontend
-    image: frontend:1
     build: ./frontend
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules # Important : pour ne pas écraser les modules node du container
-    environment:
-      - CHOKIDAR_USEPOLLING=true # Pour que le rafraîchissement auto fonctionne sous Docker
+    expose:
+      - "5173"
     tty: true
     stdin_open: true
+
+  # LE REVERSE PROXY
+  gateway:
+    image: nginx:latest
+    container_name: nginx_proxy
+    ports:
+      - "8080:80"   # Redirection HTTP -> HTTPS
+      - "8443:443" # HTTPS
+    volumes:
+      - ./nginx/conf:/etc/nginx/conf.d
+      - ./nginx/certs:/etc/nginx/certs
+    depends_on:
+      - frontend
+      - backend
+
 volumes:
   pgdata:

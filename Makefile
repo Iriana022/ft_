@@ -4,7 +4,7 @@ RESET = \033[0m
 USER = srasolom
 Dockerfilecompose = docker-compose.yml
 
-all:
+all: certs
 	@echo "$(GREEN)Starting tickeo...$(RESET)"
 	@docker compose -f $(Dockerfilecompose) up -d --build
 	@echo "$(GREEN)Migration...$(RESET)"
@@ -27,6 +27,15 @@ fclean: down
 
 
 re: fclean all
+
+certs:
+	@mkdir -p ./nginx/certs
+	@if [ ! -f ./nginx/certs/fullchain.pem ]; then \
+		openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+			-keyout ./nginx/certs/privkey.pem \
+			-out ./nginx/certs/fullchain.pem \
+			-subj "/C=FR/ST=Paris/L=Paris/O=42/CN=localhost"; \
+	fi
 
 
 .PHONY: all clean fclean down re
