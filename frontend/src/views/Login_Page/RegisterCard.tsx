@@ -22,6 +22,8 @@ export function RegisterCard() {
 
 	const isDark = theme === 'dark';
 
+	console.log("Base URL utilisée :", api.defaults.baseURL);
+
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
 		setIsRoleModalOpen(true);
