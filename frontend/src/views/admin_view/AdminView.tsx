@@ -7,6 +7,13 @@ import {
 	Bars3Icon,
 	XMarkIcon,
 } from '@heroicons/react/24/solid';
+import {
+	Squares2X2Icon,
+	TicketIcon,
+	FolderMinusIcon,
+	UsersIcon,
+	ChartBarSquareIcon,
+} from '@heroicons/react/24/outline';
 import TikeoLogo from '../../components/client_components/TikeoLogo';
 import Notification from '../../components/client_components/Notification';
 import Avatar from '../../components/client_components/Avatar';
@@ -111,7 +118,7 @@ function AdminView() {
 					</div>
 				</div>
 
-				<div className="drawer-side is-drawer-close:overflow-visible">
+				<div className="drawer-side is-drawer-close:overflow-visible text-white">
 					<label className="drawer-overlay" onClick={() => setIsOpen(false)}>
 					</label>
 					<div className="flex min-h-full flex-col items-start pt-4 px-4 bg-navy is-drawer-close:w-30 is-drawer-open:w-64">
@@ -122,15 +129,35 @@ function AdminView() {
 								<XMarkIcon className="w-6 h-6 text-white" onClick={() => setIsOpen(false)} />
 							}
 						</div>
-						<ul className="menu w-full grow">
+						<ul className="menu w-full grow gap-1 mt-10">
 							<li>
-								<button className="is-drawer-close:tooltip is-drawer-close:tooltip-right" data-tip="Homepage">
-									<span className="is-drawer-close:hidden">Homepage</span>
+								<button className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Tableau de bord">
+									<Squares2X2Icon className="w-5 h-5" />
+									<span className="is-drawer-close:hidden text-sm">Tableau de bord</span>
 								</button>
 							</li>
 							<li>
-								<button className="is-drawer-close:tooltip is-drawer-close:tooltip-right" data-tip="Settings">
-									<span className="is-drawer-close:hidden">Settings</span>
+								<button className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Tickets">
+									<TicketIcon className="w-5 h-5" />
+									<span className="is-drawer-close:hidden text-sm">Tickets</span>
+								</button>
+							</li>
+							<li>
+								<button className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Categories">
+									<FolderMinusIcon className="w-5 h-5" />
+									<span className="is-drawer-close:hidden text-sm">Categories</span>
+								</button>
+							</li>
+							<li>
+								<button className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Utilisateurs">
+									<UsersIcon className="w-5 h-5" />
+									<span className="is-drawer-close:hidden text-sm">Utilisateurs</span>
+								</button>
+							</li>
+							<li>
+								<button className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Statistiques">
+									<ChartBarSquareIcon className="w-5 h-5" />
+									<span className="is-drawer-close:hidden text-sm">Statistiques</span>
 								</button>
 							</li>
 						</ul>
