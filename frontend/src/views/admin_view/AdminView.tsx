@@ -19,6 +19,7 @@ import Notification from '../../components/client_components/Notification';
 import Avatar from '../../components/client_components/Avatar';
 import avatar1 from '../../assets/avatars/avatar1.jpg';
 import {Outlet, Link} from 'react-router-dom';
+import {type HeroIconType} from '../../types';
 
 function VerticalSeparator() {
 	return (
@@ -95,10 +96,76 @@ function AdminHamburgerMenu(props: AdminHamburgerMenuProps) {
 	);
 }
 
+enum StatCardType {
+	TOTAL_TICKET = 'TOTAL_TICKET',
+	OPEN_TICKET = 'OPEN_TICKET',
+	CLOSED_TICKET = 'CLOSED_TICKET',
+	USERS = 'USERS',
+	CATEGORIES = 'CATEGORIES',
+}
+
+interface StatCardProps {
+	title: string,
+	count: number,
+	type: StatCardType,
+	icon: HeroIconType,
+}
+
+function StatCard(props: StatCardProps) {
+	let colorIcon: string | undefined = undefined;
+	let bgIcon: string | undefined = undefined;
+
+	switch (props.type) {
+		case StatCardType.TOTAL_TICKET:
+			colorIcon = "text-gray-600";
+			bgIcon = "bg-blue-500/25";
+			break;
+		case StatCardType.OPEN_TICKET:
+			colorIcon = "text-gray-600";
+			bgIcon = "bg-green-500/25";
+			break;
+		case StatCardType.CLOSED_TICKET:
+			colorIcon = "text-gray-600";
+			bgIcon = "bg-red-500/25";
+			break;
+		case StatCardType.USERS:
+			colorIcon = "text-gray-600";
+			bgIcon = "bg-indigo-500/25";
+			break;
+		case StatCardType.CATEGORIES:
+			colorIcon = "text-gray-600";
+			bgIcon = "bg-yellow-400/25";
+			break;
+		default:
+			colorIcon = "text-gray-500";
+			bgIcon = "bg-gray-300/25";
+	}
+
+	return (
+		<div className="card bg-base-100 w-96 shadow-sm">
+			<div className="card-body">
+				<div className="flex items-center justify-between">
+					<h2 className="card-title text-base text-gray-600 font-medium">{props.title}</h2>
+					<div className={`${bgIcon} p-2 rounded-md`}>
+						<props.icon className={`w-5 h-5 ${colorIcon}`} />
+					</div>
+				</div>
+				<h3 className="text-2xl font-semibold">{props.count}</h3>
+			</div>
+		</div>
+	);
+}
+
 export function AdminDashboard() {
 	return (
 		<div>
-			Dashboard
+			<div className="flex items-center gap-3">
+				<StatCard title="Total tickets" count={128} icon={TicketIcon} type={StatCardType.TOTAL_TICKET} />
+				<StatCard title="Tickets ouverts" count={34} icon={TicketIcon} type={StatCardType.OPEN_TICKET} />
+				<StatCard title="Tickets fermes" count={94} icon={TicketIcon} type={StatCardType.CLOSED_TICKET} />
+				<StatCard title="Utilisateurs" count={256} icon={UsersIcon} type={StatCardType.USERS} />
+				<StatCard title="Categories" count={5} icon={FolderMinusIcon} type={StatCardType.CATEGORIES} />
+			</div>
 		</div>
 	);
 }
