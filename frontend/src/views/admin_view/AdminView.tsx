@@ -13,6 +13,7 @@ import {
 	FolderMinusIcon,
 	UsersIcon,
 	ChartBarSquareIcon,
+	ClockIcon
 } from '@heroicons/react/24/outline';
 import TikeoLogo from '../../components/client_components/TikeoLogo';
 import Notification from '../../components/client_components/Notification';
@@ -142,7 +143,7 @@ function StatCard(props: StatCardProps) {
 	}
 
 	return (
-		<div className="card bg-base-100 w-96 shadow-sm">
+		<div className="card bg-base-100 shadow-sm">
 			<div className="card-body">
 				<div className="flex items-center justify-between">
 					<h2 className="card-title text-base text-gray-600 font-medium">{props.title}</h2>
@@ -158,13 +159,38 @@ function StatCard(props: StatCardProps) {
 
 export function AdminDashboard() {
 	return (
-		<div>
-			<div className="flex items-center gap-3">
-				<StatCard title="Total tickets" count={128} icon={TicketIcon} type={StatCardType.TOTAL_TICKET} />
-				<StatCard title="Tickets ouverts" count={34} icon={TicketIcon} type={StatCardType.OPEN_TICKET} />
-				<StatCard title="Tickets fermes" count={94} icon={TicketIcon} type={StatCardType.CLOSED_TICKET} />
-				<StatCard title="Utilisateurs" count={256} icon={UsersIcon} type={StatCardType.USERS} />
-				<StatCard title="Categories" count={5} icon={FolderMinusIcon} type={StatCardType.CATEGORIES} />
+		<div className="p-4">
+			<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+				<StatCard
+					title="Total tickets"
+					count={128}
+					icon={TicketIcon}
+					type={StatCardType.TOTAL_TICKET}
+				/>
+				<StatCard
+					title="Tickets ouverts"
+					count={34}
+					icon={ClockIcon}
+					type={StatCardType.OPEN_TICKET}
+				/>
+				<StatCard
+					title="Tickets fermes"
+					count={94}
+					icon={TicketIcon}
+					type={StatCardType.CLOSED_TICKET}
+				/>
+				<StatCard
+					title="Utilisateurs"
+					count={256}
+					icon={UsersIcon}
+					type={StatCardType.USERS}
+				/>
+				<StatCard
+					title="Categories"
+					count={5}
+					icon={FolderMinusIcon}
+					type={StatCardType.CATEGORIES}
+				/>
 			</div>
 		</div>
 	);
