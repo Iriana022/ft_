@@ -22,7 +22,10 @@ import avatar1 from '../../assets/avatars/avatar1.jpg';
 import {Outlet, Link} from 'react-router-dom';
 import {type HeroIconType} from '../../types';
 import {RechartsDevtools} from '@recharts/devtools';
-import {Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip} from 'recharts';
+import {
+	LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+	BarChart, Bar, ResponsiveContainer
+} from 'recharts';
 
 function VerticalSeparator() {
 	return (
@@ -169,6 +172,78 @@ const dailyData = [
 	{name: "Dim", created: 28, resolved: 22},
 ];
 
+function TicketsActivities() {
+	return (
+		<div className="w-[60%] bg-white shadow rounded-md p-5">
+			<div className="flex items-center justify-between">
+				<div>
+					<h3 className="text-base font-medium text-navy">Activite des tickets</h3>
+					<p className="text-sm text-gray-600">Apercu des 7 derniers jours</p>
+				</div>
+				<div className="flex items-center gap-4">
+					<div className="flex items-center gap-2">
+						<span className="block w-3 h-3 bg-navy rounded-full"></span>
+						<span className="text-sm">Crees</span>
+					</div>
+					<div className="flex items-center gap-2">
+						<span className="block w-3 h-3 bg-status-resolved rounded-full"></span>
+						<span className="text-sm">Resolus</span>
+					</div>
+				</div>
+			</div>
+			<div className="mt-8">
+				<LineChart style={{width: '100%', aspectRatio: 3}} responsive data={dailyData}>
+					<CartesianGrid stroke="#aaa" strokeDasharray="5 5" />
+					<Line type="monotone" dataKey="created" stroke="var(--color-navy)" strokeWidth={2} name="Crees"
+						dot={false}
+						activeDot={{r: 5}}
+					/>
+					<Line type="monotone" dataKey="resolved" stroke="var(--color-status-resolved)" strokeWidth={2} name="Resolus"
+						dot={false}
+						activeDot={{r: 5}}
+					/>
+					<XAxis dataKey="name" tick={{fontSize: 12}} />
+					<YAxis tick={{fontSize: 12}} />
+					<Tooltip />
+					<RechartsDevtools />
+				</LineChart>
+			</div>
+		</div>
+	);
+}
+
+const ticketsPerCategory = [
+	{category: "Bug", count: 45},
+	{category: "Fonctionnalite", count: 30},
+	{category: "Support", count: 20},
+	{category: "Facturation", count: 15},
+	{category: "Autre", count: 10},
+];
+
+function TicketsRepartitionPerCategory() {
+	return (
+		<div className="w-[40%] bg-white shadow rounded-md p-5">
+			<h3 className="text-base font-medium text-navy">Par categorie</h3>
+			<p className="text-sm text-gray-600">Repartition des tickets</p>
+			<ResponsiveContainer width="100%" height={300}>
+				<BarChart
+					data={ticketsPerCategory}
+					layout="vertical"
+					margin={{top: 20, right: 20, bottom: 20, left: 40}}
+				>
+					<CartesianGrid stroke="#aaa" strokeDasharray="5 5" horizontal={false} vertical={true} />
+					<XAxis type="number" tick={{fontSize: 12}} />
+					<YAxis dataKey="category" type="category" tick={{fontSize: 12}} />
+					<Tooltip />
+					<Bar dataKey="count" fill="var(--color-navy)" barSize={30}
+						radius={[0, 5, 5, 0]}
+					/>
+				</BarChart>
+			</ResponsiveContainer>
+		</div>
+	);
+}
+
 export function AdminDashboard() {
 	return (
 		<div className="p-4">
@@ -205,43 +280,8 @@ export function AdminDashboard() {
 				/>
 			</div>
 			<div className="flex items-center mt-6 gap-4">
-				<div className="w-[60%] bg-white shadow rounded-md p-5">
-					<div className="flex items-center justify-between">
-						<div>
-							<h3 className="text-base font-medium text-navy">Activite des tickets</h3>
-							<p className="text-sm text-gray-600">Apercu des 7 derniers jours</p>
-						</div>
-						<div className="flex items-center gap-4">
-							<div className="flex items-center gap-2">
-								<span className="block w-3 h-3 bg-navy rounded-full"></span>
-								<span className="text-sm">Crees</span>
-							</div>
-							<div className="flex items-center gap-2">
-								<span className="block w-3 h-3 bg-status-resolved rounded-full"></span>
-								<span className="text-sm">Resolus</span>
-							</div>
-						</div>
-					</div>
-					<div className="mt-8">
-						<LineChart style={{width: '100%', aspectRatio: 3}} responsive data={dailyData}>
-							<CartesianGrid stroke="#aaa" strokeDasharray="5 5" />
-							<Line type="monotone" dataKey="created" stroke="var(--color-navy)" strokeWidth={2} name="Crees"
-								dot={false}
-								activeDot={{r: 5}}
-							/>
-							<Line type="monotone" dataKey="resolved" stroke="var(--color-status-resolved)" strokeWidth={2} name="Resolus"
-								dot={false}
-								activeDot={{r: 5}}
-							/>
-							<XAxis dataKey="name" tick={{fontSize: 12}} />
-							<YAxis tick={{fontSize: 12}} />
-							<Tooltip />
-							<RechartsDevtools />
-						</LineChart>
-					</div>
-				</div>
-				<div className="h-[200px] w-[40%] bg-white shadow rounded-md">
-				</div>
+				<TicketsActivities />
+				<TicketsRepartitionPerCategory />
 			</div>
 		</div>
 	);
