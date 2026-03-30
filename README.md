@@ -40,7 +40,7 @@ docker exec -it nest_backend npx prisma db push
 
 ## 🚀 Démarrage sur navigateur
 + Allez sur votre navigateur
-+ Taper http://localhost:5173
++ Taper https://localhost:8443
 + Inscrivez vous dans register
 + Connectez-vous dans l'interface de connexion
 + Enjoy it <br>

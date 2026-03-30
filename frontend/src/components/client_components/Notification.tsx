@@ -1,13 +1,18 @@
 import {BellIcon} from '@heroicons/react/24/outline';
 import NotificationView from './NotificationView';
 
-function Notification() {
+interface NotificationProps {
+	hasNotification: boolean,
+}
+
+function Notification(props: NotificationProps) {
 	return (
 		<div className="dropdown dropdown-end">
 			<div
 				tabIndex={0}
 				role="button"
 				className="
+					relative
 					w-9 h-9
 					border border-gray-300
 					hover:border-navy/40
@@ -21,6 +26,19 @@ function Notification() {
 				"
 			>
 				<BellIcon className="w-5 h-5 text-gray-600 transition hover:scale-110" />
+
+				{/* 🔴 Notification dot */}
+				{props.hasNotification && (
+					<span
+						className="
+							absolute
+							top-2 right-2
+							w-[6px] h-[6px]
+							bg-red-500
+							rounded-full
+						"
+					/>
+				)}
 			</div>
 
 			<div

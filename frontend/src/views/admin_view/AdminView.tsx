@@ -1,5 +1,12 @@
 import {useState} from 'react';
-import {ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, MagnifyingGlassIcon} from '@heroicons/react/24/solid';
+import {
+	ChevronLeftIcon,
+	ChevronRightIcon,
+	ChevronDownIcon,
+	MagnifyingGlassIcon,
+	Bars3Icon,
+	XMarkIcon,
+} from '@heroicons/react/24/solid';
 import TikeoLogo from '../../components/client_components/TikeoLogo';
 import Notification from '../../components/client_components/Notification';
 import Avatar from '../../components/client_components/Avatar';
@@ -19,21 +26,21 @@ function AdminHeader() {
 				<h3 className="text-navy">
 					Tableau de bord
 				</h3>
-				<span className="text-sm">
+				<span className="text-xs md:text-sm">
 					Bienvenue, Administrateur
 				</span>
 			</div>
 			<div className="flex items-center gap-4">
-				<label className="input text-sm bg-cream border border-gray-200 max-w-[280px]">
+				<label className="hidden md:flex input text-sm bg-cream border border-gray-200 max-w-[280px]">
 					<MagnifyingGlassIcon className="w-4 h-4 text-gray-600" />
 					<input type="search" required placeholder="Rechercher" />
 				</label>
-				<Notification />
+				<Notification hasNotification={true} />
 				<VerticalSeparator />
 				<div className="flex items-center gap-2">
 					<Avatar src={avatar1} size="sm" />
-					<span className="text-sm">Administrateur</span>
-					<ChevronDownIcon className="w-4 h-4 text-gray-600" />
+					<span className="text-sm hidden md:inline">Administrateur</span>
+					<ChevronDownIcon className="w-4 h-4 text-gray-600 hidden md:inline" />
 				</div>
 			</div>
 		</div>
@@ -47,18 +54,36 @@ interface DrawerTogglerProps {
 
 function DrawerToggler(props: DrawerTogglerProps) {
 	return (
-		<label
-			htmlFor="my-drawer-4"
-			aria-label="open sidebar"
-			className="block bg-white p-1 rounded-full shadow-sm"
+		<button
+			type="button"
+			aria-label="toggle sidebar"
+			className="bg-white p-1 rounded-full shadow-sm hidden md:block"
 			onClick={props.onClick}
 		>
+			{props.isOpen ? (
+				<ChevronLeftIcon className="w-4 h-4 text-gray-600" />
+			) : (
+				<ChevronRightIcon className="w-4 h-4 text-gray-600" />
+			)}
+		</button>
+	);
+}
+
+interface AdminHamburgerMenuProps {
+	isOpen: boolean,
+	onClick: () => void,
+}
+
+function AdminHamburgerMenu(props: AdminHamburgerMenuProps) {
+	return (
+		<>
 			{
-				props.isOpen ?
-					(<ChevronLeftIcon className="w-4 h-4 text-gray-600" />) :
-					(<ChevronRightIcon className="w-4 h-4 text-gray-600" />)
+				!props.isOpen &&
+				(<div className="p-1 shadow-sm border rounded md:hidden" onClick={() => props.onClick()}>
+					<Bars3Icon className="w-6 h-6" />
+				</div>)
 			}
-		</ label>
+		</>
 	);
 }
 
@@ -70,37 +95,50 @@ function AdminView() {
 	}
 
 	return (
-		<div className="drawer lg:drawer-open">
-			<input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
-			<div className="drawer-content">
-				<nav className="navbar w-full py-4 bg-white">
-					<DrawerToggler isOpen={isOpen} onClick={handleClick} />
-					<AdminHeader />
-				</nav>
-				<div className="p-4">
-					Page Content
+		<>
+			<div className="drawer lg:drawer-open">
+				<input id="my-drawer-4" type="checkbox" className="drawer-toggle"
+					checked={isOpen} onChange={() => setIsOpen(s => !s)}
+				/>
+				<div className="drawer-content">
+					<nav className="navbar w-full py-4 bg-white">
+						<AdminHamburgerMenu isOpen={isOpen} onClick={handleClick} />
+						<DrawerToggler isOpen={isOpen} onClick={handleClick} />
+						<AdminHeader />
+					</nav>
+					<div className="p-4">
+						Page Content
+					</div>
 				</div>
-			</div>
 
-			<div className="drawer-side is-drawer-close:overflow-visible">
-				<label htmlFor="my-drawer-4" aria-label="close sidebar" className="drawer-overlay"></label>
-				<div className="flex min-h-full flex-col items-start pt-4 px-4 bg-navy is-drawer-close:w-30 is-drawer-open:w-64">
-					<TikeoLogo href="/admin" color="text-white" size="text-3xl" />
-					<ul className="menu w-full grow">
-						<li>
-							<button className="is-drawer-close:tooltip is-drawer-close:tooltip-right" data-tip="Homepage">
-								<span className="is-drawer-close:hidden">Homepage</span>
-							</button>
-						</li>
-						<li>
-							<button className="is-drawer-close:tooltip is-drawer-close:tooltip-right" data-tip="Settings">
-								<span className="is-drawer-close:hidden">Settings</span>
-							</button>
-						</li>
-					</ul>
+				<div className="drawer-side is-drawer-close:overflow-visible">
+					<label className="drawer-overlay" onClick={() => setIsOpen(false)}>
+					</label>
+					<div className="flex min-h-full flex-col items-start pt-4 px-4 bg-navy is-drawer-close:w-30 is-drawer-open:w-64">
+						<div className="flex items-center w-full justify-between">
+							<TikeoLogo href="/admin" color="text-white" size="text-3xl" />
+							{
+								isOpen &&
+								<XMarkIcon className="w-6 h-6 text-white" onClick={() => setIsOpen(false)} />
+							}
+						</div>
+						<ul className="menu w-full grow">
+							<li>
+								<button className="is-drawer-close:tooltip is-drawer-close:tooltip-right" data-tip="Homepage">
+									<span className="is-drawer-close:hidden">Homepage</span>
+								</button>
+							</li>
+							<li>
+								<button className="is-drawer-close:tooltip is-drawer-close:tooltip-right" data-tip="Settings">
+									<span className="is-drawer-close:hidden">Settings</span>
+								</button>
+							</li>
+						</ul>
+					</div>
 				</div>
-			</div>
-		</div>
+			</div >
+
+		</>
 	);
 }
 

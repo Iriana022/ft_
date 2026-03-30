@@ -47,7 +47,7 @@ function Header() {
 						</nav>
 					</div>
 					<div className="flex items-center gap-8">
-						<Notification />
+						<Notification hasNotification={false} />
 						<button
 							onClick={handleLogout}
 							className="hidden md:block text-sm font-medium text-gray-600 hover:text-navy"
