@@ -12,12 +12,34 @@ import ClientSettings from "../views/client_view/pages/ClientSettings";
 import Profil from "../components/client_components/Profil";
 import ChatTicketView from '../views/chat_ticket/ChatTicketView';
 import ChatTicketViewClient from '../views/chat_ticket/ChatTicketViewClient';
-import AdminView from "../views/admin_view/AdminView";
+import {AdminView, AdminDashboard, AdminTickets, AdminUsers, AdminCategories, AdminStats} from "../views/admin_view/AdminView";
 
 export const router = createBrowserRouter([
 	{
 		path: 'admin',
-		element: <AdminView />
+		element: <AdminView />,
+		children: [
+			{
+				index: true,
+				element: <AdminDashboard />,
+			},
+			{
+				path: 'tickets',
+				element: <AdminTickets />,
+			},
+			{
+				path: 'categories',
+				element: <AdminCategories />,
+			},
+			{
+				path: 'users',
+				element: <AdminUsers />,
+			},
+			{
+				path: 'stats',
+				element: <AdminStats />,
+			},
+		],
 	},
 	{
 		path: '/',

@@ -18,6 +18,7 @@ import TikeoLogo from '../../components/client_components/TikeoLogo';
 import Notification from '../../components/client_components/Notification';
 import Avatar from '../../components/client_components/Avatar';
 import avatar1 from '../../assets/avatars/avatar1.jpg';
+import {Outlet, Link} from 'react-router-dom';
 
 function VerticalSeparator() {
 	return (
@@ -94,7 +95,47 @@ function AdminHamburgerMenu(props: AdminHamburgerMenuProps) {
 	);
 }
 
-function AdminView() {
+export function AdminDashboard() {
+	return (
+		<div>
+			Dashboard
+		</div>
+	);
+}
+
+export function AdminTickets() {
+	return (
+		<div>
+			Tickets
+		</div>
+	);
+}
+
+export function AdminCategories() {
+	return (
+		<div>
+			Categories
+		</div>
+	);
+}
+
+export function AdminUsers() {
+	return (
+		<div>
+			Users
+		</div>
+	);
+}
+
+export function AdminStats() {
+	return (
+		<div>
+			Stats
+		</div>
+	);
+}
+
+export function AdminView() {
 	const [isOpen, setIsOpen] = useState(false);
 
 	const handleClick = () => {
@@ -114,7 +155,7 @@ function AdminView() {
 						<AdminHeader />
 					</nav>
 					<div className="p-4">
-						Page Content
+						<Outlet />
 					</div>
 				</div>
 
@@ -131,34 +172,34 @@ function AdminView() {
 						</div>
 						<ul className="menu w-full grow gap-1 mt-10">
 							<li>
-								<button className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Tableau de bord">
+								<Link to="/admin" className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Tableau de bord">
 									<Squares2X2Icon className="w-5 h-5" />
 									<span className="is-drawer-close:hidden text-sm">Tableau de bord</span>
-								</button>
+								</Link>
 							</li>
 							<li>
-								<button className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Tickets">
+								<Link to="tickets" className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Tickets">
 									<TicketIcon className="w-5 h-5" />
 									<span className="is-drawer-close:hidden text-sm">Tickets</span>
-								</button>
+								</Link>
 							</li>
 							<li>
-								<button className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Categories">
+								<Link to="categories" className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Categories">
 									<FolderMinusIcon className="w-5 h-5" />
 									<span className="is-drawer-close:hidden text-sm">Categories</span>
-								</button>
+								</Link>
 							</li>
 							<li>
-								<button className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Utilisateurs">
+								<Link to="users" className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Utilisateurs">
 									<UsersIcon className="w-5 h-5" />
 									<span className="is-drawer-close:hidden text-sm">Utilisateurs</span>
-								</button>
+								</Link>
 							</li>
 							<li>
-								<button className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Statistiques">
+								<Link to="stats" className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Statistiques">
 									<ChartBarSquareIcon className="w-5 h-5" />
 									<span className="is-drawer-close:hidden text-sm">Statistiques</span>
-								</button>
+								</Link>
 							</li>
 						</ul>
 					</div>
@@ -168,5 +209,3 @@ function AdminView() {
 		</>
 	);
 }
-
-export default AdminView;
