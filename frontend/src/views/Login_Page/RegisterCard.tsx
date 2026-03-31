@@ -26,7 +26,8 @@ export function RegisterCard() {
 
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
-		setIsRoleModalOpen(true);
+		await handleCreateAccount();
+		// setIsRoleModalOpen(true);
 	};
 
 	const handleCreateAccount = async () => {
@@ -194,7 +195,48 @@ export function RegisterCard() {
 						Min. 8 characters with uppercase and number
 					</p>
 				</div>
-
+				{/* Role Selection */}
+				<div className="mb-4 mt-3">
+					<label className={`label mb-2 block ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+						Account Type
+					</label>
+					<div className="flex gap-3">
+						<label className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border transition-colors ${
+							selectedRole === 'CLIENT'
+								? 'border-indigo-600 bg-indigo-600 text-white'
+								: isDark
+									? 'border-[#2a2a2a] text-gray-300 hover:bg-[#1a1a1a]'
+									: 'border-gray-300 text-gray-700 hover:bg-gray-50'
+						}`}>
+							<input
+								type="radio"
+								name="role"
+								value="CLIENT"
+								checked={selectedRole === 'CLIENT'}
+								onChange={() => setSelectedRole('CLIENT')}
+								className="hidden"
+							/>
+							Client
+						</label>
+						<label className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border transition-colors ${
+							selectedRole === 'AGENT'
+								? 'border-indigo-600 bg-indigo-600 text-white'
+								: isDark
+									? 'border-[#2a2a2a] text-gray-300 hover:bg-[#1a1a1a]'
+									: 'border-gray-300 text-gray-700 hover:bg-gray-50'
+						}`}>
+							<input
+								type="radio"
+								name="role"
+								value="AGENT"
+								checked={selectedRole === 'AGENT'}
+								onChange={() => setSelectedRole('AGENT')}
+								className="hidden"
+							/>
+							Agent
+						</label>
+					</div>
+				</div>
 				{/* Sign Up Button */}
 				<Button
 					type="submit"
@@ -208,7 +250,7 @@ export function RegisterCard() {
 				</Button>
 			</form>
 
-			{isRoleModalOpen && (
+			{/* {isRoleModalOpen && (
 				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
 					<div className={`w-full max-w-md rounded-2xl border p-6 ${
 						isDark ? 'bg-[#121212] border-[#2a2a2a]' : 'bg-white border-gray-200'
@@ -270,7 +312,7 @@ export function RegisterCard() {
 						</div>
 					</div>
 				</div>
-			)}
+			)} */}
 
 			{/* Separator */}
 			<div className="relative mb-6">
