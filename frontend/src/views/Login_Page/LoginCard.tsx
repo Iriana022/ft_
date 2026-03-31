@@ -1,6 +1,6 @@
 import {Mail, Lock, Eye, EyeOff, Sun, Moon} from 'lucide-react';
-import {useState, type FormEvent} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useState, useEffect, type FormEvent} from 'react';
+import {useNavigate, useLocation } from 'react-router-dom';
 import {Button} from '../../components/login_components/button';
 import {Input} from '../../components/login_components/input';
 import Separator from '../../components/login_components/Separator';
@@ -16,6 +16,18 @@ export function LoginCard() {
 	const [loading, setLoading] = useState(false);
 	const {theme, setTheme} = useTheme();
 	const navigate = useNavigate();
+	const location = useLocation();
+	const [successMessage, setSuccessMessage] = useState(location.state?.message || '');
+
+	useEffect(() => {
+		if (successMessage) {
+			const timer = setTimeout(() => {
+				setSuccessMessage('');
+			}, 7000);   // 7 secondes
+
+			return () => clearTimeout(timer);  // nettoyage si composant démonté
+		}
+	}, [successMessage]);
 
 	const isDark = theme === 'dark';
 
@@ -102,7 +114,15 @@ export function LoginCard() {
 					Sign in to your account to continue
 				</p>
 			</div>
-
+			{/* Success Message */}
+			{successMessage && (
+				<div className={`mb-4 p-3 rounded-lg ${isDark
+					? 'bg-green-900/20 border border-green-800 text-green-400'
+					: 'bg-green-50 border border-green-200 text-green-600'
+				}`}>
+					{successMessage}
+				</div>
+			)}
 			{/* Error Message */}
 			{error && (
 				<div className={`mb-4 p-3 rounded-lg ${isDark ? 'bg-red-900/20 border border-red-800 text-red-400' : 'bg-red-50 border border-red-200 text-red-600'

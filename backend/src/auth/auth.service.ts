@@ -39,7 +39,7 @@ export class AuthService {
 
       // 3. Base create
       try {
-        return await this.prisma.user.create({
+        await this.prisma.user.create({//modif srasolom
           data: {
             email: dto.email,
             password: hashedPassword,
