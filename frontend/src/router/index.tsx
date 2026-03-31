@@ -13,6 +13,7 @@ import Profil from "../components/client_components/Profil";
 import ChatTicketView from '../views/chat_ticket/ChatTicketView';
 import ChatTicketViewClient from '../views/chat_ticket/ChatTicketViewClient';
 import {AdminView, AdminDashboard, AdminTickets, AdminUsers, AdminCategories, AdminStats} from "../views/admin_view/AdminView";
+import { GoogleCallback } from '../views/Login_Page/GoogleCallback';
 
 export const router = createBrowserRouter([
 	{
@@ -53,6 +54,10 @@ export const router = createBrowserRouter([
 		path: 'register',
 		element: <PublicRoute><Register /></PublicRoute>
 	},
+	{
+        path: 'auth/callback',
+        element: <GoogleCallback />
+    },
 	{
 		path: 'dashboard',
 		element: (

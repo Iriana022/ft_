@@ -15,11 +15,19 @@ services:
     build: ./backend
     container_name: nest_backend
     restart: always
-    # On expose en interne, mais pas sur l'hôte
     expose:
       - "3000"
+    # IMPORTANT : Charger le fichier .env
+    env_file:
+      - ./backend/.env
     environment:
+      # On peut garder DATABASE_URL ici car elle utilise le nom du service 'db'
       DATABASE_URL: "postgresql://user:password@db:5432/transcendence_db"
+      # Tu peux aussi forcer les variables ici pour être sûr à 100%
+      GOOGLE_REDIRECT_URI: "https://localhost:8443/api/auth/google/callback"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
     depends_on:
       - db
 
