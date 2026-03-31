@@ -41,43 +41,9 @@ export function RegisterCard() {
 				login: username,
 				role: selectedRole,
 			});
-
-			// Connexion automatique après inscription
-			const loginResponse = await api.post('/auth/login', {
-				email,
-				password
-			});
-
-			const {access_token} = loginResponse.data;
-			localStorage.setItem('access_token', access_token);
-
-			try {
-				const meResponse = await api.get('/auth/me');
-				const profileUsername = meResponse.data?.username;
-				const role = meResponse.data?.role ?? getRoleFromToken(access_token);
-
-				localStorage.setItem('username', profileUsername || username);
-				if (role) {
-					localStorage.setItem('user_role', role);
-				}
-
-				setIsRoleModalOpen(false);
-
-				navigate(getHomeRouteByRole(role));
-				return;
-			} catch (profileErr) {
-				console.warn('Impossible de récupérer le profil utilisateur après inscription:', profileErr);
-				const role = getRoleFromToken(access_token) ?? selectedRole;
-				localStorage.setItem('username', username);
-				localStorage.setItem('user_role', role);
-			}
-
 			setIsRoleModalOpen(false);
-
+			navigate('/login', { state: { message: 'Inscription réussie, veuillez vous connecter !' } });
 			console.log('Inscription réussie !');
-
-			// Redirection par défaut
-			navigate(getHomeRouteByRole(selectedRole));
 
 		} catch (err: any) {
 			console.error("Erreur lors de l'inscription :", err.response?.data?.message || err.message);
