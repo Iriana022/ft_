@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import { getHomeRouteByRole, getRoleFromToken } from '../../services/auth';
+import { UserRole } from '../../types';
 
 export function GoogleCallback() {
     const [searchParams] = useSearchParams();
@@ -17,12 +18,15 @@ export function GoogleCallback() {
             const handleProfileSync = async () => {
                 try {
                     const meResponse = await api.get('/auth/me');
+                    console.log("meResponse:", meResponse)
                     const username = meResponse.data?.username;
-                    const role = meResponse.data?.role ?? getRoleFromToken(token);
+                    console.log("username:", username);
+                    const role = UserRole.CLIENT;
+                    // const role = meResponse.data?.role ?? getRoleFromToken(token);
+                    console.log("role:", role);
                     
                     if (username) localStorage.setItem('username', username);
                     if (role) localStorage.setItem('user_role', role);
-
                     navigate(getHomeRouteByRole(role));
                 } catch (profileErr) {
                     console.warn('Erreur profil après Google:', profileErr);

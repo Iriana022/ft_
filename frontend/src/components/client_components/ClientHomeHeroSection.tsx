@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import HeroImage from '../../assets/hero_image.png';
+import HeroImage from '../../../public/assets/hero_image.png';
 import Button from './Button';
 import {PlusCircleIcon} from '@heroicons/react/24/outline';
 import CreateTicketView from './CreateTicketView';

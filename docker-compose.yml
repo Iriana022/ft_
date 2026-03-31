@@ -7,9 +7,8 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: transcendence_db
-    # On ne publie plus le port 5432 sur l'hôte pour plus de sécurité
     volumes:
-      - pgdata:/var/lib/postgresql/data
+    - pgdata:/var/lib/postgresql/data
 
   backend:
     build: ./backend
@@ -17,35 +16,43 @@ services:
     restart: always
     expose:
       - "3000"
-    # IMPORTANT : Charger le fichier .env
     env_file:
       - ./backend/.env
     environment:
-      # On peut garder DATABASE_URL ici car elle utilise le nom du service 'db'
       DATABASE_URL: "postgresql://user:password@db:5432/transcendence_db"
-      # Tu peux aussi forcer les variables ici pour être sûr à 100%
       GOOGLE_REDIRECT_URI: "https://localhost:8443/api/auth/google/callback"
     volumes:
-      - ./backend:/app
-      - /app/node_modules
+      - ./backend:/app    # Synchronise ton code source
+      - /app/node_modules  # Empêche ton dossier local d'écraser les packages du container
+      - /app/dist  # Optionnel: protège le dossier de build
     depends_on:
       - db
+    # On s'assure que Nest tourne en mode watch (vérifie ton package.json)
+    command: npm run start:dev
 
   frontend:
-    container_name: frontend
     build: ./frontend
+    container_name: frontend
+    restart: always
     expose:
       - "5173"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     tty: true
     stdin_open: true
+    # On force l'hôte et le polling via la commande
+    command: npm run dev -- --host 0.0.0.0
 
-  # LE REVERSE PROXY
   gateway:
     image: nginx:latest
     container_name: nginx_proxy
     ports:
-      - "8080:80"   # Redirection HTTP -> HTTPS
-      - "8443:443" # HTTPS
+      - "8080:80"
+      - "8443:443"
     volumes:
       - ./nginx/conf:/etc/nginx/conf.d
       - ./nginx/certs:/etc/nginx/certs

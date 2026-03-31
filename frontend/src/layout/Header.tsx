@@ -8,7 +8,7 @@ import {Cog8ToothIcon} from '@heroicons/react/24/outline';
 import HamburgerMenu from '../components/client_components/HamburgerMenu';
 import Notification from '../components/client_components/Notification';
 import Avatar from '../components/client_components/Avatar';
-import avatar1 from '../assets/avatars/avatar1.jpg';
+import avatar1 from '../../public/assets/avatars/avatar1.jpg';
 import ContainerComp from './layout_client/Container';
 import MobileMenu from '../components/client_components/MobileMenu';
 import {Link, useNavigate} from 'react-router-dom';

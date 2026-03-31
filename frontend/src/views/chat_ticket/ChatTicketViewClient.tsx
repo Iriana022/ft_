@@ -4,8 +4,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon } from '@heroicons/react/24/solid';
 import type { Message, TicketType } from '../../types';
 import Avatar from '../../components/client_components/Avatar';
-import avatar1 from '../../assets/avatars/avatar1.jpg';
-import avatar2 from '../../assets/avatars/avatar2.png';
+import avatar1 from '../../../public/assets/avatars/avatar1.jpg';
+import avatar2 from '../../../public/assets/avatars/avatar2.png';
 
 interface TicketMessageHeaderProps {
   title: string;

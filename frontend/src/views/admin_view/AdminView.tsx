@@ -18,7 +18,7 @@ import {
 import TikeoLogo from '../../components/client_components/TikeoLogo';
 import Notification from '../../components/client_components/Notification';
 import Avatar from '../../components/client_components/Avatar';
-import avatar1 from '../../assets/avatars/avatar1.jpg';
+import avatar1 from '../../../public/assets/avatars/avatar1.jpg';
 import {Outlet, Link} from 'react-router-dom';
 import {type HeroIconType} from '../../types';
 import {RechartsDevtools} from '@recharts/devtools';

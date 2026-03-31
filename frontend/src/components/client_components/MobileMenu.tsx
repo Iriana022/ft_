@@ -3,7 +3,7 @@ import {HomeIcon} from '@heroicons/react/24/outline';
 import {TicketIcon} from '@heroicons/react/24/outline';
 import {Cog8ToothIcon} from '@heroicons/react/24/outline';
 import Avatar from './Avatar';
-import avatar1 from '../../assets/avatars/avatar1.jpg';
+import avatar1 from '../../../public/assets/avatars/avatar1.jpg';
 import {useNavigate} from 'react-router-dom';
 
 function MobileMenu() {
