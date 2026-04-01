@@ -2,13 +2,14 @@ import {Injectable, NotFoundException} from '@nestjs/common';
 import {PrismaService} from '../../prisma/prisma.service';
 import {CreateTicketDto} from './dto/create-ticket.dto';
 import {UpdateTicketStatusDto} from './dto/update-ticket-status.dto';
+import { TicketsGateway } from './tickets.gateway';
 
 @Injectable()
 export class TicketsService {
-	constructor(private prisma: PrismaService) {}
+	constructor(private prisma: PrismaService, private ticketsGateway: TicketsGateway) {}
 
 	async createTicket(dto: CreateTicketDto, authorId: number) {
-		return this.prisma.ticket.create({
+		const ticket = await this.prisma.ticket.create({
 			data: {
 				title: dto.title,
 				description: dto.description,
@@ -16,7 +17,9 @@ export class TicketsService {
 				authorId
 			},
 			include: {author: true}
-		})
+		});
+		this.ticketsGateway.emitNewTIcket(ticket);
+		return ticket;
 	}
 
 	async getAllTickets() {
@@ -30,13 +33,13 @@ export class TicketsService {
 			where: {authorId},
 			include: {author: true, AssignedTo: true},
 			orderBy: {createdAt: 'desc'},
-		})
+		});
 	}
 
 	async updateTicketStatus(ticketId: number, dto: UpdateTicketStatusDto) {
 		const ticket = await this.prisma.ticket.findUnique({
 			where: {id: ticketId},
-		})
+		});
 
 		if (!ticket) {
 			throw new NotFoundException('Ticket introuvable')
@@ -48,6 +51,6 @@ export class TicketsService {
 				status: dto.status as never,
 			},
 			include: {author: true, AssignedTo: true}
-		})
+		});
 	}
 }
