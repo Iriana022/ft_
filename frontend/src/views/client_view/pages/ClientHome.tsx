@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useState} from 'react';
-import ContainerComp from '../../../layout/layout_client/Container';
 import Separator from '../../../components/login_components/Separator';
+import ContainerComp from '../../../layout/layout_client/Container';
 import ClientHomeHeroSection from '../../../components/client_components/ClientHomeHeroSection';
 import ClientHomeMyTicketsSection from '../../../components/client_components/ClientHomeMyTicketsSection';
 import {fetchMyTicketsForClientView} from '../../../services/tickets';
@@ -26,7 +26,7 @@ function ClientHome() {
 	}, [loadTickets]);
 
 	return (
-		<>
+		<div>
 			<ContainerComp>
 				<ClientHomeHeroSection onTicketCreated={loadTickets} />
 			</ContainerComp>
@@ -34,8 +34,7 @@ function ClientHome() {
 			<ContainerComp>
 				<ClientHomeMyTicketsSection tickets={tickets} isLoading={isLoading} />
 			</ContainerComp>
-			<Separator />
-		</>
+		</div >
 	);
 }
 

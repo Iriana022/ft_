@@ -1,6 +1,5 @@
 import {useEffect, useState} from 'react';
 import ContainerComp from "../../../layout/layout_client/Container";
-import Separator from "../../../components/client_components/Separator";
 import Ticket from "../../../components/client_components/Ticket";
 import SearchInput from "../../../components/client_components/SearchInput";
 import TicketFilter from "../../../components/client_components/TicketFilter";
@@ -37,7 +36,7 @@ function ClientMyTickets() {
 				onClose={() => setIsCreateTicketOpen(false)}
 				onTicketCreated={loadTickets}
 			/>
-			<div className="pt-6 pb-10">
+			<div className="pt-6 pb-10 min-h-full">
 				<ContainerComp>
 					<div className="mb-7 flex items-center justify-between gap-3">
 						<h1 className="font-poppins text-navy font-semibold">
@@ -50,27 +49,28 @@ function ClientMyTickets() {
 						>
 							Créer un ticket
 						</button>
-					</div>
+					</div >
 					<div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-10">
 						<SearchInput />
 						<TicketFilter list={status} />
 						<TicketFilter list={priorities} />
 					</div>
 					<p className="my-4">Tous les tickets</p>
-					{isLoading ? (
-						<p className="text-sm text-gray-500">Chargement des tickets...</p>
-					) : (
-						<div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
-							{
-								tickets.map((t, i) => (
-									<Ticket ticket={t} key={i} />
-								))
-							}
-						</div>
-					)}
-				</ContainerComp>
-			</div>
-			<Separator />
+					{
+						isLoading ? (
+							<p className="text-sm text-gray-500">Chargement des tickets...</p>
+						) : (
+							<div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
+								{
+									tickets.map((t, i) => (
+										<Ticket ticket={t} key={i} />
+									))
+								}
+							</div>
+						)
+					}
+				</ContainerComp >
+			</div >
 		</>
 	);
 }
