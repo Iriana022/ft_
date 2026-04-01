@@ -6,7 +6,7 @@ import TikeoLogo from '../components/client_components/TikeoLogo';
 
 function Footer() {
 	return (
-		<footer className="py">
+		<footer>
 			<ContainerComp>
 				<section className="flex flex-col md:flex-row md:justify-between py-3">
 					<div className="flex gap-4 items-center md:block">
@@ -27,7 +27,6 @@ function Footer() {
 					</div>
 				</section >
 			</ContainerComp >
-			<Separator />
 			<ContainerComp>
 				<section className="text-gray-600 text-xs flex flex-col md:flex-row items-center justify-between pb-4 gap-4">
 					<div>
@@ -39,7 +38,7 @@ function Footer() {
 					</div>
 				</section>
 			</ContainerComp>
-		</footer >
+		</footer>
 	);
 }
 

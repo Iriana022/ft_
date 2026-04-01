@@ -1,5 +1,4 @@
 import {useState} from 'react';
-import Separator from '../components/login_components/Separator';
 import TikeoLogo from '../components/client_components/TikeoLogo';
 import NavItem from '../components/client_components/NavItem';
 import {HomeIcon} from '@heroicons/react/24/outline';
@@ -25,7 +24,7 @@ function Header() {
 	};
 
 	return (
-		<>
+		<div>
 			<ContainerComp>
 				<header className="pt-10 flex justify-between">
 					{/* TODO: add transition later */}
@@ -60,8 +59,7 @@ function Header() {
 					</div>
 				</header>
 			</ContainerComp >
-			<Separator />
-		</>
+		</div>
 	);
 }
 
