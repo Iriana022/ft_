@@ -7,6 +7,7 @@ import TicketFilter from "../../../components/client_components/TicketFilter";
 import CreateTicketView from '../../../components/client_components/CreateTicketView';
 import {fetchMyTicketsForClientView} from '../../../services/tickets';
 import type {TicketType} from '../../../types';
+import {io} from 'socket.io-client';
 
 function ClientMyTickets() {
 	const status = ["Tous", "Ouvert", "En cours", "En attente", "Resolu"];
@@ -28,6 +29,20 @@ function ClientMyTickets() {
 
 	useEffect(() => {
 		loadTickets();
+
+		const socket = io('/', {
+		path: '/socket.io',
+		transports: ['websocket'],
+		withCredentials: true,
+		});
+		socket.on('ticketStatusUpdated', (updatedTicket: TicketType) => {
+			setTickets((prev) =>
+				prev.map((t) => t.id === updatedTicket.id ? updatedTicket : t)
+			);
+		});
+		return () => {
+			socket.disconnect();
+		};
 	}, []);
 
 	return (
@@ -62,8 +77,8 @@ function ClientMyTickets() {
 					) : (
 						<div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
 							{
-								tickets.map((t, i) => (
-									<Ticket ticket={t} key={i} />
+								tickets.map((t) => (
+									<Ticket ticket={t} key={t.id} />
 								))
 							}
 						</div>

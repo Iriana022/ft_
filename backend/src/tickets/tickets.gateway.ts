@@ -6,6 +6,7 @@ import { Server, Socket } from 'socket.io';
     cors: {
         origin: '*',
     },
+    path: '/socket.io'
 })
 
 export class TicketsGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -20,5 +21,8 @@ export class TicketsGateway implements OnGatewayConnection, OnGatewayDisconnect 
     }
     emitNewTIcket(ticket: any) {
         this.server.emit('newTicket', ticket);
+    }
+    emitStatusTicket(ticket: any) {
+        this.server.emit('ticketStatusUpdated', ticket);
     }
 }

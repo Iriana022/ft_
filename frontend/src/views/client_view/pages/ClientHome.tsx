@@ -5,6 +5,7 @@ import ClientHomeHeroSection from '../../../components/client_components/ClientH
 import ClientHomeMyTicketsSection from '../../../components/client_components/ClientHomeMyTicketsSection';
 import {fetchMyTicketsForClientView} from '../../../services/tickets';
 import type {TicketType} from '../../../types';
+import { io } from 'socket.io-client';
 
 function ClientHome() {
 	const [tickets, setTickets] = useState<TicketType[]>([]);
@@ -23,6 +24,21 @@ function ClientHome() {
 
 	useEffect(() => {
 		loadTickets();
+		const socket = io('/', {
+		path: '/socket.io',
+		transports: ['websocket'],
+		withCredentials: true,
+		});
+
+		socket.on('ticketStatusUpdated', (updatedTicket: TicketType) => {
+			setTickets((prev) =>
+				prev.map((t) => (t.id === updatedTicket.id ? updatedTicket : t)),
+			);
+		});
+
+		return () => {
+			socket.disconnect();
+		};
 	}, [loadTickets]);
 
 	return (
