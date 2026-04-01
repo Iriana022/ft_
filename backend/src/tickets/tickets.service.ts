@@ -45,12 +45,13 @@ export class TicketsService {
 			throw new NotFoundException('Ticket introuvable')
 		}
 
-		return this.prisma.ticket.update({
+		const updatedTicket = await this.prisma.ticket.update({
 			where: {id: ticketId},
-			data: {
-				status: dto.status as never,
-			},
+			data: {	status: dto.status as never },
 			include: {author: true, AssignedTo: true}
 		});
+
+		this.ticketsGateway.emitStatusTicket(updatedTicket);
+		return updatedTicket;
 	}
 }

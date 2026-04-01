@@ -45,6 +45,7 @@ export interface Ticket {
 }
 
 export interface TicketType {
+	id: number,
 	title: string,
 	description: string,
 	status: TicketStatus,

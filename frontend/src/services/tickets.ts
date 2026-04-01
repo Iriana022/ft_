@@ -48,6 +48,7 @@ export const updateTicketStatus = async (ticketId: number, status: TicketStatus)
 };
 
 const mapTicketToClientTicket = (ticket: Ticket): TicketType => ({
+  id: ticket.id,
   title: ticket.title,
   description: ticket.description,
   status: ticket.status,
