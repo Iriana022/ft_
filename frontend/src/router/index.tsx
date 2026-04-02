@@ -59,7 +59,7 @@ export const router = createBrowserRouter([
         element: <GoogleCallback />
     },
 	{
-		path: 'dashboard',
+		path: 'agent',
 		element: (
 			<ProtectedRoute allowedRoles={[UserRole.AGENT, UserRole.ADMIN]}>
 				<DashboardLayout />
@@ -67,7 +67,7 @@ export const router = createBrowserRouter([
 		),
 	},
 	{
-		path: 'client_view',
+		path: 'client',
 		element: (
 			// TODO: put ClientLayout inside the ProtectedRoute component
 			//<ProtectedRoute allowedRoles={[UserRole.CLIENT]}>
@@ -90,7 +90,7 @@ export const router = createBrowserRouter([
 		]
 	},
 	{
-		path: 'client_view/profil',
+		path: 'client/profil',
 		element: (
 			<ProtectedRoute allowedRoles={[UserRole.CLIENT]}>
 				<Profil />
@@ -98,7 +98,7 @@ export const router = createBrowserRouter([
 		)
 	},
 	{
-		path: 'client_view/ticket_message',
+		path: 'client/ticket_message',
 		element: (
 			<ProtectedRoute allowedRoles={[UserRole.CLIENT]}>
 				<ChatTicketViewClient />

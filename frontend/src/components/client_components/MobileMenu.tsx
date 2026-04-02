@@ -24,9 +24,9 @@ function MobileMenu() {
 					<h3 className="text-cream font-poppins pt-3">Jennifer Lawrence</h3>
 				</div>
 				<nav className="flex flex-col gap-4">
-					<NavItem icon={HomeIcon} href="/client_view" text="Accueil" color="text-cream" textColor="text-cream" textSize="text-lg" />
-					<NavItem icon={TicketIcon} href="/client_view/my_tickets" text="Mes Tickets" color="text-cream" textColor="text-cream" textSize="text-lg" />
-					<NavItem icon={Cog8ToothIcon} href="/client_view/settings" text="Parametres" color="text-cream" textColor="text-cream" textSize="text-lg" />
+					<NavItem icon={HomeIcon} href="/client" text="Accueil" color="text-cream" textColor="text-cream" textSize="text-lg" />
+					<NavItem icon={TicketIcon} href="/client/my_tickets" text="Mes Tickets" color="text-cream" textColor="text-cream" textSize="text-lg" />
+					<NavItem icon={Cog8ToothIcon} href="/client/settings" text="Parametres" color="text-cream" textColor="text-cream" textSize="text-lg" />
 					<button
 						onClick={handleLogout}
 						className="text-cream text-lg font-poppins text-left"

@@ -4,8 +4,9 @@ import Separator from './Separator';
 import ContainerComp from '../../layout/layout_client/Container';
 import {useNavigate} from 'react-router-dom';
 import Avatar from './Avatar';
-import avatar1 from '../../../public/assets/avatars/avatar1.jpg';
 import Footer from '../../layout/Footer';
+
+const avatar1 = '/assets/avatars/avatar1.jpg';
 
 function Profil() {
 	const [firstname, setFirstname] = useState('Jennifer');

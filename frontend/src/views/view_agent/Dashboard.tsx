@@ -4,7 +4,7 @@ import { StatCard } from '../../components/agent_components/StatCard';
 import { TicketList } from './TicketList';
 import { ThemeToggle } from '../../components/agent_components/ThemeToggle';
 import { useTheme } from '../../context/ThemeContext';
-import { UserRole, type Ticket as TicketType } from '../../types';
+import { TicketStatus, UserRole, type Ticket as TicketType } from '../../types';
 import { fetchTickets, getTicketStats } from '../../services/tickets';
 import { io } from 'socket.io-client';
 
@@ -18,7 +18,23 @@ export function Dashboard() {
     const loadTickets = async () => {
       try {
         const data = await fetchTickets();
-        setTickets(data.filter((ticket) => ticket.author.role === UserRole.CLIENT));
+
+        const clientTickets = data.filter(
+          (ticket) => ticket.author.role === UserRole.CLIENT
+        );
+
+        const sortedTickets = [...clientTickets].sort((a, b) => {
+          const aClosed = a.status === TicketStatus.CLOSED;
+          const bClosed = b.status === TicketStatus.CLOSED;
+
+          if (aClosed !== bClosed) {
+            return aClosed ? 1 : -1; // CLOSED en bas
+          }
+
+          return b.createdAt.getTime() - a.createdAt.getTime(); // plus récent en haut
+        });
+
+        setTickets(sortedTickets);
       } catch (error) {
         console.error('Erreur chargement tickets:', error);
       }
@@ -48,25 +64,23 @@ export function Dashboard() {
     <div className={`flex-1 overflow-auto ${isDark ? 'bg-[#0a0a0a]' : 'bg-gray-50'}`}>
       {/* Notification popup */}
       {notification && (
-          <div className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-4 rounded-xl shadow-lg border transition-all ${
-              isDark
-                  ? 'bg-[#1a1a1a] border-indigo-500 text-gray-100'
-                  : 'bg-white border-indigo-500 text-gray-900'
+        <div className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-4 rounded-xl shadow-lg border transition-all ${isDark
+            ? 'bg-[#1a1a1a] border-indigo-500 text-gray-100'
+            : 'bg-white border-indigo-500 text-gray-900'
           }`}>
-              <AlertCircle className="w-5 h-5 text-indigo-500" />
-              <span className="text-sm font-medium">{notification}</span>
-              <button
-                  onClick={() => setNotification(null)}
-                  className={`ml-2 text-xs ${isDark ? 'text-gray-400 hover:text-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
-              >
-                  ✕
-              </button>
-          </div>
+          <AlertCircle className="w-5 h-5 text-indigo-500" />
+          <span className="text-sm font-medium">{notification}</span>
+          <button
+            onClick={() => setNotification(null)}
+            className={`ml-2 text-xs ${isDark ? 'text-gray-400 hover:text-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
+          >
+            ✕
+          </button>
+        </div>
       )}
       {/* Header */}
-      <div className={`border-b px-8 py-6 ${
-        isDark ? 'bg-[#121212] border-[#2a2a2a]' : 'bg-white border-gray-200'
-      }`}>
+      <div className={`border-b px-8 py-6 ${isDark ? 'bg-[#121212] border-[#2a2a2a]' : 'bg-white border-gray-200'
+        }`}>
         <div className="flex items-center justify-between">
           <div>
             <h1 className={`text-2xl font-bold ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>Dashboard</h1>

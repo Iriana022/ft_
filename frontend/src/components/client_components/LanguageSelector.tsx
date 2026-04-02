@@ -1,8 +1,9 @@
 import React, {useState} from "react";
-import esFlag from '../../../public/assets/es.png';
-import frFlag from '../../../public/assets/fr.png';
-import usFlag from '../../../public/assets/us.png';
 import {ChevronDownIcon} from "@heroicons/react/24/outline";
+
+const esFlag = '/assets/es.png';
+const frFlag = '/assets/fr.png';
+const usFlag = '/assets/us.png';
 
 type Lang = {
 	code: string;

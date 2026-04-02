@@ -39,6 +39,15 @@ export function TicketsPage() {
     const matchesPriority = priorityFilter === 'ALL' || ticket.priority === priorityFilter;
     
     return matchesSearch && matchesStatus && matchesPriority;
+  })
+  .sort((a, b) => {
+    const aClosed = a.status === TicketStatus.CLOSED;
+    const bClosed = b.status === TicketStatus.CLOSED;
+
+    if (aClosed !== bClosed)
+      return aClosed ? 1 : -1;
+
+    return b.createdAt.getTime() - a.createdAt.getTime();
   });
 
   return (
