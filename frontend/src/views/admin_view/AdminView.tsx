@@ -29,8 +29,7 @@ import {
 
 function VerticalSeparator() {
 	return (
-		<div
-			className="w-[1px] h-8 bg-gray-300" />
+		<div className="w-[1px] h-8 bg-gray-300" />
 	);
 }
 
@@ -319,6 +318,57 @@ export function AdminStats() {
 	);
 }
 
+interface DrawerSideContentProps {
+	isOpen: boolean,
+	setIsOpen: (s: boolean) => void,
+}
+
+function DrawerSideContent(props: DraweSideContentProps) {
+	return (
+		<div className="flex min-h-full flex-col items-start pt-4 px-4 bg-navy is-drawer-close:w-30 is-drawer-open:w-64">
+			<div className="flex items-center w-full justify-between">
+				<TikeoLogo href="/admin" color="text-white" size="text-3xl" />
+				{
+					props.isOpen &&
+					<XMarkIcon className="w-6 h-6 text-white" onClick={() => props.setIsOpen(false)} />
+				}
+			</div>
+			<ul className="menu w-full grow gap-1 mt-10">
+				<li>
+					<Link to="/admin" className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Tableau de bord">
+						<Squares2X2Icon className="w-5 h-5" />
+						<span className="is-drawer-close:hidden text-sm">Tableau de bord</span>
+					</Link>
+				</li>
+				<li>
+					<Link to="tickets" className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Tickets">
+						<TicketIcon className="w-5 h-5" />
+						<span className="is-drawer-close:hidden text-sm">Tickets</span>
+					</Link>
+				</li>
+				<li>
+					<Link to="categories" className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Categories">
+						<FolderMinusIcon className="w-5 h-5" />
+						<span className="is-drawer-close:hidden text-sm">Categories</span>
+					</Link>
+				</li>
+				<li>
+					<Link to="users" className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Utilisateurs">
+						<UsersIcon className="w-5 h-5" />
+						<span className="is-drawer-close:hidden text-sm">Utilisateurs</span>
+					</Link>
+				</li>
+				<li>
+					<Link to="stats" className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Statistiques">
+						<ChartBarSquareIcon className="w-5 h-5" />
+						<span className="is-drawer-close:hidden text-sm">Statistiques</span>
+					</Link>
+				</li>
+			</ul>
+		</div>
+	);
+}
+
 export function AdminView() {
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -346,50 +396,9 @@ export function AdminView() {
 				<div className="drawer-side is-drawer-close:overflow-visible text-white">
 					<label className="drawer-overlay" onClick={() => setIsOpen(false)}>
 					</label>
-					<div className="flex min-h-full flex-col items-start pt-4 px-4 bg-navy is-drawer-close:w-30 is-drawer-open:w-64">
-						<div className="flex items-center w-full justify-between">
-							<TikeoLogo href="/admin" color="text-white" size="text-3xl" />
-							{
-								isOpen &&
-								<XMarkIcon className="w-6 h-6 text-white" onClick={() => setIsOpen(false)} />
-							}
-						</div>
-						<ul className="menu w-full grow gap-1 mt-10">
-							<li>
-								<Link to="/admin" className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Tableau de bord">
-									<Squares2X2Icon className="w-5 h-5" />
-									<span className="is-drawer-close:hidden text-sm">Tableau de bord</span>
-								</Link>
-							</li>
-							<li>
-								<Link to="tickets" className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Tickets">
-									<TicketIcon className="w-5 h-5" />
-									<span className="is-drawer-close:hidden text-sm">Tickets</span>
-								</Link>
-							</li>
-							<li>
-								<Link to="categories" className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Categories">
-									<FolderMinusIcon className="w-5 h-5" />
-									<span className="is-drawer-close:hidden text-sm">Categories</span>
-								</Link>
-							</li>
-							<li>
-								<Link to="users" className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Utilisateurs">
-									<UsersIcon className="w-5 h-5" />
-									<span className="is-drawer-close:hidden text-sm">Utilisateurs</span>
-								</Link>
-							</li>
-							<li>
-								<Link to="stats" className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Statistiques">
-									<ChartBarSquareIcon className="w-5 h-5" />
-									<span className="is-drawer-close:hidden text-sm">Statistiques</span>
-								</Link>
-							</li>
-						</ul>
-					</div>
-				</div>
+					<DrawerSideContent isOpen={isOpen} setIsOpen={setIsOpen} />
+				</div >
 			</div >
-
 		</>
 	);
 }
