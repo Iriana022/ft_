@@ -3,6 +3,7 @@ import { TicketsService } from './tickets.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketStatusDto } from './dto/update-ticket-status.dto';
+import { CreateChatMessageDto } from './dto/create-chat-message.dto';
 
 @Controller('tickets')
 export class TicketsController {
@@ -37,5 +38,24 @@ export class TicketsController {
         @Body() dto: UpdateTicketStatusDto,
     ){
         return this.ticketsService.updateTicketStatus(id, dto)
+    }
+
+    @Get(':id/messages')
+    @UseGuards(JwtAuthGuard)
+    async getMessages(
+        @Param('id', ParseIntPipe) id: number,
+        @Req() req: { user: { userId: number } },
+    ) {
+        return this.ticketsService.getMessage(id);
+    }
+
+    @Post(':id/messages')
+    @UseGuards(JwtAuthGuard)
+    async createMessages(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: CreateChatMessageDto,
+        @Req() req: { user: { userId: number } },
+    ) {
+        return this.ticketsService.createMessage(id, dto, req.user.userId);
     }
 }

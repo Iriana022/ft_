@@ -8,7 +8,7 @@ all: certs
 	@echo "$(GREEN)Starting tickeo...$(RESET)"
 	@docker compose -f $(Dockerfilecompose) up -d --build
 	@echo "$(GREEN)Migration...$(RESET)"
-	@docker exec -it nest_backend npx prisma migrate dev --name migrated
+	@docker exec -it nest_backend npx prisma migrate deploy
 	@docker exec -it nest_backend npx prisma db push
 
 up:

@@ -1,12 +1,14 @@
-import {Injectable, NotFoundException} from '@nestjs/common';
-import {PrismaService} from '../../prisma/prisma.service';
-import {CreateTicketDto} from './dto/create-ticket.dto';
-import {UpdateTicketStatusDto} from './dto/update-ticket-status.dto';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+import { CreateTicketDto } from './dto/create-ticket.dto';
+import { UpdateTicketStatusDto } from './dto/update-ticket-status.dto';
 import { TicketsGateway } from './tickets.gateway';
+import { CreateChatMessageDto } from './dto/create-chat-message.dto';
+import { TicketStatus } from '@prisma/client';
 
 @Injectable()
 export class TicketsService {
-	constructor(private prisma: PrismaService, private ticketsGateway: TicketsGateway) {}
+	constructor(private prisma: PrismaService, private ticketsGateway: TicketsGateway) { }
 
 	async createTicket(dto: CreateTicketDto, authorId: number) {
 		const ticket = await this.prisma.ticket.create({
@@ -16,7 +18,7 @@ export class TicketsService {
 				priority: dto.priority,
 				authorId
 			},
-			include: {author: true}
+			include: { author: true }
 		});
 		this.ticketsGateway.emitNewTIcket(ticket);
 		return ticket;
@@ -24,34 +26,89 @@ export class TicketsService {
 
 	async getAllTickets() {
 		return this.prisma.ticket.findMany({
-			include: {author: true, AssignedTo: true}
+			include: { author: true, AssignedTo: true }
 		})
 	}
 
 	async getMyTickets(authorId: number) {
 		return this.prisma.ticket.findMany({
-			where: {authorId},
-			include: {author: true, AssignedTo: true},
-			orderBy: {createdAt: 'desc'},
+			where: { authorId },
+			include: { author: true, AssignedTo: true },
+			orderBy: { createdAt: 'desc' },
 		});
 	}
 
 	async updateTicketStatus(ticketId: number, dto: UpdateTicketStatusDto) {
 		const ticket = await this.prisma.ticket.findUnique({
-			where: {id: ticketId},
+			where: { id: ticketId },
 		});
 
 		if (!ticket) {
-			throw new NotFoundException('Ticket introuvable')
+			throw new NotFoundException('Ticket not found')
 		}
 
+		const status = dto.status as TicketStatus;
+		const shouldUnlockChat = status === TicketStatus.IN_PROGRESS;
+		const shouldCloseChat = status === TicketStatus.CLOSED;
+
 		const updatedTicket = await this.prisma.ticket.update({
-			where: {id: ticketId},
-			data: {	status: dto.status as never },
-			include: {author: true, AssignedTo: true}
+			where: { id: ticketId },
+			data: {
+				status: dto.status as never,
+				...(shouldUnlockChat ? { chatUnlocked: true } : {}),
+				...(shouldCloseChat ? { chatUnlocked: false } : {}),
+			},
+			include: { author: true, AssignedTo: true }
 		});
 
 		this.ticketsGateway.emitStatusTicket(updatedTicket);
+		if (status === TicketStatus.CLOSED) {
+			this.ticketsGateway.emitTicketClosed(ticketId);
+		}
 		return updatedTicket;
+	}
+
+	async getMessage(ticketId: number) {
+		const ticket = await this.prisma.ticket.findUnique({
+			where: { id: ticketId },
+		});
+		if (!ticket)
+			throw new NotFoundException('TIcket not found');
+		if (!ticket.chatUnlocked || ticket.status === TicketStatus.CLOSED)
+			throw new ForbiddenException('Canal Message is closed');
+		return this.prisma.chatMessage.findMany({
+			where: { ticketId },
+			include: { author: true },
+			orderBy: { createdAt: 'asc' },
+		});
+	}
+
+	async createMessage(ticketId: number, dto: CreateChatMessageDto, authorId: number) {
+		const ticket = await this.prisma.ticket.findUnique({
+			where: { id: ticketId },
+		});
+		if (!ticket)
+			throw new NotFoundException('Ticket not found');
+		if (!ticket.chatUnlocked || ticket.status === TicketStatus.CLOSED)
+			throw new ForbiddenException('Canal Message is closed');
+		const author = await this.prisma.user.findUnique({
+			where: { id: authorId },
+		});
+
+		if (!author) {
+			throw new ForbiddenException('Utilisateur invalide ou session expirée');
+		}
+		console.log('createMessage authorId=', authorId, 'ticketId=', ticketId);
+		const message = await this.prisma.chatMessage.create({
+			data: {
+				content: dto.content,
+				isFromSupport: dto.isFromSupport ?? false,
+				ticketId,
+				authorId,
+			},
+			include: { author: true },
+		});
+		this.ticketsGateway.emitNewMessage(ticketId, message);
+		return message;
 	}
 }

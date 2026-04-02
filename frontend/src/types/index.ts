@@ -58,3 +58,12 @@ export interface Message {
 	agent: string,
 }
 
+export interface ChatMessage {
+    id: number;
+    content: string;
+    createdAt: Date;
+    isFromSupport: boolean;
+    ticketId: number;
+    authorId: number;
+    author: User;
+}

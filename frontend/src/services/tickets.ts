@@ -1,5 +1,5 @@
 import api from './api';
-import { TicketStatus, type Ticket, type User } from '../types';
+import { type ChatMessage, TicketStatus, type Ticket, type User } from '../types';
 import { TicketPriority, type TicketType } from '../types';
 
 type RawUser = Omit<User, 'createdAt'> & {
@@ -80,3 +80,26 @@ export const getTicketStats = (tickets: Ticket[]) => ({
   pending: tickets.filter((ticket) => ticket.status === TicketStatus.PENDING).length,
   inProgress: tickets.filter((ticket) => ticket.status === TicketStatus.IN_PROGRESS).length,
 });
+
+export const getTicketMessages = async (ticketId: number): Promise<ChatMessage[]> => {
+  const response = await api.get(`/tickets/${ticketId}/messages`);
+  return response.data.map((msg: any) => ({
+    ...msg,
+    createdAt: new Date(msg.createdAt),
+  }));
+};
+
+export const sendTicketMessage = async (
+  ticketId: number,
+  content: string,
+  isFromSupport: boolean
+): Promise<ChatMessage> => {
+  const response = await api.post(`/tickets/${ticketId}/messages`, {
+    content,
+    isFromSupport,
+  });
+  return {
+    ...response.data,
+    createdAt: new Date(response.data.createdAt),
+  };
+};
