@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import HeroImage from '../../../public/assets/hero_image.png';
 import Button from './Button';
 import {PlusCircleIcon} from '@heroicons/react/24/outline';
@@ -10,6 +10,14 @@ interface ClientHomeHeroSectionProps {
 
 function ClientHomeHeroSection(props: ClientHomeHeroSectionProps) {
 	const [isTicketViewOpen, setIsTicketViewOpen] = useState(false);
+	const [username, setUsername] = useState('Utilisateur');
+
+	useEffect(() => {
+		const storedUsername = localStorage.getItem('username');
+		if (storedUsername) {
+			setUsername(storedUsername);
+		}
+	}, []);
 
 	const handleClick = () => {
 		setIsTicketViewOpen(true);
@@ -23,7 +31,7 @@ function ClientHomeHeroSection(props: ClientHomeHeroSectionProps) {
 		<section className="flex items-center pt-15 pb-7">
 			<CreateTicketView isOpen={isTicketViewOpen} onClose={onClose} onTicketCreated={props.onTicketCreated} />
 			<div className="w-[100%] md:w-[50%] flex items-center md:items-start flex-col gap-5">
-				<h1 className="text-4xl font-bold font-inter">Bonjour, <span className="text-navy">Dontoman</span></h1>
+				<h1 className="text-4xl font-bold font-inter">Bonjour, <span className="text-navy">{username}</span></h1>
 				<p className="text-center md:text-start">
 					Vos problèmes méritent une solution claire et rapide. Créez vos tickets en quelques clics, suivez leur statut en direct, échangez facilement avec les agents. Une gestion de support moderne, fluide et sans perte d’information.
 				</p>
