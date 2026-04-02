@@ -1,5 +1,5 @@
-import {useState} from 'react';
-import {Link, useLocation, useNavigate, useSearchParams} from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import {
 	AlertCircle,
 	ArrowLeft,
@@ -15,16 +15,9 @@ import {
 } from 'lucide-react';
 import { ThemeToggle } from '../../components/agent_components/ThemeToggle';
 import { useTheme } from '../../context/ThemeContext';
-import { TicketPriority, TicketStatus, type Ticket } from '../../types';
-import { updateTicketStatus } from '../../services/tickets';
-
-type ChatMessage = {
-	id: number;
-	content: string;
-	author: string;
-	createdAt: Date;
-	isFromSupport: boolean;
-};
+import { TicketPriority, TicketStatus, type Ticket, type ChatMessage } from '../../types';
+import { updateTicketStatus, getTicketMessages, sendTicketMessage } from '../../services/tickets';
+import { io } from 'socket.io-client';
 
 type InternalNote = {
 	id: number;
@@ -36,8 +29,6 @@ type InternalNote = {
 type LocationState = {
 	ticket?: Ticket;
 };
-
-type StatusModalContext = 'response' | 'note' | null;
 
 const statusConfig = {
 	[TicketStatus.OPEN]: {
@@ -73,17 +64,17 @@ const statusConfig = {
 };
 
 const priorityConfig = {
-	[TicketPriority.LOW]: {label: 'Basse', color: 'text-green-600', bg: 'bg-green-50', bgDark: 'bg-green-600/10'},
-	[TicketPriority.MEDIUM]: {label: 'Moyenne', color: 'text-blue-600', bg: 'bg-blue-50', bgDark: 'bg-blue-600/10'},
-	[TicketPriority.HIGH]: {label: 'Haute', color: 'text-orange-600', bg: 'bg-orange-50', bgDark: 'bg-orange-600/10'},
-	[TicketPriority.URGENT]: {label: 'Urgent', color: 'text-red-600', bg: 'bg-red-50', bgDark: 'bg-red-600/10'},
+	[TicketPriority.LOW]: { label: 'Basse', color: 'text-green-600', bg: 'bg-green-50', bgDark: 'bg-green-600/10' },
+	[TicketPriority.MEDIUM]: { label: 'Moyenne', color: 'text-blue-600', bg: 'bg-blue-50', bgDark: 'bg-blue-600/10' },
+	[TicketPriority.HIGH]: { label: 'Haute', color: 'text-orange-600', bg: 'bg-orange-50', bgDark: 'bg-orange-600/10' },
+	[TicketPriority.URGENT]: { label: 'Urgent', color: 'text-red-600', bg: 'bg-red-50', bgDark: 'bg-red-600/10' },
 };
 
 function ChatTicketView() {
 	const navigate = useNavigate();
-	const {theme} = useTheme();
+	const { theme } = useTheme();
 	const isDark = theme === 'dark';
-	const location = useLocation() as {state?: LocationState};
+	const location = useLocation() as { state?: LocationState };
 	const [searchParams] = useSearchParams();
 	const [activeTab, setActiveTab] = useState<'responses' | 'notes'>('responses');
 	const [newResponse, setNewResponse] = useState('');
@@ -93,7 +84,7 @@ function ChatTicketView() {
 	const fallbackTicket: Ticket = {
 		id: fallbackId,
 		title: 'Ticket',
-		description: 'Aucune description transmise. Ouvre ce ticket depuis la vue agent pour voir les détails.',
+		description: 'Aucune description transmise.',
 		status: TicketStatus.OPEN,
 		priority: TicketPriority.MEDIUM,
 		createdAt: new Date(),
@@ -108,30 +99,13 @@ function ChatTicketView() {
 		authorId: 0,
 	};
 
-  const initialTicket = location.state?.ticket ?? fallbackTicket;
-  const [ticket, setTicket] = useState<Ticket>(initialTicket);
-  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
-  const [statusModalContext, setStatusModalContext] = useState<StatusModalContext>(null);
-  const [selectedStatus, setSelectedStatus] = useState<TicketStatus>(initialTicket.status);
-  const [isSavingStatus, setIsSavingStatus] = useState(false);
-  const [statusError, setStatusError] = useState<string | null>(null);
-
-	const [responses, setResponses] = useState<ChatMessage[]>([
-		{
-			id: 1,
-			content: 'Bonjour, nous avons bien reçu votre ticket.',
-			author: 'Support',
-			createdAt: new Date(),
-			isFromSupport: true,
-		},
-		{
-			id: 2,
-			content: 'Merci, avez-vous une mise à jour ?',
-			author: ticket.author.login || 'Client',
-			createdAt: new Date(),
-			isFromSupport: false,
-		},
-	]);
+	const initialTicket = location.state?.ticket ?? fallbackTicket;
+	const [ticket, setTicket] = useState<Ticket>(initialTicket);
+	const [selectedStatus, setSelectedStatus] = useState<TicketStatus>(initialTicket.status);
+	const [isSavingStatus, setIsSavingStatus] = useState(false);
+	const [responses, setResponses] = useState<ChatMessage[]>([]);
+	const [isLoadingMessages, setIsLoadingMessages] = useState(true);
+	const messagesEndRef = useRef<HTMLDivElement>(null);
 
 	const [notes, setNotes] = useState<InternalNote[]>([
 		{
@@ -141,6 +115,73 @@ function ChatTicketView() {
 			createdAt: new Date(),
 		},
 	]);
+
+	const scrollToBottom = () => {
+		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+	};
+
+	const [chatUnlocked, setChatUnlocked] = useState(
+		initialTicket.status === TicketStatus.IN_PROGRESS
+	);
+
+	useEffect(() => {
+		if (ticket.status === TicketStatus.IN_PROGRESS) setChatUnlocked(true);
+		if (ticket.status === TicketStatus.CLOSED) setChatUnlocked(false);
+	}, [ticket.status]);
+
+	useEffect(() => {
+		scrollToBottom();
+	}, [responses]);
+
+	useEffect(() => {
+		setSelectedStatus(ticket.status);
+	}, [ticket.status]);
+
+	useEffect(() => {
+		if (!chatUnlocked || ticket.status === TicketStatus.CLOSED) {
+			setIsLoadingMessages(false);
+			return;
+		}
+
+		const loadMessages = async () => {
+			try {
+				const data = await getTicketMessages(ticket.id);
+				setResponses(data);
+			} catch (error) {
+				console.error('Erreur chargement messages:', error);
+			} finally {
+				setIsLoadingMessages(false);
+			}
+		};
+		loadMessages();
+
+		const socket = io('/', {
+			path: '/socket.io',
+			transports: ['websocket'],
+			withCredentials: true
+		});
+
+		socket.emit('joinTicket', { ticketId: ticket.id });
+
+		socket.on('newMessage', (message: ChatMessage) => {
+			setResponses((prev) => {
+				if (prev.some((m) => m.id === message.id))
+					return prev;
+				return [
+					...prev,
+					{
+						...message,
+						createdAt: new Date(message.createdAt),
+					},
+				];
+			});
+		});
+
+		return () => {
+			socket.emit('leaveTicket', { ticketId: ticket.id });
+			socket.disconnect();
+		};
+	}, [ticket.id, ticket.status, chatUnlocked]);
 
 	const formatDate = (dateValue: Date | string) => {
 		const date = new Date(dateValue);
@@ -163,100 +204,74 @@ function ChatTicketView() {
 		}).format(date);
 	};
 
-  const handleSendResponse = () => {
-    if (!newResponse.trim()) {
-      return;
-    }
-    setResponses((prev: ChatMessage[]) => [
-      ...prev,
-      {
-        id: prev.length + 1,
-        content: newResponse,
-        author: 'Agent',
-        createdAt: new Date(),
-        isFromSupport: true,
-      },
-    ]);
-    setNewResponse('');
-    setSelectedStatus(ticket.status);
-    setStatusModalContext('response');
-    setIsStatusModalOpen(true);
-  };
+	const handleSendResponse = async () => {
+		if (!newResponse.trim()) return;
 
-  const handleSendNote = () => {
-    if (!newNote.trim()) {
-      return;
-    }
-    setNotes((prev: InternalNote[]) => [
-      ...prev,
-      {
-        id: prev.length + 1,
-        content: newNote,
-        author: 'Agent',
-        createdAt: new Date(),
-      },
-    ]);
-    setNewNote('');
-    setSelectedStatus(ticket.status);
-    setStatusModalContext('note');
-    setIsStatusModalOpen(true);
-  };
+		try {
+			const created = await sendTicketMessage(ticket.id, newResponse, true);
 
-  const closeStatusModal = () => {
-    if (isSavingStatus) {
-      return;
-    }
+			// Affichage immédiat côté agent
+			setResponses((prev) => {
+				if (prev.some((m) => m.id === created.id)) return prev;
+				return [...prev, created];
+			});
 
-    setIsStatusModalOpen(false);
-    setStatusModalContext(null);
-    setStatusError(null);
-  };
+			setNewResponse('');
+		} catch (error: any) {
+			console.error('Erreur envoi message:', error?.response?.data ?? error);
+		}
+	};
 
-  const handleUpdateStatus = async () => {
-    setIsSavingStatus(true);
-    setStatusError(null);
+	const handleSendNote = () => {
+		if (!newNote.trim()) return;
+		setNotes((prev: InternalNote[]) => [
+			...prev,
+			{
+				id: prev.length + 1,
+				content: newNote,
+				author: 'Agent',
+				createdAt: new Date(),
+			},
+		]);
+		setNewNote('');
+	};
 
-    try {
-      const updatedTicket = await updateTicketStatus(ticket.id, selectedStatus);
-      setTicket(updatedTicket);
-      closeStatusModal();
-    } catch (error) {
-      console.error('Erreur mise à jour statut ticket:', error);
-      setStatusError('Impossible de mettre à jour le statut du ticket pour le moment.');
-    } finally {
-      setIsSavingStatus(false);
-    }
-  };
+	const handleUpdateStatus = async () => {
+		setIsSavingStatus(true);
 
-  const statusModalLabel = statusModalContext === 'response' ? 'réponse' : 'note interne';
+		try {
+			const updatedTicket = await updateTicketStatus(ticket.id, selectedStatus);
+			setTicket(updatedTicket);
+		} catch (error) {
+			console.error('Erreur mise à jour statut ticket:', error);
+		} finally {
+			setIsSavingStatus(false);
+		}
+	};
 
-  return (
-    <div className={`min-h-screen ${isDark ? 'bg-[#0a0a0a]' : 'bg-gray-50'}`}>
-      <div className={`border-b px-4 py-4 md:px-8 ${isDark ? 'bg-[#121212] border-[#2a2a2a]' : 'bg-white border-gray-200'}`}>
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => navigate(-1)}
-            className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-colors ${
-              isDark ? 'text-gray-400 hover:bg-[#1a1a1a] hover:text-gray-300' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-            }`}
-          >
-            <ArrowLeft className="h-5 w-5" />
-            <span className="font-medium">Retour</span>
-          </button>
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <Link
-              to="/dashboard"
-              className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-                isDark
-                  ? 'border-[#2a2a2a] text-gray-300 hover:bg-[#1a1a1a]'
-                  : 'border-gray-300 text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              Dashboard
-            </Link>
-          </div>
-        </div>
+	return (
+		<div className={`min-h-screen ${isDark ? 'bg-[#0a0a0a]' : 'bg-gray-50'}`}>
+			<div className={`border-b px-4 py-4 md:px-8 ${isDark ? 'bg-[#121212] border-[#2a2a2a]' : 'bg-white border-gray-200'}`}>
+				<div className="flex items-center justify-between">
+					<button
+						onClick={() => navigate(-1)}
+						className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-colors ${isDark ? 'text-gray-400 hover:bg-[#1a1a1a] hover:text-gray-300' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+							}`}
+					>
+						<ArrowLeft className="h-5 w-5" />
+						<span className="font-medium">Retour</span>
+					</button>
+					<div className="flex items-center gap-2">
+						<ThemeToggle />
+						<Link
+							to="/dashboard"
+							className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${isDark ? 'border-[#2a2a2a] text-gray-300 hover:bg-[#1a1a1a]' : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+								}`}
+						>
+							Dashboard
+						</Link>
+					</div>
+				</div>
 
 				<div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
 					<div className="flex-1">
@@ -327,70 +342,89 @@ function ChatTicketView() {
 						<div className="p-6">
 							{activeTab === 'responses' ? (
 								<div className="space-y-6">
-									<div className={`rounded-lg border p-4 ${isDark ? 'bg-[#121212] border-[#2a2a2a]' : 'bg-gray-50 border-gray-200'}`}>
-										<div className="mb-3 flex items-center gap-2">
-											<MessageSquare className={`h-5 w-5 ${isDark ? 'text-indigo-400' : 'text-indigo-600'}`} />
-											<span className={`font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>Répondre au client</span>
+									{!chatUnlocked && (
+										<div className={`rounded-lg p-3 text-center text-sm ${isDark ? 'bg-yellow-600/10 text-yellow-400' : 'bg-yellow-50 text-yellow-700'}`}>
+											⚠️ Le canal de messagerie s'ouvrira quand le statut sera "En cours".
 										</div>
-										<textarea
-											value={newResponse}
-											onChange={(e) => setNewResponse(e.target.value)}
-											placeholder="Écrivez votre réponse au client..."
-											rows={3}
-											className={`w-full resize-none rounded-lg border px-4 py-3 transition-colors ${isDark
-												? 'bg-[#1a1a1a] border-[#2a2a2a] text-gray-100 placeholder:text-gray-600 focus:border-indigo-500'
-												: 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-indigo-600'
-												} focus:outline-none focus:ring-2 focus:ring-indigo-500/20`}
-										/>
-										<div className="mt-3 flex justify-end">
-											<button
-												onClick={handleSendResponse}
-												disabled={!newResponse.trim()}
-												className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
-											>
-												<Send className="h-4 w-4" />
-												Envoyer la réponse
-											</button>
+									)}
+
+									{chatUnlocked && ticket.status !== TicketStatus.CLOSED && (
+										<div className={`rounded-lg border p-4 ${isDark ? 'bg-[#121212] border-[#2a2a2a]' : 'bg-gray-50 border-gray-200'}`}>
+											<div className="mb-3 flex items-center gap-2">
+												<MessageSquare className={`h-5 w-5 ${isDark ? 'text-indigo-400' : 'text-indigo-600'}`} />
+												<span className={`font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>Répondre au client</span>
+											</div>
+											<textarea
+												value={newResponse}
+												onChange={(e) => setNewResponse(e.target.value)}
+												placeholder="Écrivez votre réponse au client..."
+												rows={3}
+												className={`w-full resize-none rounded-lg border px-4 py-3 transition-colors ${isDark
+													? 'bg-[#1a1a1a] border-[#2a2a2a] text-gray-100 placeholder:text-gray-600 focus:border-indigo-500'
+													: 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-indigo-600'
+													} focus:outline-none focus:ring-2 focus:ring-indigo-500/20`}
+											/>
+											<div className="mt-3 flex justify-end">
+												<button
+													onClick={handleSendResponse}
+													disabled={!newResponse.trim()}
+													className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+												>
+													<Send className="h-4 w-4" />
+													Envoyer la réponse
+												</button>
+											</div>
 										</div>
-									</div>
+									)}
 
 									<div className="space-y-4">
-										{responses.map((response) => (
-											<div
-												key={response.id}
-												className={`rounded-lg border p-4 ${response.isFromSupport
-													? isDark
-														? 'bg-indigo-600/5 border-indigo-600/20'
-														: 'bg-indigo-50/50 border-indigo-200'
-													: isDark
-														? 'bg-[#121212] border-[#2a2a2a]'
-														: 'bg-gray-50 border-gray-200'
-													}`}
-											>
-												<div className="flex items-start gap-3">
-													<div
-														className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold ${response.isFromSupport ? 'bg-indigo-600/20 text-indigo-500' : 'bg-gray-200 text-gray-700'
-															}`}
-													>
-														{response.author.charAt(0).toUpperCase()}
-													</div>
-													<div className="flex-1">
-														<div className="mb-1 flex items-center gap-2">
-															<span className={`font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>{response.author}</span>
-															{response.isFromSupport && (
-																<span className={`rounded px-2 py-0.5 text-xs font-medium ${isDark ? 'bg-indigo-600/20 text-indigo-400' : 'bg-indigo-100 text-indigo-700'}`}>
-																	Support
-																</span>
-															)}
-															<span className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
-																{formatDateShort(response.createdAt)}
-															</span>
+										{isLoadingMessages ? (
+											<p className="text-center text-sm text-gray-500">Chargement...</p>
+										) : responses.length === 0 ? (
+											<p className={`text-center text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+												Aucun message pour le moment.
+											</p>
+										) : (
+											responses.map((response) => (
+												<div
+													key={response.id}
+													className={`rounded-lg border p-4 ${response.isFromSupport
+														? isDark
+															? 'bg-indigo-600/5 border-indigo-600/20'
+															: 'bg-indigo-50/50 border-indigo-200'
+														: isDark
+															? 'bg-[#121212] border-[#2a2a2a]'
+															: 'bg-gray-50 border-gray-200'
+														}`}
+												>
+													<div className="flex items-start gap-3">
+														<div
+															className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold ${response.isFromSupport ? 'bg-indigo-600/20 text-indigo-500' : 'bg-gray-200 text-gray-700'
+																}`}
+														>
+															{response.author.login?.charAt(0).toUpperCase() ?? '?'}
 														</div>
-														<p className={`${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{response.content}</p>
+														<div className="flex-1">
+															<div className="mb-1 flex items-center gap-2">
+																<span className={`font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+																	{response.author.login ?? response.author.email}
+																</span>
+																{response.isFromSupport && (
+																	<span className={`rounded px-2 py-0.5 text-xs font-medium ${isDark ? 'bg-indigo-600/20 text-indigo-400' : 'bg-indigo-100 text-indigo-700'}`}>
+																		Support
+																	</span>
+																)}
+																<span className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+																	{formatDateShort(response.createdAt)}
+																</span>
+															</div>
+															<p className={`${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{response.content}</p>
+														</div>
 													</div>
 												</div>
-											</div>
-										))}
+											))
+										)}
+										<div ref={messagesEndRef} />
 									</div>
 								</div>
 							) : (
@@ -446,37 +480,48 @@ function ChatTicketView() {
 				<div className="w-full space-y-4 md:w-80">
 					<div className={`rounded-xl border p-6 ${isDark ? 'bg-[#1a1a1a] border-[#2a2a2a]' : 'bg-white border-gray-200'}`}>
 						<h3 className={`mb-4 font-bold ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>Détails</h3>
-
-            <div className="space-y-4">
-              <div>
-                <div className={`mb-2 flex items-center gap-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  <Clock className="h-4 w-4" />
-                  <span className="font-medium">Statut actuel</span>
-                </div>
-                <div
-                  className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 ${
-                    isDark ? statusConfig[ticket.status].colorDark : statusConfig[ticket.status].color
-                  }`}
-                >
-                  <span className="font-medium">{statusConfig[ticket.status].label}</span>
-                </div>
-              </div>
-
-              <div>
-                <div className={`mb-2 flex items-center gap-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  <Tag className="h-4 w-4" />
-                  <span className="font-medium">Priorité</span>
-                </div>
-                <div
-                  className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 ${
-                    isDark ? priorityConfig[ticket.priority].bgDark : priorityConfig[ticket.priority].bg
-                  }`}
-                >
-                  <AlertCircle className={`h-4 w-4 ${priorityConfig[ticket.priority].color}`} />
-                  <span className={`font-medium ${priorityConfig[ticket.priority].color}`}>{priorityConfig[ticket.priority].label}</span>
-                </div>
-              </div>
-
+						<div className="space-y-4">
+							<div>
+								<div className={`mb-2 flex items-center gap-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+									<Clock className="h-4 w-4" />
+									<span className="font-medium">Statut actuel</span>
+								</div>
+								{/* <div className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 ${isDark ? statusConfig[ticket.status].colorDark : statusConfig[ticket.status].color}`}>
+									<span className="font-medium">{statusConfig[ticket.status].label}</span>
+								</div> */}
+								<select
+									value={selectedStatus}
+									onChange={(e) => setSelectedStatus(e.target.value as TicketStatus)}
+									className={`w-full rounded-lg border px-3 py-2 text-sm ${isDark
+										? 'bg-[#1a1a1a] border-[#2a2a2a] text-gray-100'
+										: 'bg-white border-gray-300 text-gray-900'
+										}`}
+								>
+									<option value={TicketStatus.OPEN}>Ouvert</option>
+									<option value={TicketStatus.IN_PROGRESS}>En cours</option>
+									<option value={TicketStatus.PENDING}>En attente</option>
+									<option value={TicketStatus.RESOLVED}>Résolu</option>
+									<option value={TicketStatus.CLOSED}>Fermé</option>
+								</select>
+								<button
+									type="button"
+									onClick={handleUpdateStatus}
+									disabled={isSavingStatus || selectedStatus === ticket.status}
+									className="mt-2 w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+								>
+									{isSavingStatus ? 'Mise a jour...' : 'Appliquer le statut'}
+								</button>
+							</div>
+							<div>
+								<div className={`mb-2 flex items-center gap-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+									<Tag className="h-4 w-4" />
+									<span className="font-medium">Priorité</span>
+								</div>
+								<div className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 ${isDark ? priorityConfig[ticket.priority].bgDark : priorityConfig[ticket.priority].bg}`}>
+									<AlertCircle className={`h-4 w-4 ${priorityConfig[ticket.priority].color}`} />
+									<span className={`font-medium ${priorityConfig[ticket.priority].color}`}>{priorityConfig[ticket.priority].label}</span>
+								</div>
+							</div>
 							<div>
 								<div className={`mb-2 flex items-center gap-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
 									<User className="h-4 w-4" />
@@ -494,7 +539,6 @@ function ChatTicketView() {
 									<p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>Non assigné</p>
 								)}
 							</div>
-
 							<div>
 								<div className={`mb-2 flex items-center gap-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
 									<Calendar className="h-4 w-4" />
@@ -502,7 +546,6 @@ function ChatTicketView() {
 								</div>
 								<p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{formatDate(ticket.createdAt)}</p>
 							</div>
-
 							<div>
 								<div className={`mb-2 flex items-center gap-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
 									<Clock className="h-4 w-4" />
@@ -512,73 +555,10 @@ function ChatTicketView() {
 							</div>
 						</div>
 					</div>
-
-        </div>
-      </div>
-
-      {isStatusModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-          <div className={`w-full max-w-md rounded-2xl border p-6 shadow-xl ${isDark ? 'bg-[#121212] border-[#2a2a2a]' : 'bg-white border-gray-200'}`}>
-            <div className="mb-4">
-              <h2 className={`text-lg font-bold ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>Mettre à jour le statut</h2>
-              <p className={`mt-1 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Votre {statusModalLabel} a bien été ajoutée. Voulez-vous aussi modifier le statut du ticket ?
-              </p>
-            </div>
-
-            <div className="mb-6 space-y-2">
-              <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`} htmlFor="ticket-status-select">
-                Nouveau statut
-              </label>
-              <select
-                id="ticket-status-select"
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value as TicketStatus)}
-                className={`w-full rounded-lg border px-4 py-3 transition-colors ${
-                  isDark
-                    ? 'bg-[#1a1a1a] border-[#2a2a2a] text-gray-100 focus:border-indigo-500'
-                    : 'bg-white border-gray-300 text-gray-900 focus:border-indigo-600'
-                } focus:outline-none focus:ring-2 focus:ring-indigo-500/20`}
-              >
-                <option value={TicketStatus.OPEN}>Ouvert</option>
-                <option value={TicketStatus.IN_PROGRESS}>En cours</option>
-                <option value={TicketStatus.PENDING}>En attente</option>
-                <option value={TicketStatus.RESOLVED}>Résolu</option>
-                <option value={TicketStatus.CLOSED}>Fermé</option>
-              </select>
-            </div>
-
-            {statusError && (
-              <p className={`mb-4 text-sm ${isDark ? 'text-red-400' : 'text-red-600'}`}>
-                {statusError}
-              </p>
-            )}
-
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={closeStatusModal}
-                disabled={isSavingStatus}
-                className={`rounded-lg px-4 py-2 font-medium transition-colors ${
-                  isDark ? 'bg-[#1a1a1a] text-gray-300 hover:bg-[#242424]' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                Plus tard
-              </button>
-              <button
-                type="button"
-                onClick={handleUpdateStatus}
-                disabled={isSavingStatus}
-                className="rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isSavingStatus ? 'Mise à jour...' : 'Mettre à jour'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+				</div>
+			</div>
+		</div>
+	);
 }
 
 export default ChatTicketView;
