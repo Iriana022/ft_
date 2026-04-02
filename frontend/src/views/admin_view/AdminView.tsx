@@ -20,7 +20,7 @@ import Notification from '../../components/client_components/Notification';
 import Avatar from '../../components/client_components/Avatar';
 import avatar1 from '../../../public/assets/avatars/avatar1.jpg';
 import {Outlet, Link} from 'react-router-dom';
-import {type HeroIconType} from '../../types';
+import {type HeroIconType, StatCardType} from '../../types';
 import {RechartsDevtools} from '@recharts/devtools';
 import {
 	LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -101,14 +101,6 @@ function AdminHamburgerMenu(props: AdminHamburgerMenuProps) {
 	);
 }
 
-enum StatCardType {
-	TOTAL_TICKET = 'TOTAL_TICKET',
-	OPEN_TICKET = 'OPEN_TICKET',
-	CLOSED_TICKET = 'CLOSED_TICKET',
-	USERS = 'USERS',
-	CATEGORIES = 'CATEGORIES',
-}
-
 interface StatCardProps {
 	title: string,
 	count: number,
@@ -173,7 +165,7 @@ const dailyData = [
 
 function TicketsActivities() {
 	return (
-		<div className="w-[60%] bg-white shadow rounded-md p-5">
+		<div className="w-full md:w-[60%] bg-white shadow rounded-md p-5">
 			<div className="flex items-center justify-between">
 				<div>
 					<h3 className="text-base font-medium text-navy">Activite des tickets</h3>
@@ -190,22 +182,24 @@ function TicketsActivities() {
 					</div>
 				</div>
 			</div>
-			<div className="mt-8">
-				<LineChart style={{width: '100%', aspectRatio: 3}} responsive data={dailyData}>
-					<CartesianGrid stroke="#aaa" strokeDasharray="5 5" />
-					<Line type="monotone" dataKey="created" stroke="var(--color-navy)" strokeWidth={2} name="Crees"
-						dot={false}
-						activeDot={{r: 5}}
-					/>
-					<Line type="monotone" dataKey="resolved" stroke="var(--color-status-resolved)" strokeWidth={2} name="Resolus"
-						dot={false}
-						activeDot={{r: 5}}
-					/>
-					<XAxis dataKey="name" tick={{fontSize: 12}} />
-					<YAxis tick={{fontSize: 12}} />
-					<Tooltip />
-					<RechartsDevtools />
-				</LineChart>
+			<div className="mt-8 w-full aspect-[5/3] md:aspect-[3/1]">
+				<ResponsiveContainer>
+					<LineChart responsive data={dailyData}>
+						<CartesianGrid stroke="#aaa" strokeDasharray="5 5" />
+						<Line type="monotone" dataKey="created" stroke="var(--color-navy)" strokeWidth={2} name="Crees"
+							dot={false}
+							activeDot={{r: 5}}
+						/>
+						<Line type="monotone" dataKey="resolved" stroke="var(--color-status-resolved)" strokeWidth={2} name="Resolus"
+							dot={false}
+							activeDot={{r: 5}}
+						/>
+						<XAxis dataKey="name" tick={{fontSize: 12}} />
+						<YAxis tick={{fontSize: 12}} />
+						<Tooltip />
+						<RechartsDevtools />
+					</LineChart>
+				</ResponsiveContainer>
 			</div>
 		</div>
 	);
@@ -221,7 +215,7 @@ const ticketsPerCategory = [
 
 function TicketsRepartitionPerCategory() {
 	return (
-		<div className="w-[40%] bg-white shadow rounded-md p-5">
+		<div className="w-full md:w-[40%] bg-white shadow rounded-md p-5">
 			<h3 className="text-base font-medium text-navy">Par categorie</h3>
 			<p className="text-sm text-gray-600">Repartition des tickets</p>
 			<ResponsiveContainer width="100%" height={300}>
@@ -278,7 +272,7 @@ export function AdminDashboard() {
 					type={StatCardType.CATEGORIES}
 				/>
 			</div>
-			<div className="flex items-center mt-6 gap-4">
+			<div className="flex flex-col md:flex-row items-center mt-6 gap-4">
 				<TicketsActivities />
 				<TicketsRepartitionPerCategory />
 			</div>

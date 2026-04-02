@@ -1,5 +1,13 @@
 export type HeroIconType = React.ForwardRefExoticComponent<React.PropsWithoutRef<React.SVGProps<SVGSVGElement>> & {title?: string, titleId?: string} & React.RefAttributes<SVGSVGElement>>;
 
+export enum StatCardType {
+	TOTAL_TICKET = 'TOTAL_TICKET',
+	OPEN_TICKET = 'OPEN_TICKET',
+	CLOSED_TICKET = 'CLOSED_TICKET',
+	USERS = 'USERS',
+	CATEGORIES = 'CATEGORIES',
+}
+
 export enum TicketStatus {
 	OPEN = 'OPEN',
 	IN_PROGRESS = 'IN_PROGRESS',
