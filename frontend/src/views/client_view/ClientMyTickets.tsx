@@ -1,11 +1,11 @@
 import {useEffect, useState} from 'react';
-import ContainerComp from "../../../layout/layout_client/Container";
-import Ticket from "../../../components/client_components/Ticket";
-import SearchInput from "../../../components/client_components/SearchInput";
-import TicketFilter from "../../../components/client_components/TicketFilter";
-import CreateTicketView from '../../../components/client_components/CreateTicketView';
-import {fetchMyTicketsForClientView} from '../../../services/tickets';
-import type {TicketType} from '../../../types';
+import ContainerComp from "../../layout/layout_client/Container";
+import Ticket from "../../components/client_components/Ticket";
+import SearchInput from "../../components/client_components/SearchInput";
+import TicketFilter from "../../components/client_components/TicketFilter";
+import CreateTicketView from '../../components/client_components/CreateTicketView';
+import {fetchMyTicketsForClientView} from '../../services/tickets';
+import type {TicketType} from '../../types';
 import {io} from 'socket.io-client';
 
 function ClientMyTickets() {

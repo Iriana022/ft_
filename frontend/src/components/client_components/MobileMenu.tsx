@@ -3,8 +3,9 @@ import {HomeIcon} from '@heroicons/react/24/outline';
 import {TicketIcon} from '@heroicons/react/24/outline';
 import {Cog8ToothIcon} from '@heroicons/react/24/outline';
 import Avatar from './Avatar';
-import avatar1 from '../../../public/assets/avatars/avatar1.jpg';
 import {useNavigate} from 'react-router-dom';
+
+const avatar1 = '/assets/avatars/avatar1.jpg';
 
 function MobileMenu() {
 	const navigate = useNavigate();
