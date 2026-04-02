@@ -264,7 +264,7 @@ function ChatTicketView() {
 					<div className="flex items-center gap-2">
 						<ThemeToggle />
 						<Link
-							to="/dashboard"
+							to="/agent"
 							className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${isDark ? 'border-[#2a2a2a] text-gray-300 hover:bg-[#1a1a1a]' : 'border-gray-300 text-gray-700 hover:bg-gray-100'
 								}`}
 						>

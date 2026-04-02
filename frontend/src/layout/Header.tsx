@@ -7,10 +7,11 @@ import {Cog8ToothIcon} from '@heroicons/react/24/outline';
 import HamburgerMenu from '../components/client_components/HamburgerMenu';
 import Notification from '../components/client_components/Notification';
 import Avatar from '../components/client_components/Avatar';
-import avatar1 from '../../public/assets/avatars/avatar1.jpg';
 import ContainerComp from './layout_client/Container';
 import MobileMenu from '../components/client_components/MobileMenu';
 import {Link, useNavigate} from 'react-router-dom';
+
+const avatar1 = '/assets/avatars/avatar1.jpg';
 
 function Header() {
 	const [isMenuOpened, setIsMenuOpened] = useState(false);
@@ -37,12 +38,12 @@ function Header() {
 					<div className="flex gap-[100px]">
 						<HamburgerMenu onClick={() => setIsMenuOpened(s => !s)} isMenuOpened={isMenuOpened} />
 						<div className="absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0">
-							<TikeoLogo href="/client_view" color="text-navy" size="text-4xl" />
+							<TikeoLogo href="/client" color="text-navy" size="text-4xl" />
 						</div>
 						<nav className="hidden md:flex gap-5">
-							<NavItem icon={HomeIcon} href="/client_view" text="Acceuil" color="text-gray-500" />
-							<NavItem icon={TicketIcon} href="/client_view/my_tickets" text="Mes Tickets" color="text-gray-600" />
-							<NavItem icon={Cog8ToothIcon} href="/client_view/settings" text="Parametres" color="text-gray-600" />
+							<NavItem icon={HomeIcon} href="/client" text="Acceuil" color="text-gray-500" />
+							<NavItem icon={TicketIcon} href="/client/my_tickets" text="Mes Tickets" color="text-gray-600" />
+							<NavItem icon={Cog8ToothIcon} href="/client/settings" text="Parametres" color="text-gray-600" />
 						</nav>
 					</div>
 					<div className="flex items-center gap-8">

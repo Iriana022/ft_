@@ -10,7 +10,7 @@ function Footer() {
 			<ContainerComp>
 				<section className="flex flex-col md:flex-row md:justify-between py-3">
 					<div className="flex gap-4 items-center md:block">
-						<TikeoLogo href="/client_view" color="text-navy" size="text-4xl" />
+						<TikeoLogo href="/client" color="text-navy" size="text-4xl" />
 						<p className="text-xs md:text-sm max-w-[500px] mt-3 text-gray-700">
 							Vos problèmes méritent une réponse claire et rapide. Créez vos tickets en quelques clics, suivez leur avancement en temps réel et échangez facilement avec l’équipe.
 						</p>
@@ -20,9 +20,9 @@ function Footer() {
 							Liens rapides
 						</h3>
 						<div className="text-xs md:text-sm flex md:flex-col justify-center md:justify-start gap-4 md:gap-1 mt-6 md:mt-3 text-gray-700 md:mt-0">
-							<Link to="/client_view" className="transition hover:text-navy hover:underline">Accueil</Link>
-							<Link to="/client_view/my_tickets" className="transition hover:text-navy hover:underline">Mes tickets</Link>
-							<Link to="/client_view/settings" className="transition hover:text-navy hover:underline">Parametres</Link>
+							<Link to="/client" className="transition hover:text-navy hover:underline">Accueil</Link>
+							<Link to="/client/my_tickets" className="transition hover:text-navy hover:underline">Mes tickets</Link>
+							<Link to="/client/settings" className="transition hover:text-navy hover:underline">Parametres</Link>
 						</div>
 					</div>
 				</section >
@@ -33,8 +33,8 @@ function Footer() {
 						<span>Copyright &copy; 2026 Tikeo</span>
 					</div>
 					<div className="flex items-center flex-col md:flex-row gap-2 md:gap-10">
-						<Link to="/client_view" className="hover:underline">Politique de confidentialite</Link>
-						<Link to="/client_view" className="hover:underline">Conditions generales d'utilisation</Link>
+						<Link to="/client" className="hover:underline">Politique de confidentialite</Link>
+						<Link to="/client" className="hover:underline">Conditions generales d'utilisation</Link>
 					</div>
 				</section>
 			</ContainerComp>

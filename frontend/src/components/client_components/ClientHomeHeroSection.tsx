@@ -1,8 +1,8 @@
 import {useState, useEffect} from 'react';
-import HeroImage from '../../../public/assets/hero_image.png';
 import Button from './Button';
 import {PlusCircleIcon} from '@heroicons/react/24/outline';
 import CreateTicketView from './CreateTicketView';
+const heroImage = '/assets/hero_image.png'
 
 interface ClientHomeHeroSectionProps {
 	onTicketCreated?: () => void;
@@ -42,7 +42,7 @@ function ClientHomeHeroSection(props: ClientHomeHeroSectionProps) {
 				</div>
 			</div>
 			<div className="w-[50%] ps-30 hidden md:block">
-				<img alt="Hero image" src={HeroImage} />
+				<img alt="Hero image" src={heroImage} />
 			</div>
 		</section>
 	);

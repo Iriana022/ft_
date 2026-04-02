@@ -29,7 +29,7 @@ function ClientHomeMyTicketsSection(props: ClientHomeMyTicketsSectionProps) {
 					<TicketsStat tickets={tickets} />
 				</div>
 			</div>
-			<Link to="/client_view/my_tickets" className="flex items-center gap-2 mt-4 group">
+			<Link to="/client/my_tickets" className="flex items-center gap-2 mt-4 group">
 				<span className="text-sm text-blue-400 transition group-hover:text-blue-500">
 					Voir tous les tickets
 				</span>
