@@ -20,12 +20,13 @@ import Notification from '../../components/client_components/Notification';
 import Avatar from '../../components/client_components/Avatar';
 import avatar1 from '../../../public/assets/avatars/avatar1.jpg';
 import {Outlet, Link} from 'react-router-dom';
-import {type HeroIconType, StatCardType} from '../../types';
+import {type HeroIconType, TicketStatus, TicketPriority, StatCardType} from '../../types';
 import {RechartsDevtools} from '@recharts/devtools';
 import {
 	LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
 	BarChart, Bar, ResponsiveContainer
 } from 'recharts';
+import Separator from '../../components/login_components/Separator';
 
 function VerticalSeparator() {
 	return (
@@ -237,6 +238,127 @@ function TicketsRepartitionPerCategory() {
 	);
 }
 
+// FAKEEEEEEE
+const recentTickets = [
+	{
+		id: 1024,
+		title: "Problème de connexion sur mobile",
+		status: TicketStatus.OPEN,
+		priority: TicketPriority.HIGH,
+		user: "John D.",
+		createdAt: "2026-04-02T08:15:00Z",
+	},
+	{
+		id: 1025,
+		title: "Erreur lors du paiement",
+		status: TicketStatus.IN_PROGRESS,
+		priority: TicketPriority.URGENT,
+		user: "Sarah M.",
+		createdAt: "2026-04-01T14:32:00Z",
+	},
+	{
+		id: 1026,
+		title: "Bug d'affichage du dashboard",
+		status: TicketStatus.OPEN,
+		priority: TicketPriority.MEDIUM,
+		user: "Lucas R.",
+		createdAt: "2026-03-31T10:05:00Z",
+	},
+	{
+		id: 1027,
+		title: "Impossible de réinitialiser le mot de passe",
+		status: TicketStatus.RESOLVED,
+		priority: TicketPriority.HIGH,
+		user: "Emma K.",
+		createdAt: "2026-03-30T18:20:00Z",
+	},
+	{
+		id: 1028,
+		title: "Notification non reçue",
+		status: TicketStatus.OPEN,
+		priority: TicketPriority.LOW,
+		user: "Noah T.",
+		createdAt: "2026-03-29T09:45:00Z",
+	},
+];
+
+function RecentTicketsHeader() {
+	return (
+		<div className="flex items-center justify-between px-5 pt-3">
+			<div>
+				<h3 className="text-base">
+					Tickets recents
+				</h3>
+				<p className="text-sm text-gray-600">Dernieres demandes de support</p>
+			</div>
+			{/* TODO: change this to Link component */}
+			<span className="block text-navy font-medium text-sm">
+				Voir tout
+			</span>
+		</div>
+	);
+}
+
+function RecentTickets() {
+	return (
+		<div className="bg-white rounded-md shadow mt-8">
+			<RecentTicketsHeader />
+			<Separator />
+			<div className="overflow-x-auto">
+				<table className="w-full text-sm text-left">
+					<thead className="text-gray-500 border-b">
+						<tr>
+							<th className="px-5 pb-3 font-medium">ID</th>
+							<th className="px-5 pb-3 font-medium">Titre</th>
+							<th className="px-5 pb-3 font-medium">Utilisateur</th>
+							<th className="px-5 pb-3 font-medium">Status</th>
+							<th className="px-5 pb-3 font-medium">Priorite</th>
+							<th className="px-5 pb-3 font-medium">Date</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						{recentTickets.map((ticket) => (
+							<tr
+								key={ticket.id}
+								className="border-b hover:bg-cream/70 transition"
+							>
+								<td className="px-5 py-3 text-navy">
+									TK-{ticket.id}
+								</td>
+
+								<td className="px-5 py-3">
+									{ticket.title}
+								</td>
+
+								<td className="px-5 py-3">
+									{ticket.user}
+								</td>
+
+								<td className="px-5 py-3">
+									<span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-600">
+										{ticket.status}
+									</span>
+								</td>
+
+								<td className="px-5 py-3">
+									<span className="px-2 py-1 rounded text-xs bg-red-100 text-red-600">
+										{ticket.priority}
+									</span>
+								</td>
+
+								<td className="px-5 py-3 text-gray-500">
+									{new Date(ticket.createdAt).toLocaleDateString()}
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	);
+}
+
 export function AdminDashboard() {
 	return (
 		<div className="p-4">
@@ -276,6 +398,7 @@ export function AdminDashboard() {
 				<TicketsActivities />
 				<TicketsRepartitionPerCategory />
 			</div>
+			<RecentTickets />
 		</div>
 	);
 }
