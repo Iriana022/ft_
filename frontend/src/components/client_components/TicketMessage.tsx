@@ -5,8 +5,9 @@ import {ArrowLeftIcon} from '@heroicons/react/24/solid';
 import {useNavigate} from 'react-router-dom';
 import {type Message} from '../../types';
 import Avatar from './Avatar';
-import avatar1 from '../../../public/assets/avatars/avatar1.jpg';
-import avatar2 from '../../../public/assets/avatars/avatar2.png';
+
+const avatar1 = '/assets/avatars/avatar1.jpg';
+const avatar2 = '/assets/avatars/avatar2.png';
 
 interface TicketMessageHeaderProps {
 	title: string,

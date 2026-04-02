@@ -18,7 +18,6 @@ import {
 import TikeoLogo from '../../components/client_components/TikeoLogo';
 import Notification from '../../components/client_components/Notification';
 import Avatar from '../../components/client_components/Avatar';
-import avatar1 from '../../../public/assets/avatars/avatar1.jpg';
 import {Outlet, Link} from 'react-router-dom';
 import {type HeroIconType, TicketStatus, TicketPriority, StatCardType} from '../../types';
 import {RechartsDevtools} from '@recharts/devtools';
@@ -27,6 +26,8 @@ import {
 	BarChart, Bar, ResponsiveContainer
 } from 'recharts';
 import Separator from '../../components/login_components/Separator';
+
+const avatar1 = '/assets/avatars/avatar1.jpg';
 
 function VerticalSeparator() {
 	return (

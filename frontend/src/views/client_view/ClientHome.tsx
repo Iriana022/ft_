@@ -1,10 +1,10 @@
 import {useCallback, useEffect, useState} from 'react';
-import Separator from '../../../components/login_components/Separator';
-import ContainerComp from '../../../layout/layout_client/Container';
-import ClientHomeHeroSection from '../../../components/client_components/ClientHomeHeroSection';
-import ClientHomeMyTicketsSection from '../../../components/client_components/ClientHomeMyTicketsSection';
-import {fetchMyTicketsForClientView} from '../../../services/tickets';
-import type {TicketType} from '../../../types';
+import Separator from '../../components/login_components/Separator';
+import ContainerComp from '../../layout/layout_client/Container';
+import ClientHomeHeroSection from '../../components/client_components/ClientHomeHeroSection';
+import ClientHomeMyTicketsSection from '../../components/client_components/ClientHomeMyTicketsSection';
+import {fetchMyTicketsForClientView} from '../../services/tickets';
+import type {TicketType} from '../../types';
 import { io } from 'socket.io-client';
 
 function ClientHome() {

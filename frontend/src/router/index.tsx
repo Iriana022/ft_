@@ -6,9 +6,9 @@ import {DashboardLayout} from '../layout/layout_agent/DashboardLayout';
 import {UserRole} from '../types';
 import Register from '../views/Login_Page/Register';
 import ClientLayout from "../layout/layout_client/ClientLayout";
-import ClientHome from "../views/client_view/pages/ClientHome";
-import ClientMyTickets from "../views/client_view/pages/ClientMyTickets";
-import ClientSettings from "../views/client_view/pages/ClientSettings";
+import ClientHome from "../views/client_view/ClientHome";
+import ClientMyTickets from "../views/client_view/ClientMyTickets";
+import ClientSettings from "../views/client_view/ClientSettings";
 import Profil from "../components/client_components/Profil";
 import ChatTicketView from '../views/chat_ticket/ChatTicketView';
 import ChatTicketViewClient from '../views/chat_ticket/ChatTicketViewClient';
@@ -97,14 +97,14 @@ export const router = createBrowserRouter([
 			</ProtectedRoute>
 		)
 	},
-	{
-		path: 'client/ticket_message',
-		element: (
-			<ProtectedRoute allowedRoles={[UserRole.CLIENT]}>
-				<ChatTicketViewClient />
-			</ProtectedRoute>
-		)
-	},
+	// {
+	// 	path: 'client/ticket_message',
+	// 	element: (
+	// 		<ProtectedRoute allowedRoles={[UserRole.CLIENT]}>
+	// 			<ChatTicketViewClient />
+	// 		</ProtectedRoute>
+	// 	)
+	// },
 	{
 		path: 'chat_ticket_client',
 		element: (

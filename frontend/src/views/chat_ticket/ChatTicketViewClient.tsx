@@ -6,14 +6,15 @@ import { ArrowLeftIcon } from '@heroicons/react/24/solid';
 import type { ChatMessage, TicketType } from '../../types';
 import { TicketStatus } from '../../types';
 import Avatar from '../../components/client_components/Avatar';
-import avatar1 from '../../../public/assets/avatars/avatar1.jpg';
-import avatar2 from '../../../public/assets/avatars/avatar2.png';
 import { getTicketMessages, sendTicketMessage } from '../../services/tickets';
 import { io } from 'socket.io-client';
 
 interface TicketMessageHeaderProps {
   title: string;
 }
+
+const avatar2 = '/assets/avatars/avatar2.png';
+const avatar1 = '/assets/avatars/avatar1.jpg';
 
 function TicketMessageHeader({ title }: TicketMessageHeaderProps) {
   const navigate = useNavigate();

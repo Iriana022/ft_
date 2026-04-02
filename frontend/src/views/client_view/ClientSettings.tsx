@@ -1,7 +1,7 @@
-import ContainerComp from "../../../layout/layout_client/Container";
-import Separator from "../../../components/client_components/Separator";
-import LanguageSelector from "../../../components/client_components/LanguageSelector";
-import ThemeController from "../../../components/client_components/ThemeController";
+import ContainerComp from "../../layout/layout_client/Container";
+import Separator from "../../components/client_components/Separator";
+import LanguageSelector from "../../components/client_components/LanguageSelector";
+import ThemeController from "../../components/client_components/ThemeController";
 
 function ClientSettings() {
 	return (
