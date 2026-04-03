@@ -42,9 +42,11 @@ export function Dashboard() {
 
     loadTickets();
 
-    const socket = io('https://localhost:8443', {
-      transports: ['websocket']
-    });
+		const socket = io('/', {
+			path: '/socket.io',
+			transports: ['websocket'],
+			withCredentials: true
+		});
     socket.on('newTicket', (ticket: TicketType) => {
       console.log('New ticket received :', ticket);
       if (ticket.author.role === UserRole.CLIENT) {
@@ -52,6 +54,20 @@ export function Dashboard() {
         setNotification(`New ticket incoming : ${ticket.title}`);
         setTimeout(() => setNotification(), 5000);
       }
+    });
+
+    socket.on('ticketUnreadUpdated', (payload: { ticketId: number; agentUnreadCount: number; clientUnreadCount: number }) => {
+      setTickets((prev) =>
+        prev.map((t) =>
+          t.id === payload.ticketId
+            ? {
+              ...t,
+              agentUnreadCount: payload.agentUnreadCount,
+              clientUnreadCount: payload.clientUnreadCount,
+            }
+            : t
+        )
+      );
     });
     return () => {
       socket.disconnect();
@@ -65,8 +81,8 @@ export function Dashboard() {
       {/* Notification popup */}
       {notification && (
         <div className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-4 rounded-xl shadow-lg border transition-all ${isDark
-            ? 'bg-[#1a1a1a] border-indigo-500 text-gray-100'
-            : 'bg-white border-indigo-500 text-gray-900'
+          ? 'bg-[#1a1a1a] border-indigo-500 text-gray-100'
+          : 'bg-white border-indigo-500 text-gray-900'
           }`}>
           <AlertCircle className="w-5 h-5 text-indigo-500" />
           <span className="text-sm font-medium">{notification}</span>

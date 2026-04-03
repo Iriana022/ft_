@@ -58,4 +58,20 @@ export class TicketsController {
     ) {
         return this.ticketsService.createMessage(id, dto, req.user.userId);
     }
+
+    @Patch(':id/read')
+    @UseGuards(JwtAuthGuard)
+    async markAsRead(
+        @Param('id', ParseIntPipe) id: number,
+        @Req() req: { user: {
+            userId: number;
+            role: 'CLIENT' | 'AGENT' | 'ADMIN'
+        }},
+    ) {
+        return this.ticketsService.markTicketMessagesAsRead(
+            id,
+            req.user.userId,
+            req.user.role as any,
+        );
+    }
 }

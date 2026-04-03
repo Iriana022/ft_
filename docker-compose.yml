@@ -13,6 +13,7 @@ services:
   backend:
     build: ./backend
     container_name: nest_backend
+    image: backend
     restart: always
     expose:
       - "3000"
@@ -22,9 +23,9 @@ services:
       DATABASE_URL: "postgresql://user:password@db:5432/transcendence_db"
       GOOGLE_REDIRECT_URI: "https://localhost:8443/api/auth/google/callback"
     volumes:
-      - ./backend:/app    # Synchronise ton code source
-      - /app/node_modules  # Empêche ton dossier local d'écraser les packages du container
-      - /app/dist  # Optionnel: protège le dossier de build
+      - ./backend:/usr/src/app   # Synchronise ton code source
+      - /usr/src/app/node_modules  # Empêche ton dossier local d'écraser les packages du container
+      # - /usr/src/app/dist  # Optionnel: protège le dossier de build
     depends_on:
       - db
     # On s'assure que Nest tourne en mode watch (vérifie ton package.json)
@@ -33,6 +34,7 @@ services:
   frontend:
     build: ./frontend
     container_name: frontend
+    image: frontend
     restart: always
     expose:
       - "5173"

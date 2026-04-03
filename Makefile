@@ -1,20 +1,22 @@
 GREEN = \033[0;32m
 RED = \033[0;31m
+YELLOW = \033[1;33m
 RESET = \033[0m
-USER = srasolom
 Dockerfilecompose = docker-compose.yml
 
 all: certs
 	@echo "$(GREEN)Starting tickeo...$(RESET)"
 	@docker compose -f $(Dockerfilecompose) up -d --build
-	@echo "$(GREEN)Migration...$(RESET)"
-	@docker exec -it nest_backend npx prisma migrate deploy
-	@docker exec -it nest_backend npx prisma db push
+	@echo "$(GREEN)Waiting for database...$(RESET)"
+	@sleep 5
+	@echo "$(GREEN)Pushing schema to database...$(RESET)"
+	@docker exec -it nest_backend npx prisma db push --accept-data-loss
+	@docker exec -it nest_backend npx prisma generate
+	@echo "$(GREEN)Tickeo is ready!$(RESET)"
 
 up:
 	@echo "$(GREEN)Restarting tickeo...$(RESET)"
 	@docker compose -f $(Dockerfilecompose) up -d
-
 
 down:
 	@echo "$(RED)Stopping tickeo...$(RESET)"
@@ -24,7 +26,6 @@ fclean: down
 	@echo "$(RED)Stopping and cleaning tickeo...$(RESET)"
 	@docker compose -f $(Dockerfilecompose) rm -f -s -v
 	@docker system prune -af
-
 
 re: fclean all
 
@@ -37,5 +38,4 @@ certs:
 			-subj "/C=FR/ST=Paris/L=Paris/O=42/CN=localhost"; \
 	fi
 
-
-.PHONY: all clean fclean down re
+.PHONY: all fclean up down re certs
