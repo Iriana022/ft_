@@ -16,7 +16,7 @@ import {
 import { ThemeToggle } from '../../components/agent_components/ThemeToggle';
 import { useTheme } from '../../context/ThemeContext';
 import { TicketPriority, TicketStatus, type Ticket, type ChatMessage } from '../../types';
-import { updateTicketStatus, getTicketMessages, sendTicketMessage } from '../../services/tickets';
+import { markTicketMessagesAsRead, updateTicketStatus, getTicketMessages, sendTicketMessage } from '../../services/tickets';
 import { io } from 'socket.io-client';
 
 type InternalNote = {
@@ -97,6 +97,8 @@ function ChatTicketView() {
 			createdAt: new Date(),
 		},
 		authorId: 0,
+		clientUnreadCount: 0,
+		agentUnreadCount: 0
 	};
 
 	const initialTicket = location.state?.ticket ?? fallbackTicket;
@@ -138,6 +140,13 @@ function ChatTicketView() {
 	}, [ticket.status]);
 
 	useEffect(() => {
+		if (!ticket.id) return;
+		markTicketMessagesAsRead(ticket.id).catch((error) => {
+			console.error('Erreur reset unread agent:', error);
+		});
+	}, [ticket.id]);
+
+	useEffect(() => {
 		if (!chatUnlocked || ticket.status === TicketStatus.CLOSED) {
 			setIsLoadingMessages(false);
 			return;
@@ -175,6 +184,9 @@ function ChatTicketView() {
 					},
 				];
 			});
+			if (!message.isFromSupport) {
+				markTicketMessagesAsRead(ticket.id).catch(() => { });
+			}
 		});
 
 		return () => {

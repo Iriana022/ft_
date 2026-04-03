@@ -14,6 +14,8 @@ type RawTicket = Omit<Ticket, 'createdAt' | 'updatedAt' | 'author' | 'assignedTo
   AssignedTo?: RawUser;
   assignedToId?: number;
   AssignedToId?: number;
+  clientUnreadCount?: number;
+  agentUnreadCount?: number;
 };
 
 const normalizeUser = (user: RawUser): User => ({
@@ -31,6 +33,8 @@ export const normalizeTicket = (ticket: RawTicket): Ticket => {
     author: normalizeUser(ticket.author),
     assignedTo: assignedTo ? normalizeUser(assignedTo) : undefined,
     assignedToId: ticket.assignedToId ?? ticket.AssignedToId,
+    clientUnreadCount: ticket.clientUnreadCount ?? 0,
+    agentUnreadCount: ticket.agentUnreadCount ?? 0,
   };
 };
 
@@ -53,8 +57,18 @@ const mapTicketToClientTicket = (ticket: Ticket): TicketType => ({
   description: ticket.description,
   status: ticket.status,
   priority: ticket.priority,
-  hasMessage: false,
+  clientUnreadCount: ticket.clientUnreadCount,
+  hasMessage: ticket.clientUnreadCount > 0,
 });
+
+export const markTicketMessagesAsRead = async (ticketId: number) => {
+  const response = await api.patch('/tickets/' + ticketId + '/read');
+  return response.data as {
+    id: number;
+    clientUnreadCount: number;
+    agentUnreadCount: number;
+  };
+};
 
 export const fetchMyTicketsForClientView = async (): Promise<TicketType[]> => {
   const response = await api.get('/tickets/my');

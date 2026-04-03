@@ -1,12 +1,12 @@
-import {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import ContainerComp from "../../layout/layout_client/Container";
 import Ticket from "../../components/client_components/Ticket";
 import SearchInput from "../../components/client_components/SearchInput";
 import TicketFilter from "../../components/client_components/TicketFilter";
 import CreateTicketView from '../../components/client_components/CreateTicketView';
-import {fetchMyTicketsForClientView} from '../../services/tickets';
-import type {TicketType} from '../../types';
-import {io} from 'socket.io-client';
+import { fetchMyTicketsForClientView } from '../../services/tickets';
+import type { TicketType } from '../../types';
+import { io } from 'socket.io-client';
 
 function ClientMyTickets() {
 	const status = ["Tous", "Ouvert", "En cours", "En attente", "Resolu"];
@@ -30,13 +30,26 @@ function ClientMyTickets() {
 		loadTickets();
 
 		const socket = io('/', {
-		path: '/socket.io',
-		transports: ['websocket'],
-		withCredentials: true,
+			path: '/socket.io',
+			transports: ['websocket'],
+			withCredentials: true,
 		});
-		socket.on('ticketStatusUpdated', (updatedTicket: TicketType) => {
+		socket.on('ticketStatusUpdated', (updatedTicket: { id: number; status: string }) => {
 			setTickets((prev) =>
-				prev.map((t) => t.id === updatedTicket.id ? updatedTicket : t)
+				prev.map((t) => t.id === updatedTicket.id ? { ...t, status: updatedTicket.status as any } : t)
+			);
+		});
+		socket.on('ticketUnreadUpdated', (payload: { ticketId: number; clientUnreadCount: number }) => {
+			setTickets((prev) =>
+				prev.map((t) =>
+					t.id === payload.ticketId
+						? {
+							...t,
+							clientUnreadCount: payload.clientUnreadCount,
+							hasMessage: payload.clientUnreadCount > 0,
+						}
+						: t
+				)
 			);
 		});
 		return () => {

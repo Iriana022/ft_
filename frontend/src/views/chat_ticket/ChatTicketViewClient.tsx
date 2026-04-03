@@ -8,6 +8,7 @@ import { TicketStatus } from '../../types';
 import Avatar from '../../components/client_components/Avatar';
 import { getTicketMessages, sendTicketMessage } from '../../services/tickets';
 import { io } from 'socket.io-client';
+import { markTicketMessagesAsRead } from '../../services/tickets';
 
 interface TicketMessageHeaderProps {
   title: string;
@@ -66,6 +67,14 @@ function ChatTicketViewClient() {
     if (currentStatus === TicketStatus.CLOSED) setChatUnlocked(false);
   }, [currentStatus]);
 
+  useEffect(() => {
+    if (!ticketId)
+      return;
+    markTicketMessagesAsRead(ticketId).catch((error) => {
+      console.error('Erro an reset unread client', error);
+    })
+  }, [ticketId]);
+
   // Charger les messages au démarrage
   useEffect(() => {
     if (!ticketId || !chatUnlocked || currentStatus === TicketStatus.CLOSED) {
@@ -101,6 +110,9 @@ function ChatTicketViewClient() {
         ...message,
         createdAt: new Date(message.createdAt)
       }]);
+      if (message.isFromSupport) {
+        markTicketMessagesAsRead(ticketId).catch(() => {});
+      }
     });
 
     return () => {

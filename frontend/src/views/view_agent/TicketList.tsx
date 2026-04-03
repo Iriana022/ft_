@@ -73,6 +73,12 @@ export function TicketList({ tickets, maxItems }: TicketListProps) {
                   }`}>
                     {statusConfig[ticket.status].label}
                   </span>
+                  {ticket.agentUnreadCount > 0 && (
+                    <span
+                      className="inline-block w-2.5 h-2.5 rounded-full bg-red-500"
+                      title={ticket.agentUnreadCount + ' message(s) non lu(s)'}
+                    />
+                  )}
                 </div>
                 
                 <h4 className={`font-semibold mb-1 truncate ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>

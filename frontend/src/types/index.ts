@@ -50,6 +50,8 @@ export interface Ticket {
 	authorId: number;
 	assignedTo?: User;
 	assignedToId?: number;
+	clientUnreadCount: number;
+	agentUnreadCount: number;
 }
 
 export interface TicketType {
@@ -59,6 +61,7 @@ export interface TicketType {
 	status: TicketStatus,
 	priority: TicketPriority,
 	hasMessage: boolean,
+	clientUnreadCount: number
 }
 
 export interface Message {
@@ -75,3 +78,4 @@ export interface ChatMessage {
     authorId: number;
     author: User;
 }
+

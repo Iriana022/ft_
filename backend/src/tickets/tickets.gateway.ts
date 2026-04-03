@@ -53,4 +53,13 @@ export class TicketsGateway implements OnGatewayConnection, OnGatewayDisconnect 
     emitTicketClosed(ticketId: number) {
         this.server.to(`ticket-${ticketId}`).emit('ticketClosed', { ticketId });
     }
+
+    emitTicketUnreadUpdated(ticketId: number, clientUnreadCount: number, 
+        agentUnreadCount: number) {
+        this.server.emit('ticketUnreadUpdated', {
+            ticketId,
+            clientUnreadCount,
+            agentUnreadCount
+        });
+    }
 }
