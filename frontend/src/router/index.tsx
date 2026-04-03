@@ -1,5 +1,7 @@
-import {createBrowserRouter} from "react-router-dom";
+import {createBrowserRouter, Navigate} from "react-router-dom";
 import Login from '../views/Login_Page/Login';
+import { Dashboard } from "../views/view_agent/Dashboard";
+import { TicketsPage } from "../views/view_agent/TicketsPage";
 import ProtectedRoute from '../components/ProtectedRoute'
 import PublicRoute from '../components/PublicRoute'
 import {DashboardLayout} from '../layout/layout_agent/DashboardLayout';
@@ -65,6 +67,28 @@ export const router = createBrowserRouter([
 				<DashboardLayout />
 			</ProtectedRoute >
 		),
+		children: [
+        {
+            index: true,
+            element: <Navigate to="dashboard" replace />,
+        },
+        {
+            path: 'dashboard',
+            element: <Dashboard />,
+        },
+        {
+            path: 'tickets',
+            element: <TicketsPage />,
+        },
+        {
+            path: 'notifications',
+            element: <div>Notifications — coming soon</div>,
+        },
+        {
+            path: 'settings',
+            element: <div>Paramètres — coming soon</div>,
+        },
+    ]
 	},
 	{
 		path: 'client',

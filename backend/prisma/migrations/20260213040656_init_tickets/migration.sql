@@ -8,21 +8,21 @@ CREATE TYPE "UserRole" AS ENUM ('CLIENT', 'AGENT', 'ADMIN');
 CREATE TYPE "Priority" AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'URGENT');
 
 -- CreateTable
-CREATE TABLE "User" (
-    "id" SERIAL NOT NULL,
-    "fortyTwoId" INTEGER,
-    "googleId" TEXT,
-    "login" TEXT,
-    "email" TEXT NOT NULL,
-    "password" TEXT,
-    "avatar" TEXT,
-    "role" "UserRole" NOT NULL DEFAULT 'CLIENT',
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "twoFactorSecret" TEXT,
-    "isTwoFactorEnabled" BOOLEAN NOT NULL DEFAULT false,
+-- CREATE TABLE "User" (
+--     "id" SERIAL NOT NULL,
+--     "fortyTwoId" INTEGER,
+--     "googleId" TEXT,
+--     "login" TEXT,
+--     "email" TEXT NOT NULL,
+--     "password" TEXT,
+--     "avatar" TEXT,
+--     "role" "UserRole" NOT NULL DEFAULT 'CLIENT',
+--     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--     "twoFactorSecret" TEXT,
+--     "isTwoFactorEnabled" BOOLEAN NOT NULL DEFAULT false,
 
-    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
-);
+--     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+-- );
 
 -- CreateTable
 CREATE TABLE "Ticket" (
@@ -39,17 +39,17 @@ CREATE TABLE "Ticket" (
     CONSTRAINT "Ticket_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "User_fortyTwoId_key" ON "User"("fortyTwoId");
+-- -- CreateIndex
+-- CREATE UNIQUE INDEX "User_fortyTwoId_key" ON "User"("fortyTwoId");
 
--- CreateIndex
-CREATE UNIQUE INDEX "User_googleId_key" ON "User"("googleId");
+-- -- CreateIndex
+-- CREATE UNIQUE INDEX "User_googleId_key" ON "User"("googleId");
 
--- CreateIndex
-CREATE UNIQUE INDEX "User_login_key" ON "User"("login");
+-- -- CreateIndex
+-- CREATE UNIQUE INDEX "User_login_key" ON "User"("login");
 
--- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+-- -- CreateIndex
+-- CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- AddForeignKey
 ALTER TABLE "Ticket" ADD CONSTRAINT "Ticket_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
