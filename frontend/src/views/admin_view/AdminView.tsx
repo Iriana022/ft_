@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useState, useMemo} from 'react';
 import {
 	ChevronLeftIcon,
 	ChevronRightIcon,
@@ -525,7 +525,7 @@ function RecentTickets() {
 								</td>
 
 								<td className="px-5 py-3 text-gray-500 whitespace-nowrap">
-									{new Date(ticket.createdAt).toLocaleDateString()}
+									{new Date(ticket.createdAt).toLocaleDateString("fr-FR").replace(/\//g, "-")}
 								</td>
 							</tr>
 						))
@@ -620,18 +620,75 @@ function TicketsFooter(props: TicketsFooterProps) {
 
 const ITEMS_PER_PAGE = 8;
 
+interface StatusFilter {
+	label: string,
+	value: TicketStatus | null,
+}
+
+interface PriorityFilter {
+	label: string,
+	value: TicketPriority | null,
+}
+
 export function AdminTickets() {
-	const statusFilterElements = ["Ouverts", "En cours", "Resolus", "Fermes"];
-	const priorityFilterElements = ["Basses", "Moyennes", "Hautes", "Urgents"];
+	// TODO: refactor this code
+	const statusFilterElements = [
+		{label: "Tous", value: null},
+		{label: "Ouverts", value: TicketStatus.OPEN},
+		{label: "En cours", value: TicketStatus.IN_PROGRESS},
+		{label: "Résolus", value: TicketStatus.RESOLVED},
+		{label: "Fermés", value: TicketStatus.CLOSED},
+	];
+
+	const priorityFilterElements = [
+		{label: "Tous", value: null},
+		{label: "Basses", value: TicketPriority.LOW},
+		{label: "Moyennes", value: TicketPriority.MEDIUM},
+		{label: "Hautes", value: TicketPriority.HIGH},
+		{label: "Urgentes", value: TicketPriority.URGENT},
+	];
+
+	const [currentFilterStatus, setCurrentFilterStatus] = useState<TicketStatus | null>(null);
+	const [currentFilterPriority, setCurrentFilterPriority] = useState<TicketPriority | null>(null);
+
+	const currentFilterElementStatus = statusFilterElements.find(e => e.value === currentFilterStatus);
+	const currentFilterElementPriority = priorityFilterElements.find(e => e.value === currentFilterPriority);
+
+	const filteredTickets = useMemo(() => {
+		return fakeTickets.filter((ticket) => {
+			const matchStatus =
+				currentFilterStatus === null ||
+				ticket.status === currentFilterStatus;
+
+			const matchPriority =
+				currentFilterPriority === null ||
+				ticket.priority === currentFilterPriority;
+
+			return matchStatus && matchPriority;
+		});
+	}, [currentFilterStatus, currentFilterPriority]);
 
 	const [currentPage, setCurrentPage] = useState(1);
 
-	const totalItems = fakeTickets.length;
+	const totalItems = filteredTickets.length;
 	const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
 	const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-	const currentTickets = fakeTickets.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+	const currentTickets = filteredTickets.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
+	const handleSelectStatus = (e: React.MouseEvent, element: StatusFilter) => {
+		e.stopPropagation();
+		setCurrentFilterStatus(element.value);
+		setCurrentPage(1);
+	}
+
+	const handleSelectPriority = (e: React.MouseEvent, element: PriorityFilter) => {
+		e.stopPropagation();
+		setCurrentFilterPriority(element.value);
+		setCurrentPage(1);
+	}
+
+	// TODO: fix the error here
 	return (
 		<div>
 			<div className="flex items-center justify-between">
@@ -640,8 +697,8 @@ export function AdminTickets() {
 					<input type="search" className="text-sm" required placeholder="Rechercher des tickets" />
 				</label>
 				<div className="flex items-center gap-4">
-					<TicketFilter list={statusFilterElements} />
-					<TicketFilter list={priorityFilterElements} />
+					<TicketFilter list={statusFilterElements} currentFilterElement={currentFilterElementStatus?.label ?? "Tous"} handleSelect={handleSelectStatus} />
+					<TicketFilter list={priorityFilterElements} currentFilterElement={currentFilterElementPriority?.label ?? "Tous"} handleSelect={handleSelectPriority} />
 				</div>
 			</div>
 			<div className="bg-white py-4 rounded-md shadow mt-8">
@@ -692,7 +749,7 @@ export function AdminTickets() {
 										{ticket.user}
 									</td>
 									<td className="px-5 py-3 text-gray-500 whitespace-nowrap">
-										{new Date(ticket.createdAt).toLocaleDateString()}
+										{new Date(ticket.createdAt).toLocaleDateString("fr-FR").replace(/\//g, "-")}
 									</td>
 									<td className="px-5 py-3 text-gray-500 whitespace-nowrap flex items-center gap-5">
 										<div className="p-2 transition hover:bg-blue-200 rounded-full cursor-pointer">
@@ -713,7 +770,7 @@ export function AdminTickets() {
 					totalPages={totalPages}
 					totalItems={totalItems}
 					onNext={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-					onPrev={() => setCurrentPage((p) => Math.max(p - 1), 1)}
+					onPrev={() => setCurrentPage((p) => Math.max(p - 1, 1))}
 				/>
 			</div>
 		</div>
@@ -779,9 +836,9 @@ function DrawerSideContent(props: DraweSideContentProps) {
 				<li>
 					<NavLink
 						to="tickets"
-						className={({isActive}) => 
+						className={({isActive}) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
-								${isActive ? "bg-sky/25": ""}
+								${isActive ? "bg-sky/25" : ""}
 								focus:bg-sky/25
 							`
 						}
@@ -828,7 +885,7 @@ function DrawerSideContent(props: DraweSideContentProps) {
 							${isActive ? "bg-sky/25" : ""}
 							focus:bg-sky/25
 							`
-						} 
+						}
 						data-tip="Statistiques"
 					>
 						<ChartBarSquareIcon className="w-5 h-5" />

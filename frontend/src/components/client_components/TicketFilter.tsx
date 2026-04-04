@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {FunnelIcon} from '@heroicons/react/24/outline';
 import {ChevronDownIcon} from '@heroicons/react/24/outline';
+import {TicketStatus, TicketPriority} from '../../types';
 
 interface TicketFilterElementProps {
 	name: string,
@@ -17,19 +18,24 @@ function TicketFilterElement(props: TicketFilterElementProps) {
 	);
 }
 
+interface StatusFilter {
+	label: string,
+	value: TicketStatus | null,
+}
+
+interface PriorityFilter {
+	label: string,
+	value: TicketPriority | null,
+}
+
 interface TicketFilterProps {
-	list: string[],
+	list: {label: string, value: TicketStatus | TicketPriority | null}[],
+	currentFilterElement: string,
+	handleSelect: (e: React.MouseEvent, element: StatusFilter | PriorityFilter) => void;
 }
 
 function TicketFilter(props: TicketFilterProps) {
 	const [open, setOpen] = useState(false);
-	const [currentFilterStatus, setCurrentFilterStatus] = useState(props.list[0]);
-
-	const handleSelect = (e: React.MouseEvent, element: string) => {
-		e.stopPropagation();
-		setCurrentFilterStatus(element);
-		setOpen(false);
-	}
 
 	return (
 		<div
@@ -39,7 +45,7 @@ function TicketFilter(props: TicketFilterProps) {
 			<div className="flex items-center gap-2">
 				<FunnelIcon className="w-5 h-5 text-gray-500" />
 				<span className="text-sm">
-					{currentFilterStatus}
+					{props.currentFilterElement}
 				</span>
 			</div>
 			<ChevronDownIcon className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
@@ -49,9 +55,13 @@ function TicketFilter(props: TicketFilterProps) {
 			>
 				{props.list.map((element, index) => (
 					<TicketFilterElement
-						name={element}
+						name={element.label}
 						key={index}
-						onClick={(e: React.MouseEvent) => handleSelect(e, element)}
+						onClick={(e: React.MouseEvent) => {
+							props.handleSelect(e, element);
+							setOpen(false);
+						}
+						}
 					/>
 				))}
 			</div>

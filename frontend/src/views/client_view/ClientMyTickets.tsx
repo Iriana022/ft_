@@ -1,19 +1,46 @@
-import { useEffect, useState } from 'react';
+import {useEffect, useState} from 'react';
 import ContainerComp from "../../layout/layout_client/Container";
 import Ticket from "../../components/client_components/Ticket";
 import SearchInput from "../../components/client_components/SearchInput";
 import TicketFilter from "../../components/client_components/TicketFilter";
 import CreateTicketView from '../../components/client_components/CreateTicketView';
-import { fetchMyTicketsForClientView } from '../../services/tickets';
-import type { TicketType } from '../../types';
-import { io } from 'socket.io-client';
+import {fetchMyTicketsForClientView} from '../../services/tickets';
+import {type TicketType, TicketPriority, TicketStatus} from '../../types';
+import {io} from 'socket.io-client';
 
 function ClientMyTickets() {
-	const status = ["Tous", "Ouvert", "En cours", "En attente", "Resolu"];
-	const priorities = ["Basse", "Moyenne", "Haute", "Urgente"];
+	const status = [
+		{label: "Tous", value: null},
+		{label: "Ouverts", value: TicketStatus.OPEN},
+		{label: "En cours", value: TicketStatus.IN_PROGRESS},
+		{label: "Résolus", value: TicketStatus.RESOLVED},
+		{label: "Fermés", value: TicketStatus.CLOSED},
+	];
+
+	const priorities = [
+		{label: "Tous", value: null},
+		{label: "Basses", value: TicketPriority.LOW},
+		{label: "Moyennes", value: TicketPriority.MEDIUM},
+		{label: "Hautes", value: TicketPriority.HIGH},
+		{label: "Urgentes", value: TicketPriority.URGENT},
+	];
+
+	const [currentFilterStatus, setCurrentFilterStatus] = useState(status[0].label);
+	const [currentFilterPriority, setCurrentFilterPriority] = useState(priorities[0].label);
+
 	const [tickets, setTickets] = useState<TicketType[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isCreateTicketOpen, setIsCreateTicketOpen] = useState(false);
+
+	const handleSelectStatus = (e: React.MouseEvent, element: string) => {
+		e.stopPropagation();
+		setCurrentFilterStatus(element.value);
+	}
+
+	const handleSelectPriority = (e: React.MouseEvent, element: string) => {
+		e.stopPropagation();
+		setCurrentFilterPriority(element.value);
+	}
 
 	const loadTickets = async () => {
 		try {
@@ -34,12 +61,12 @@ function ClientMyTickets() {
 			transports: ['websocket'],
 			withCredentials: true,
 		});
-		socket.on('ticketStatusUpdated', (updatedTicket: { id: number; status: string }) => {
+		socket.on('ticketStatusUpdated', (updatedTicket: {id: number; status: string}) => {
 			setTickets((prev) =>
-				prev.map((t) => t.id === updatedTicket.id ? { ...t, status: updatedTicket.status as any } : t)
+				prev.map((t) => t.id === updatedTicket.id ? {...t, status: updatedTicket.status as any} : t)
 			);
 		});
-		socket.on('ticketUnreadUpdated', (payload: { ticketId: number; clientUnreadCount: number }) => {
+		socket.on('ticketUnreadUpdated', (payload: {ticketId: number; clientUnreadCount: number}) => {
 			setTickets((prev) =>
 				prev.map((t) =>
 					t.id === payload.ticketId
@@ -80,8 +107,8 @@ function ClientMyTickets() {
 					</div >
 					<div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-10">
 						<SearchInput />
-						<TicketFilter list={status} />
-						<TicketFilter list={priorities} />
+						<TicketFilter list={status} currentFilterElement={currentFilterStatus} handleSelect={handleSelectStatus} />
+						<TicketFilter list={priorities} currentFilterElement={currentFilterPriority} handleSelect={handleSelectPriority} />
 					</div>
 					<p className="my-4">Tous les tickets</p>
 					{
