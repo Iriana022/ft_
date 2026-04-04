@@ -1,24 +1,15 @@
-import { useState } from 'react';
+import { Outlet } from 'react-router-dom';
 import { Sidebar } from '../../components/agent_components/Sidebar';
-import { Dashboard } from '../../views/view_agent/Dashboard';
-import { TicketsPage } from '../../views/view_agent/TicketsPage';
 import { UserRole } from '../../types';
 import { getStoredUserRole } from '../../services/auth';
 
 export function DashboardLayout() {
-  const [activePage, setActivePage] = useState('dashboard');
-  const [currentRole] = useState<UserRole>(getStoredUserRole() ?? UserRole.AGENT);
+  const currentRole = getStoredUserRole() ?? UserRole.AGENT;
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <Sidebar 
-        currentRole={currentRole} 
-        activePage={activePage}
-        onNavigate={setActivePage}
-      />
-      {activePage === 'dashboard' && <Dashboard />}
-      {activePage === 'tickets' && <TicketsPage />}
-      {/* Les autres pages seront ajoutées ici */}
+      <Sidebar currentRole={currentRole} />
+      <Outlet />
     </div>
   );
 }

@@ -1,17 +1,16 @@
-import { LayoutDashboard, Ticket, Users, Settings, LogOut, BarChart3, Bell } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { LayoutDashboard, Ticket, Users, Settings, LogOut, Bell } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { UserRole } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
 
 interface SidebarProps {
   currentRole: UserRole;
-  activePage: string;
-  onNavigate: (page: string) => void;
 }
 
-export function Sidebar({ currentRole, activePage, onNavigate }: SidebarProps) {
+export function Sidebar({ currentRole }: SidebarProps) {
   const { theme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation()
   const isDark = theme === 'dark';
   const username = localStorage.getItem('username') || 'Utilisateur';
 
@@ -21,7 +20,7 @@ export function Sidebar({ currentRole, activePage, onNavigate }: SidebarProps) {
     localStorage.removeItem('user_role');
     navigate('/login');
   };
-  
+
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT] },
     { id: 'tickets', label: 'Tickets', icon: Ticket, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT] },
@@ -33,9 +32,8 @@ export function Sidebar({ currentRole, activePage, onNavigate }: SidebarProps) {
   const filteredItems = menuItems.filter(item => item.roles.includes(currentRole));
 
   return (
-    <aside className={`w-64 border-r h-screen flex flex-col ${
-      isDark ? 'bg-[#121212] border-[#2a2a2a]' : 'bg-white border-gray-200'
-    }`}>
+    <aside className={`w-64 border-r h-screen flex flex-col ${isDark ? 'bg-[#121212] border-[#2a2a2a]' : 'bg-white border-gray-200'
+      }`}>
       {/* Logo */}
       <div className={`p-6 border-b ${isDark ? 'border-[#2a2a2a]' : 'border-gray-200'}`}>
         <div className="flex items-center gap-3">
@@ -53,21 +51,21 @@ export function Sidebar({ currentRole, activePage, onNavigate }: SidebarProps) {
       <nav className="flex-1 p-4 space-y-1">
         {filteredItems.map((item) => {
           const Icon = item.icon;
-          const isActive = activePage === item.id;
-          
+          const targetPath = `/agent/${item.id}`;
+          const isActive = location.pathname === targetPath;
+
           return (
             <button
               key={item.id}
-              onClick={() => onNavigate(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                isActive
-                  ? isDark 
+              onClick={() => navigate(targetPath)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
+                  ? isDark
                     ? 'bg-indigo-600/20 text-indigo-400'
                     : 'bg-indigo-50 text-indigo-600'
                   : isDark
                     ? 'text-gray-400 hover:bg-[#1a1a1a]'
                     : 'text-gray-700 hover:bg-gray-50'
-              }`}
+                }`}
             >
               <Icon className="w-5 h-5" />
               <span className="font-medium">{item.label}</span>
@@ -89,13 +87,12 @@ export function Sidebar({ currentRole, activePage, onNavigate }: SidebarProps) {
             <p className={`text-xs capitalize ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{currentRole.toLowerCase()}</p>
           </div>
         </div>
-        <button 
+        <button
           onClick={handleLogout}
-          className={`w-full flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${
-            isDark 
+          className={`w-full flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${isDark
               ? 'text-gray-400 hover:bg-[#1a1a1a]'
               : 'text-gray-700 hover:bg-gray-50'
-          }`}>
+            }`}>
           <LogOut className="w-4 h-4" />
           <span>Déconnexion</span>
         </button>
