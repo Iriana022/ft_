@@ -1,13 +1,15 @@
-import {NestFactory} from '@nestjs/core';
-import {AppModule} from './app.module';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
 //import { PrismaService } from './prisma.service';
-import {ValidationPipe} from '@nestjs/common';
-import {NestExpressApplication} from '@nestjs/platform-express';
+import { ValidationPipe } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
+import { mkdirSync } from 'fs';
 
 async function bootstrap() {
 	const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-
+	mkdirSync(join(process.cwd(), 'uploads'), { recursive: true });
 	app.useGlobalPipes(new ValidationPipe({
 		whitelist: true,
 		forbidNonWhitelisted: true,
@@ -22,6 +24,9 @@ async function bootstrap() {
 		credentials: true,
 	});
 
+	app.useStaticAssets(join(process.cwd(), 'uploads'), {
+		prefix: '/uploads/',
+	});
 	await app.listen(3000);
 }
 bootstrap();

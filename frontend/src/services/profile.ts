@@ -16,3 +16,12 @@ export const updateMyProfile = async (payload: UpdateProfilePayload) => {
     const response = await api.patch('/user/me', payload);
     return response.data;
 };
+
+export const uploadMyAvatar = async (file: File) => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    const response = await api.patch('/user/me/avatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data'},
+    });
+    return response.data
+}
