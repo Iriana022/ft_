@@ -378,10 +378,6 @@ function getStatusColor(status: TicketStatus) {
 			color[0] = "bg-status-in-progress/25";
 			color[1] = "text-status-in-progress";
 		} break;
-		case TicketStatus.PENDING: {
-			color[0] = "bg-status-pending/25";
-			color[1] = "text-status-pending";
-		} break;
 		case TicketStatus.RESOLVED: {
 			color[0] = "bg-status-resolved/25";
 			color[1] = "text-status-resolved";
@@ -405,9 +401,6 @@ function getStatusText(status: TicketStatus) {
 		} break;
 		case TicketStatus.IN_PROGRESS: {
 			statusText = "En cours";
-		} break;
-		case TicketStatus.PENDING: {
-			statusText = "En attente";
 		} break;
 		case TicketStatus.RESOLVED: {
 			statusText = "Resolu";

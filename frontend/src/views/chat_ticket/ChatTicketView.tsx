@@ -43,12 +43,6 @@ const statusConfig = {
 		colorDark: 'bg-orange-600/20 text-orange-400 border-orange-600/30',
 		icon: Clock,
 	},
-	[TicketStatus.PENDING]: {
-		label: 'En attente',
-		color: 'bg-amber-100 text-amber-700 border-amber-200',
-		colorDark: 'bg-amber-600/20 text-amber-400 border-amber-600/30',
-		icon: Clock,
-	},
 	[TicketStatus.RESOLVED]: {
 		label: 'Résolu',
 		color: 'bg-green-100 text-green-700 border-green-200',
@@ -511,7 +505,6 @@ function ChatTicketView() {
 								>
 									<option value={TicketStatus.OPEN}>Ouvert</option>
 									<option value={TicketStatus.IN_PROGRESS}>En cours</option>
-									<option value={TicketStatus.PENDING}>En attente</option>
 									<option value={TicketStatus.RESOLVED}>Résolu</option>
 									<option value={TicketStatus.CLOSED}>Fermé</option>
 								</select>

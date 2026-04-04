@@ -12,7 +12,6 @@ interface TicketListProps {
 const statusConfig = {
   [TicketStatus.OPEN]: { label: 'Ouvert', color: 'bg-red-100 text-red-700', colorDark: 'bg-red-600/20 text-red-400' },
   [TicketStatus.IN_PROGRESS]: { label: 'En cours', color: 'bg-orange-100 text-orange-700', colorDark: 'bg-orange-600/20 text-orange-400' },
-  [TicketStatus.PENDING]: { label: 'En attente', color: 'bg-purple-100 text-purple-700', colorDark: 'bg-purple-600/20 text-purple-400' },
   [TicketStatus.RESOLVED]: { label: 'Résolu', color: 'bg-green-100 text-green-700', colorDark: 'bg-green-600/20 text-green-400' },
   [TicketStatus.CLOSED]: { label: 'Fermé', color: 'bg-gray-100 text-gray-700', colorDark: 'bg-gray-600/20 text-gray-400' }
 };

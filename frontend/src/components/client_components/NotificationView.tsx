@@ -1,26 +1,29 @@
-interface NotificationShape {
-	id: number,
-	text: string,
-	time: string,
+export interface ClientNotificationItem {
+	id: number;
+	text: string;
+	createdAt: string;
 }
-function NotificationView() {
-	const notifications: NotificationShape[] = [
-		{
-			id: 1,
-			text: "Nouveau ticket créé",
-			time: "il y a 2 min",
-		},
-		{
-			id: 2,
-			text: "Ticket mis à jour",
-			time: "il y a 10 min",
-		},
-		{
-			id: 3,
-			text: "Priorité changée",
-			time: "il y a 1 h",
-		},
-	];
+
+interface NotificationViewProps {
+	notifications: ClientNotificationItem[];
+}
+
+function formatTimeAgo(isoDate: string) {
+	const diffMs = Date.now() - new Date(isoDate).getTime();
+	const diffMin = Math.floor(diffMs / 60000);
+
+	if (diffMin < 1) return 'a l instant';
+	if (diffMin < 60) return 'il y a ' + diffMin + ' min';
+
+	const diffH = Math.floor(diffMin / 60);
+	if (diffH < 24) return 'il y a ' + diffH + ' h';
+
+	const diffD = Math.floor(diffH / 24);
+	return 'il y a ' + diffD + ' j';
+}
+
+function NotificationView(props: NotificationViewProps) {
+	const notifications = props.notifications;
 
 	return (
 		<div className="flex flex-col">
@@ -29,37 +32,27 @@ function NotificationView() {
 			</div>
 
 			<div className="max-h-64 overflow-y-auto">
-				{notifications.length ? notifications.map(n => (
-					<div
-						key={n.id}
-						className="
-							px-3 py-2
-							hover:bg-gray-100
-							rounded-lg
-							cursor-pointer
-							transition
-						"
-					>
-						<div className="text-sm">
-							{n.text}
+				{notifications.length ? (
+					notifications.map((n) => (
+						<div
+							key={n.id}
+							className="
+                px-3 py-2
+                hover:bg-gray-100
+                rounded-lg
+                cursor-pointer
+                transition
+              "
+						>
+							<div className="text-sm">{n.text}</div>
+							<div className="text-xs text-gray-500">{formatTimeAgo(n.createdAt)}</div>
 						</div>
-
-						<div className="text-xs text-gray-500">
-							{n.time}
-						</div>
-					</div>
-				)) : <span className="text-sm block mt-3 mb-2">Aucune notifications</span>}
+					))
+				) : (
+					<span className="text-sm block mt-3 mb-2">Aucune notification</span>
+				)}
 			</div>
-			{
-				notifications.length ?
-					(< div className="border-t mt-1">
-						<button className="w-full py-2 text-sm text-navy hover:bg-gray-100 rounded-lg">
-							Voir tout
-						</button>
-					</div>) : ""
-			}
-
-		</div >
+		</div>
 	);
 }
 
