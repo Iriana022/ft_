@@ -5,7 +5,7 @@ RESET = \033[0m
 Dockerfilecompose = docker-compose.yml
 
 all: certs
-	@echo "$(GREEN)Starting tickeo...$(RESET)"
+	@echo "$(GREEN)Starting tikeo...$(RESET)"
 	@docker compose -f $(Dockerfilecompose) up -d --build
 	@echo "$(GREEN)Waiting for database...$(RESET)"
 	@sleep 5
@@ -15,17 +15,21 @@ all: certs
 	@echo "$(GREEN)Tickeo is ready!$(RESET)"
 
 up:
-	@echo "$(GREEN)Restarting tickeo...$(RESET)"
+	@echo "$(GREEN)Restarting tikeo...$(RESET)"
 	@docker compose -f $(Dockerfilecompose) up -d
 
 down:
-	@echo "$(RED)Stopping tickeo...$(RESET)"
+	@echo "$(RED)Stopping tikeo...$(RESET)"
 	@docker compose -f $(Dockerfilecompose) down
 
 fclean: down
-	@echo "$(RED)Stopping and cleaning tickeo...$(RESET)"
+	@echo "$(RED)Stopping and cleaning tikeo...$(RESET)"
 	@docker compose -f $(Dockerfilecompose) rm -f -s -v
 	@docker system prune -af
+
+clear-volume:
+	@echo "$(RED)cleaning all tikeo volume...$(RESET)"
+	@docker volume prune -af
 
 re: fclean all
 
@@ -38,4 +42,4 @@ certs:
 			-subj "/C=FR/ST=Paris/L=Paris/O=42/CN=localhost"; \
 	fi
 
-.PHONY: all fclean up down re certs
+.PHONY: all fclean up down re certs clear-volume
