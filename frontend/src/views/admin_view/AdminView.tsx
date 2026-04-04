@@ -590,24 +590,56 @@ function TicketsHeader() {
 	);
 }
 
-function TicketsFooter() {
+interface TicketsFooterProps {
+	currentPage: number,
+	totalPages: number,
+	totalItems: number,
+	onNext: () => void;
+	onPrev: () => void;
+}
+
+function TicketsFooter(props: TicketsFooterProps) {
+	const start = (props.currentPage - 1) * 8 + 1;
+	const end = Math.min(props.currentPage * 8, props.totalItems);
+
 	return (
 		<div className="px-5 pt-3 flex items-center justify-between">
-			{/* TODO: make this text dynamuc */}
 			<span className="text-sm text-gray-600">
-				Affichage 1–8 sur 128 tickets
+				Affichage {start}-{end} sur {props.totalItems} tickets
 			</span>
 			<div className="flex items-center gap-3">
-				<button className="btn btn-disabled rounded-lg border border-1 bg-cream">Precedent</button>
-				<button className="btn font-medium rounded-lg border border-1 bg-cream text-gray-600">Suivant</button>
+				<button
+					onClick={props.onPrev}
+					disabled={props.currentPage == 1}
+					className="btn font-medium disabled:opacity-50 rounded-lg border border-1 bg-cream text-gray-600"
+				>
+					Precedent
+				</button>
+				<button
+					onClick={props.onNext}
+					disabled={props.currentPage === props.totalPages}
+					className="btn font-medium disabled:opacity-50 rounded-lg border border-1 bg-cream text-gray-600"
+				>
+					Suivant
+				</button>
 			</div>
 		</div>
 	);
 }
 
+const ITEMS_PER_PAGE = 8;
+
 export function AdminTickets() {
 	const statusFilterElements = ["Ouverts", "En cours", "Resolus", "Fermes"];
 	const priorityFilterElements = ["Basses", "Moyennes", "Hautes", "Urgents"];
+
+	const [currentPage, setCurrentPage] = useState(1);
+
+	const totalItems = fakeTickets.length;
+	const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+
+	const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+	const currentTickets = fakeTickets.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
 	return (
 		<div>
@@ -637,7 +669,7 @@ export function AdminTickets() {
 							</tr>
 						</thead>
 						<tbody>
-							{fakeTickets.slice(0, 8).map((ticket) => (
+							{currentTickets.map((ticket) => (
 								<tr
 									key={ticket.id}
 									className="border-b hover:bg-cream/70 transition"
@@ -685,7 +717,13 @@ export function AdminTickets() {
 						</tbody>
 					</table>
 				</div>
-				<TicketsFooter />
+				<TicketsFooter
+					currentPage={currentPage}
+					totalPages={totalPages}
+					totalItems={totalItems}
+					onNext={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+					onPrev={() => setCurrentPage((p) => Math.max(p - 1), 1)}
+				/>
 			</div>
 		</div>
 	);
