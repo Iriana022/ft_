@@ -1,21 +1,31 @@
-import {useState} from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import TikeoLogo from '../components/client_components/TikeoLogo';
 import NavItem from '../components/client_components/NavItem';
-import {HomeIcon} from '@heroicons/react/24/outline';
-import {TicketIcon} from '@heroicons/react/24/outline';
-import {Cog8ToothIcon} from '@heroicons/react/24/outline';
+import { HomeIcon } from '@heroicons/react/24/outline';
+import { TicketIcon } from '@heroicons/react/24/outline';
+import { Cog8ToothIcon } from '@heroicons/react/24/outline';
 import HamburgerMenu from '../components/client_components/HamburgerMenu';
 import Notification from '../components/client_components/Notification';
 import Avatar from '../components/client_components/Avatar';
 import ContainerComp from './layout_client/Container';
 import MobileMenu from '../components/client_components/MobileMenu';
-import {Link, useNavigate} from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { fetchMyTicketsForClientView } from '../services/tickets';
+import { io } from 'socket.io-client'
+import { type ClientNotificationItem } from '../components/client_components/NotificationView';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
 function Header() {
 	const [isMenuOpened, setIsMenuOpened] = useState(false);
+	const [unreadByTicket, setUnreadByTicket] = useState<Record<number, number>>({});
+	const [notifications, setNotifications] = useState<ClientNotificationItem[]>([]);
+	const clientTicketIdsRef = useRef<Set<number>>(new Set());
 	const navigate = useNavigate();
+	const hasNotification = useMemo(
+		() => Object.values(unreadByTicket).some((count) => count > 0),
+		[unreadByTicket],
+	);
 
 	const handleLogout = () => {
 		localStorage.removeItem('access_token');
@@ -23,6 +33,71 @@ function Header() {
 		localStorage.removeItem('user_role');
 		navigate('/login');
 	};
+	useEffect(() => {
+		let mounted = true;
+
+		const loadClientTickets = async () => {
+			try {
+				const data = await fetchMyTicketsForClientView();
+				if (!mounted) return;
+
+				const ids = new Set<number>();
+				const unreadMap: Record<number, number> = {};
+
+				for (const ticket of data) {
+					ids.add(ticket.id);
+					unreadMap[ticket.id] = ticket.clientUnreadCount ?? 0;
+				}
+
+				clientTicketIdsRef.current = ids;
+				setUnreadByTicket(unreadMap);
+			} catch (error) {
+				console.error('Erreur chargement notifications client:', error);
+			}
+		};
+
+		loadClientTickets();
+
+		const socket = io('/', {
+			path: '/socket.io',
+			transports: ['websocket'],
+			withCredentials: true,
+		});
+
+		socket.on('ticketUnreadUpdated', (payload: { ticketId: number; clientUnreadCount: number }) => {
+			if (!clientTicketIdsRef.current.has(payload.ticketId)) return;
+
+			setUnreadByTicket((prev) => {
+				const previousCount = prev[payload.ticketId] ?? 0;
+				const nextCount = payload.clientUnreadCount ?? 0;
+
+				if (nextCount > previousCount) {
+					setNotifications((old) =>
+						[
+							{
+								id: Date.now(),
+								text: 'Nouveau message sur le ticket #' + payload.ticketId,
+								createdAt: new Date().toISOString(),
+							},
+							...old,
+						].slice(0, 20),
+					);
+				}
+
+				return {
+					...prev,
+					[payload.ticketId]: nextCount,
+				};
+			});
+
+
+		});
+
+		return () => {
+			mounted = false;
+			socket.disconnect();
+		};
+	}, []);
 
 	return (
 		<div>
@@ -47,7 +122,10 @@ function Header() {
 						</nav>
 					</div>
 					<div className="flex items-center gap-8">
-						<Notification hasNotification={false} />
+						<Notification
+							hasNotification={hasNotification}
+							notifications={notifications}
+						/>
 						<button
 							onClick={handleLogout}
 							className="hidden md:block text-sm font-medium text-gray-600 hover:text-navy"

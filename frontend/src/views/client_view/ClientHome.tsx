@@ -1,10 +1,10 @@
-import {useCallback, useEffect, useState} from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Separator from '../../components/login_components/Separator';
 import ContainerComp from '../../layout/layout_client/Container';
 import ClientHomeHeroSection from '../../components/client_components/ClientHomeHeroSection';
 import ClientHomeMyTicketsSection from '../../components/client_components/ClientHomeMyTicketsSection';
-import {fetchMyTicketsForClientView} from '../../services/tickets';
-import type {TicketType} from '../../types';
+import { fetchMyTicketsForClientView } from '../../services/tickets';
+import type { TicketType } from '../../types';
 import { io } from 'socket.io-client';
 
 function ClientHome() {
@@ -25,9 +25,9 @@ function ClientHome() {
 	useEffect(() => {
 		loadTickets();
 		const socket = io('/', {
-		path: '/socket.io',
-		transports: ['websocket'],
-		withCredentials: true,
+			path: '/socket.io',
+			transports: ['websocket'],
+			withCredentials: true,
 		});
 
 		socket.on('ticketStatusUpdated', (updatedTicket: TicketType) => {
@@ -35,7 +35,19 @@ function ClientHome() {
 				prev.map((t) => (t.id === updatedTicket.id ? updatedTicket : t)),
 			);
 		});
-
+		socket.on('ticketUnreadUpdated', (payload: { ticketId: number; clientUnreadCount: number }) => {
+			setTickets((prev) =>
+				prev.map((t) =>
+					t.id === payload.ticketId
+						? {
+							...t,
+							clientUnreadCount: payload.clientUnreadCount,
+							hasMessage: payload.clientUnreadCount > 0,
+						}
+						: t,
+				),
+			);
+		});
 		return () => {
 			socket.disconnect();
 		};
