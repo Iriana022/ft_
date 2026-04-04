@@ -71,8 +71,8 @@ export class UserService {
     }
     async updateAvatar(userId: number, avatar: string) {
         const currentUser = await this.prisma.user.findUnique({
-            where: {id: userId},
-            select: {avatar: true},
+            where: { id: userId },
+            select: { avatar: true },
         });
 
         if (!currentUser) {
@@ -81,9 +81,9 @@ export class UserService {
 
         const oldAvatar = currentUser.avatar;
 
-        const updatedUser = await this.prisma.user.update ({
-            where: {id: userId},
-            data: {avatar},
+        const updatedUser = await this.prisma.user.update({
+            where: { id: userId },
+            data: { avatar },
             select: {
                 id: true,
                 login: true,
@@ -96,10 +96,49 @@ export class UserService {
             },
         });
 
-        if(oldAvatar && oldAvatar !== avatar && this.isManagedUploadAvatar(oldAvatar)) {
+        if (oldAvatar && oldAvatar !== avatar && this.isManagedUploadAvatar(oldAvatar)) {
             const oldPath = this.toUploadDiskPath(oldAvatar);
             await unlink(oldPath).catch(() => undefined);
         }
         return updatedUser;
+    }
+
+    async deleteMe(userId: number) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { avatar: true },
+        });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        const avatarToDelete = user.avatar;
+        await this.prisma.$transaction(async (tx) => {
+            await tx.ticket.updateMany({
+                where: { AssignedToId: userId },
+                data: { AssignedToId: null },
+            });
+
+
+            await tx.chatMessage.deleteMany({
+                where: {
+                    OR: [
+                        { authorId: userId },
+                        { ticket: { authorId: userId } },
+                    ],
+                },
+            });
+
+            await tx.ticket.deleteMany({
+                where: { authorId: userId },
+            });
+
+            await tx.user.delete({
+                where: { id: userId },
+            });
+        });
+        if (avatarToDelete && this.isManagedUploadAvatar(avatarToDelete)) {
+            const avatarPath = this.toUploadDiskPath(avatarToDelete);
+            await unlink(avatarPath).catch(() => undefined);
+        }
     }
 }
