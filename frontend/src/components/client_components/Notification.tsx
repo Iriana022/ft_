@@ -1,8 +1,9 @@
 import {BellIcon} from '@heroicons/react/24/outline';
-import NotificationView from './NotificationView';
+import NotificationView, {type ClientNotificationItem} from './NotificationView';
 
 interface NotificationProps {
 	hasNotification: boolean,
+	notifications?: ClientNotificationItem[]
 }
 
 function Notification(props: NotificationProps) {
@@ -56,7 +57,7 @@ function Notification(props: NotificationProps) {
 					p-2
 				"
 			>
-				<NotificationView />
+				<NotificationView notifications={props.notifications ?? []}/>
 			</div>
 		</div>
 	);
