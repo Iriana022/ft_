@@ -300,6 +300,113 @@ function RecentTicketsHeader() {
 	);
 }
 
+function getStatusColor(status: TicketStatus) {
+	let color: [string, string] = ["", ""];
+	switch (status) {
+		case TicketStatus.OPEN: {
+			color[0] = "bg-status-open/25"; // bg-color
+			color[1] = "text-status-open"; // text-color
+		} break;
+		case TicketStatus.IN_PROGRESS: {
+			color[0] = "bg-status-in-progress/25";
+			color[1] = "text-status-in-progress";
+		} break;
+		case TicketStatus.PENDING: {
+			color[0] = "bg-status-pending/25";
+			color[1] = "text-status-pending";
+		} break;
+		case TicketStatus.RESOLVED: {
+			color[0] = "bg-status-resolved/25";
+			color[1] = "text-status-resolved";
+		} break;
+		case TicketStatus.CLOSED: {
+			color[0] = "bg-status-closed/25";
+			color[1] = "text-status-closed";
+		} break;
+		default: {
+			throw new Error("Unkown ticket status");
+		}
+	}
+	return (color);
+}
+
+function getStatusText(status: TicketStatus) {
+	let statusText: string | undefined;
+	switch (status) {
+		case TicketStatus.OPEN: {
+			statusText = "Ouvert";
+		} break;
+		case TicketStatus.IN_PROGRESS: {
+			statusText = "En cours";
+		} break;
+		case TicketStatus.PENDING: {
+			statusText = "En attente";
+		} break;
+		case TicketStatus.RESOLVED: {
+			statusText = "Resolu";
+		} break;
+		case TicketStatus.CLOSED: {
+			statusText = "Ferme";
+		} break;
+		default: {
+			throw new Error("Unkown ticket status");
+		}
+	}
+	return (statusText);
+}
+
+function getPriorityText(priority: TicketPriority) {
+	let priorityText: string | undefined;
+	switch (priority) {
+		case TicketPriority.LOW: {
+			priorityText = "Basse";
+		} break;
+		case TicketPriority.MEDIUM: {
+			priorityText = "Moyenne";
+		} break;
+		case TicketPriority.HIGH: {
+			priorityText = "Haute";
+		} break;
+		case TicketPriority.URGENT: {
+			priorityText = "Urgent";
+		} break;
+		default: {
+			throw new Error("Unkown ticket priority");
+		}
+	}
+	return (priorityText);
+}
+
+function getPriorityColor(priority: TicketPriority): [string, string] {
+	let color: [string, string] = ["", ""];
+
+	switch (priority) {
+		case TicketPriority.LOW: {
+			color[0] = "bg-green-100";
+			color[1] = "text-green-700";
+		} break;
+
+		case TicketPriority.MEDIUM: {
+			color[0] = "bg-yellow-100";
+			color[1] = "text-yellow-700";
+		} break;
+
+		case TicketPriority.HIGH: {
+			color[0] = "bg-orange-100";
+			color[1] = "text-orange-700";
+		} break;
+
+		case TicketPriority.URGENT: {
+			color[0] = "bg-red-100";
+			color[1] = "text-red-700";
+		} break;
+
+		default: {
+			throw new Error("Unknown ticket priority");
+		}
+	}
+	return color;
+}
 function RecentTickets() {
 	return (
 		<div className="bg-white rounded-md shadow mt-8">
@@ -337,14 +444,16 @@ function RecentTickets() {
 								</td>
 
 								<td className="px-5 py-3">
-									<span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-600">
-										{ticket.status}
+									<span
+										className={`px-2 py-1 rounded-full text-xs ${getStatusColor(ticket.status)[0]} ${getStatusColor(ticket.status)[1]}`}>
+										{getStatusText(ticket.status)}
 									</span>
 								</td>
 
 								<td className="px-5 py-3">
-									<span className="px-2 py-1 rounded text-xs bg-red-100 text-red-600">
-										{ticket.priority}
+									<span
+										className={`px-2 py-1 rounded-full text-xs ${getPriorityColor(ticket.priority)[0]} ${getPriorityColor(ticket.priority)[1]}`}>
+										{getPriorityText(ticket.priority)}
 									</span>
 								</td>
 
