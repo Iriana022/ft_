@@ -13,7 +13,9 @@ import {
 	FolderMinusIcon,
 	UsersIcon,
 	ChartBarSquareIcon,
-	ClockIcon
+	ClockIcon,
+	TrashIcon,
+	EyeIcon,
 } from '@heroicons/react/24/outline';
 import TikeoLogo from '../../components/client_components/TikeoLogo';
 import Notification from '../../components/client_components/Notification';
@@ -26,6 +28,7 @@ import {
 	BarChart, Bar, ResponsiveContainer
 } from 'recharts';
 import Separator from '../../components/login_components/Separator';
+import TicketFilter from '../../components/client_components/TicketFilter';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -47,9 +50,9 @@ function AdminHeader() {
 				</span>
 			</div>
 			<div className="flex items-center gap-4">
-				<label className="hidden md:flex input text-sm bg-cream border border-gray-200 max-w-[280px]">
+				<label className="hidden md:flex input text-sm bg-cream rounded-lg border border-gray-200 max-w-[280px]">
 					<MagnifyingGlassIcon className="w-4 h-4 text-gray-600" />
-					<input type="search" required placeholder="Rechercher" />
+					<input type="search" className="text-sm" required placeholder="Rechercher" />
 				</label>
 				<Notification hasNotification={true} />
 				<VerticalSeparator />
@@ -254,47 +257,96 @@ function TicketsRepartitionPerCategory() {
 	);
 }
 
-// FAKEEEEEEE
-const recentTickets = [
+const fakeTickets = [
 	{
-		id: 1024,
-		title: "Problème de connexion sur mobile",
+		id: 101,
+		title: "Crash de la page de connexion",
+		category: "Bug",
+		status: TicketStatus.OPEN,
+		priority: TicketPriority.URGENT,
+		user: "Alice",
+		createdAt: "2026-04-01T10:15:00Z",
+	},
+	{
+		id: 102,
+		title: "Ajouter le mode sombre",
+		category: "Fonctionnalité",
+		status: TicketStatus.IN_PROGRESS,
+		priority: TicketPriority.MEDIUM,
+		user: "Bob",
+		createdAt: "2026-04-01T14:20:00Z",
+	},
+	{
+		id: 103,
+		title: "Corriger l’alignement de la navbar",
+		category: "UI",
+		status: TicketStatus.RESOLVED,
+		priority: TicketPriority.LOW,
+		user: "Charlie",
+		createdAt: "2026-04-02T08:45:00Z",
+	},
+	{
+		id: 104,
+		title: "Problème de timeout de la base de données",
+		category: "Bug",
 		status: TicketStatus.OPEN,
 		priority: TicketPriority.HIGH,
-		user: "John D.",
-		createdAt: "2026-04-02T08:15:00Z",
+		user: "David",
+		createdAt: "2026-04-02T11:30:00Z",
 	},
 	{
-		id: 1025,
-		title: "Erreur lors du paiement",
+		id: 105,
+		title: "Améliorer les performances du dashboard",
+		category: "Optimisation",
 		status: TicketStatus.IN_PROGRESS,
-		priority: TicketPriority.URGENT,
-		user: "Sarah M.",
-		createdAt: "2026-04-01T14:32:00Z",
+		priority: TicketPriority.HIGH,
+		user: "Eve",
+		createdAt: "2026-04-02T16:10:00Z",
 	},
 	{
-		id: 1026,
-		title: "Bug d'affichage du dashboard",
+		id: 106,
+		title: "Ajouter un système de notifications",
+		category: "Fonctionnalité",
 		status: TicketStatus.OPEN,
 		priority: TicketPriority.MEDIUM,
-		user: "Lucas R.",
-		createdAt: "2026-03-31T10:05:00Z",
+		user: "Frank",
+		createdAt: "2026-04-03T09:00:00Z",
 	},
 	{
-		id: 1027,
-		title: "Impossible de réinitialiser le mot de passe",
-		status: TicketStatus.RESOLVED,
+		id: 107,
+		title: "Corriger le responsive mobile",
+		category: "UI",
+		status: TicketStatus.IN_PROGRESS,
 		priority: TicketPriority.HIGH,
-		user: "Emma K.",
-		createdAt: "2026-03-30T18:20:00Z",
+		user: "Grace",
+		createdAt: "2026-04-03T12:25:00Z",
 	},
 	{
-		id: 1028,
-		title: "Notification non reçue",
+		id: 108,
+		title: "Erreur sur la passerelle de paiement",
+		category: "Bug",
 		status: TicketStatus.OPEN,
+		priority: TicketPriority.URGENT,
+		user: "Hank",
+		createdAt: "2026-04-03T15:40:00Z",
+	},
+	{
+		id: 109,
+		title: "Mettre à jour la page de profil utilisateur",
+		category: "Fonctionnalité",
+		status: TicketStatus.RESOLVED,
 		priority: TicketPriority.LOW,
-		user: "Noah T.",
-		createdAt: "2026-03-29T09:45:00Z",
+		user: "Ivy",
+		createdAt: "2026-04-04T08:10:00Z",
+	},
+	{
+		id: 110,
+		title: "Corriger une faille de sécurité",
+		category: "Sécurité",
+		status: TicketStatus.IN_PROGRESS,
+		priority: TicketPriority.URGENT,
+		user: "Jack",
+		createdAt: "2026-04-04T09:50:00Z",
 	},
 ];
 
@@ -434,7 +486,7 @@ function RecentTickets() {
 					</thead>
 
 					<tbody>
-						{recentTickets.map((ticket) => (
+						{fakeTickets.slice(0, 5).map((ticket) => (
 							<tr
 								key={ticket.id}
 								className="border-b hover:bg-cream/70 transition"
@@ -468,13 +520,13 @@ function RecentTickets() {
 								<td className="px-5 py-3 text-gray-500 whitespace-nowrap">
 									{new Date(ticket.createdAt).toLocaleDateString()}
 								</td>
-							</tr >
+							</tr>
 						))
 						}
-					</tbody >
-				</table >
-			</div >
-		</div >
+					</tbody>
+				</table>
+			</div>
+		</div>
 	);
 }
 
@@ -522,10 +574,112 @@ export function AdminDashboard() {
 	);
 }
 
-export function AdminTickets() {
+
+function TicketsHeader() {
 	return (
 		<div>
-			Tickets
+			Tickets Header
+		</div>
+	);
+}
+
+function TicketsFooter() {
+	return (
+		<div className="px-5 pt-3 flex items-center justify-between">
+			{/* TODO: make this text dynamuc */}
+			<span className="text-sm text-gray-600">
+				Affichage 1–8 sur 128 tickets
+			</span>
+			<div className="flex items-center gap-3">
+				<button className="btn btn-disabled rounded-lg border border-1 bg-cream">Precedent</button>
+				<button className="btn font-medium rounded-lg border border-1 bg-cream text-gray-600">Suivant</button>
+			</div>
+		</div>
+	);
+}
+
+export function AdminTickets() {
+	const statusFilterElements = ["Ouverts", "En cours", "Resolus", "Fermes"];
+	const priorityFilterElements = ["Basses", "Moyennes", "Hautes", "Urgents"];
+
+	return (
+		<div>
+			<div className="flex items-center justify-between">
+				<label className="hidden md:flex input text-sm border rounded-lg border-gray-200 max-w-[280px]">
+					<MagnifyingGlassIcon className="w-4 h-4 text-gray-600" />
+					<input type="search" className="text-sm" required placeholder="Rechercher des tickets" />
+				</label>
+				<div className="flex items-center gap-4">
+					<TicketFilter list={statusFilterElements} />
+					<TicketFilter list={priorityFilterElements} />
+				</div>
+			</div>
+			<div className="bg-white py-4 rounded-md shadow mt-8">
+				<div className="w-full overflow-x-auto">
+					<table className="min-w-[700px] w-full text-sm text-left">
+						<thead className="text-gray-500 border-b">
+							<tr>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">ID</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">Titre</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">Categories</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">Statut</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">Priorite</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">Utilisateur</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">Date</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">Actions</th>
+							</tr>
+						</thead>
+						<tbody>
+							{fakeTickets.slice(0, 8).map((ticket) => (
+								<tr
+									key={ticket.id}
+									className="border-b hover:bg-cream/70 transition"
+								>
+									<td className="px-5 py-3 text-navy whitespace-nowrap">
+										TK-{ticket.id}
+									</td>
+									<td className="px-5 py-3 whitespace-nowrap">
+										{ticket.title}
+									</td>
+									<td className="px-5 py-3 whitespace-nowrap">
+										<span className="text-xs px-2 py-1 rounded-full bg-gray-200 text-gray-600">
+											{ticket.category}
+										</span>
+									</td>
+									<td className="px-5 py-3 whitespace-nowrap">
+										<span
+											className={`px-2 py-1 rounded-full text-xs ${getStatusColor(ticket.status)[0]} ${getStatusColor(ticket.status)[1]}`}>
+											{getStatusText(ticket.status)}
+										</span>
+									</td>
+									<td className="px-5 py-3 whitespace-nowrap">
+										<span
+											className={`px-2 py-1 rounded-full text-xs ${getPriorityColor(ticket.priority)[0]} ${getPriorityColor(ticket.priority)[1]}`}>
+											{getPriorityText(ticket.priority)}
+										</span>
+									</td>
+									<td className="px-5 py-3 whitespace-nowrap">
+										{ticket.user}
+									</td>
+									<td className="px-5 py-3 text-gray-500 whitespace-nowrap">
+										{new Date(ticket.createdAt).toLocaleDateString()}
+									</td>
+									<td className="px-5 py-3 text-gray-500 whitespace-nowrap flex items-center gap-5">
+										<div className="p-2 transition hover:bg-blue-200 rounded-full cursor-pointer">
+											<EyeIcon className="w-4 h-4" />
+										</div>
+										<div className="p-2 transition hover:bg-red-100 rounded-full cursor-pointer">
+											<TrashIcon className="w-4 h-4 text-red-500" />
+										</div>
+									</td>
+								</tr>
+							))
+							}
+						</tbody>
+					</table>
+				</div>
+				<TicketsFooter />
+			</div>
 		</div>
 	);
 }
