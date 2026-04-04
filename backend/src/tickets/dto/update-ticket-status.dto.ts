@@ -1,6 +1,6 @@
 import { IsIn } from 'class-validator';
 
-const ticketStatuses = ['OPEN', 'IN_PROGRESS', 'PENDING', 'RESOLVED', 'CLOSED'] as const;
+const ticketStatuses = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'] as const;
 
 type TicketStatusValue = (typeof ticketStatuses)[number];
 

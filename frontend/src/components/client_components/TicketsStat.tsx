@@ -1,5 +1,5 @@
 import React from 'react';
-import {TicketStatus, type TicketType} from '../../types';
+import { TicketStatus, type TicketType } from '../../types';
 
 interface StatItemProps {
 	title: string,
@@ -19,13 +19,13 @@ function StatItem(props: StatItemProps) {
 			bgColor = "bg-status-in-progress/15";
 			textColor = "text-status-in-progress";
 		} break;
-		case "status-pending": {
-			bgColor = "bg-status-pending/15";
-			textColor = "text-status-pending";
-		} break;
 		case "status-resolved": {
 			bgColor = "bg-status-resolved/15";
 			textColor = "text-status-resolved";
+		} break;
+		case 'status-closed': {
+			bgColor = 'bg-status-closed/15';
+			textColor = 'text-status-closed';
 		} break;
 	}
 
@@ -45,8 +45,8 @@ function TicketsStat(props: TicketsStatProps) {
 	const { tickets } = props;
 	const openTicketsCount = tickets.filter(t => t.status === TicketStatus.OPEN).length;
 	const inProgressTicketsCount = tickets.filter(t => t.status === TicketStatus.IN_PROGRESS).length;
-	const pendingTicketsCount = tickets.filter(t => t.status === TicketStatus.PENDING).length;
 	const resolvedTicketsCount = tickets.filter(t => t.status === TicketStatus.RESOLVED).length;
+	const closedTicketsCount = tickets.filter(t => t.status === TicketStatus.CLOSED).length;
 
 	return (
 		<div className="w-full shadow rounded-md p-5">
@@ -56,8 +56,8 @@ function TicketsStat(props: TicketsStatProps) {
 			<div className="grid grid-cols-2 gap-5">
 				<StatItem title="Ouverts" count={openTicketsCount} color="status-open" />
 				<StatItem title="En cours" count={inProgressTicketsCount} color="status-in-progress" />
-				<StatItem title="En attentes" count={pendingTicketsCount} color="status-pending" />
 				<StatItem title="Resolus" count={resolvedTicketsCount} color="status-resolved" />
+				<StatItem title="Fermes" count={closedTicketsCount} color="status-closed" />
 			</div>
 		</div>
 	);

@@ -18,10 +18,6 @@ function TicketStatusIndicator(props: TicketStatusIndicatorProps) {
 			color = 'bg-status-in-progress';
 			text = 'En cours';
 		} break;
-		case TicketStatus.PENDING: {
-			color = 'bg-status-pending';
-			text = 'En attente';
-		} break;
 		case TicketStatus.RESOLVED: {
 			color = 'bg-status-resolved';
 			text = 'Resolu';

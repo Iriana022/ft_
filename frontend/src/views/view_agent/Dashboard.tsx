@@ -1,4 +1,4 @@
-import { Ticket, AlertCircle, Clock, PauseCircle } from 'lucide-react';
+import { Ticket, AlertCircle, Clock, CheckCircle2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { StatCard } from '../../components/agent_components/StatCard';
 import { TicketList } from './TicketList';
@@ -125,16 +125,16 @@ export function Dashboard() {
             color="red"
           />
           <StatCard
-            title="En attente"
-            value={stats.pending}
-            icon={PauseCircle}
-            color="purple"
-          />
-          <StatCard
-            title="En cours"
+            title="Tickets En cours"
             value={stats.inProgress}
             icon={Clock}
             color="orange"
+          />
+            <StatCard
+            title="Tickets Resolus"
+            value={stats.resolved}
+            icon={CheckCircle2}
+            color="green"
           />
         </div>
 
