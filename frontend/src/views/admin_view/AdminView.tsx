@@ -165,22 +165,37 @@ const dailyData = [
 	{name: "Dim", created: 28, resolved: 22},
 ];
 
+type CreatedOrResolved = "created" | "resolved";
+
+interface CreatedAndResolvedIndicatorProps {
+	type: CreatedOrResolved,
+}
+
+function CreatedAndResolvedIndicator(props: CreatedAndResolvedIndicatorProps) {
+	const text = props.type === "created" ? "Crees" : "Resolus";
+	const bg = props.type === "created" ? "bg-navy" : "bg-status-resolved";
+	return (
+		<>
+			<span className={`block w-3 h-3 ${bg} rounded-full`}></span>
+			<span className="text-xs md:text-sm">{text}</span>
+		</>
+	);
+}
+
 function TicketsActivities() {
 	return (
 		<div className="w-full md:w-[60%] bg-white shadow rounded-md p-5">
 			<div className="flex items-center justify-between">
 				<div>
 					<h3 className="text-base font-medium text-navy">Activite des tickets</h3>
-					<p className="text-sm text-gray-600">Apercu des 7 derniers jours</p>
+					<p className="text-xs md:text-sm text-gray-600">Apercu des 7 derniers jours</p>
 				</div>
-				<div className="flex items-center gap-4">
-					<div className="flex items-center gap-2">
-						<span className="block w-3 h-3 bg-navy rounded-full"></span>
-						<span className="text-sm">Crees</span>
+				<div className="flex items-center gap-3 md:gap-4">
+					<div className="flex items-center gap-1 md:gap-2">
+						<CreatedAndResolvedIndicator type="created" />
 					</div>
-					<div className="flex items-center gap-2">
-						<span className="block w-3 h-3 bg-status-resolved rounded-full"></span>
-						<span className="text-sm">Resolus</span>
+					<div className="flex items-center gap-1 md:gap-2">
+						<CreatedAndResolvedIndicator type="resolved" />
 					</div>
 				</div>
 			</div>
@@ -290,12 +305,12 @@ function RecentTicketsHeader() {
 				<h3 className="text-base">
 					Tickets recents
 				</h3>
-				<p className="text-sm text-gray-600">Dernieres demandes de support</p>
+				<p className="text-xs md:text-sm text-gray-600">Dernieres demandes de support</p>
 			</div>
 			{/* TODO: change this to Link component */}
-			<span className="block text-navy font-medium text-sm">
+			<Link to="tickets" className="block text-navy font-medium text-xs md:text-sm">
 				Voir tout
-			</span>
+			</Link>
 		</div>
 	);
 }
@@ -412,16 +427,16 @@ function RecentTickets() {
 		<div className="bg-white rounded-md shadow mt-8">
 			<RecentTicketsHeader />
 			<Separator />
-			<div className="overflow-x-auto">
-				<table className="w-full text-sm text-left">
+			<div className="w-full overflow-x-auto">
+				<table className="min-w-[700px] w-full text-sm text-left">
 					<thead className="text-gray-500 border-b">
 						<tr>
-							<th className="px-5 pb-3 font-medium">ID</th>
-							<th className="px-5 pb-3 font-medium">Titre</th>
-							<th className="px-5 pb-3 font-medium">Utilisateur</th>
-							<th className="px-5 pb-3 font-medium">Status</th>
-							<th className="px-5 pb-3 font-medium">Priorite</th>
-							<th className="px-5 pb-3 font-medium">Date</th>
+							<th className="px-5 pb-3 font-medium whitespace-nowrap">ID</th>
+							<th className="px-5 pb-3 font-medium whitespace-nowrap">Titre</th>
+							<th className="px-5 pb-3 font-medium whitespace-nowrap">Utilisateur</th>
+							<th className="px-5 pb-3 font-medium whitespace-nowrap">Status</th>
+							<th className="px-5 pb-3 font-medium whitespace-nowrap">Priorite</th>
+							<th className="px-5 pb-3 font-medium whitespace-nowrap">Date</th>
 						</tr>
 					</thead>
 
@@ -431,41 +446,42 @@ function RecentTickets() {
 								key={ticket.id}
 								className="border-b hover:bg-cream/70 transition"
 							>
-								<td className="px-5 py-3 text-navy">
+								<td className="px-5 py-3 text-navy whitespace-nowrap">
 									TK-{ticket.id}
 								</td>
 
-								<td className="px-5 py-3">
+								<td className="px-5 py-3 whitespace-nowrap">
 									{ticket.title}
 								</td>
 
-								<td className="px-5 py-3">
+								<td className="px-5 py-3 whitespace-nowrap">
 									{ticket.user}
 								</td>
 
-								<td className="px-5 py-3">
+								<td className="px-5 py-3 whitespace-nowrap">
 									<span
 										className={`px-2 py-1 rounded-full text-xs ${getStatusColor(ticket.status)[0]} ${getStatusColor(ticket.status)[1]}`}>
 										{getStatusText(ticket.status)}
 									</span>
 								</td>
 
-								<td className="px-5 py-3">
+								<td className="px-5 py-3 whitespace-nowrap">
 									<span
 										className={`px-2 py-1 rounded-full text-xs ${getPriorityColor(ticket.priority)[0]} ${getPriorityColor(ticket.priority)[1]}`}>
 										{getPriorityText(ticket.priority)}
 									</span>
 								</td>
 
-								<td className="px-5 py-3 text-gray-500">
+								<td className="px-5 py-3 text-gray-500 whitespace-nowrap">
 									{new Date(ticket.createdAt).toLocaleDateString()}
 								</td>
-							</tr>
-						))}
-					</tbody>
-				</table>
-			</div>
-		</div>
+							</tr >
+						))
+						}
+					</tbody >
+				</table >
+			</div >
+		</div >
 	);
 }
 
