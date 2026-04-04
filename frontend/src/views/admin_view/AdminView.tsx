@@ -20,7 +20,7 @@ import {
 import TikeoLogo from '../../components/client_components/TikeoLogo';
 import Notification from '../../components/client_components/Notification';
 import Avatar from '../../components/client_components/Avatar';
-import {Outlet, Link} from 'react-router-dom';
+import {Outlet, Link, NavLink} from 'react-router-dom';
 import {type HeroIconType, TicketStatus, TicketPriority, StatCardType} from '../../types';
 import {RechartsDevtools} from '@recharts/devtools';
 import {
@@ -574,15 +574,6 @@ export function AdminDashboard() {
 	);
 }
 
-
-function TicketsHeader() {
-	return (
-		<div>
-			Tickets Header
-		</div>
-	);
-}
-
 interface TicketsFooterProps {
 	currentPage: number,
 	totalPages: number,
@@ -763,34 +754,79 @@ function DrawerSideContent(props: DraweSideContentProps) {
 			</div>
 			<ul className="menu w-full grow gap-1 mt-10">
 				<li>
-					<Link to="/admin" className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Tableau de bord">
+					<NavLink
+						to="/admin"
+						end
+						className={({isActive}) =>
+							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
+							 ${isActive ? "bg-sky/25" : ""}
+							 focus:bg-sky/50
+							`
+						}
+						data-tip="Tableau de bord"
+					>
 						<Squares2X2Icon className="w-5 h-5" />
 						<span className="is-drawer-close:hidden text-sm">Tableau de bord</span>
-					</Link>
+					</NavLink>
 				</li>
 				<li>
-					<Link to="tickets" className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Tickets">
+					<NavLink
+						to="tickets"
+						className={({isActive}) => 
+							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
+								${isActive ? "bg-sky/25": ""}
+								focus:bg-sky/25
+							`
+						}
+						data-tip="Tickets"
+					>
 						<TicketIcon className="w-5 h-5" />
 						<span className="is-drawer-close:hidden text-sm">Tickets</span>
-					</Link>
+					</NavLink>
 				</li>
 				<li>
-					<Link to="categories" className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Categories">
+					<NavLink
+						to="categories"
+						className={({isActive}) =>
+							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
+							${isActive ? "bg-sky/25" : ""}
+							focus:bg-sky/25
+							`
+						}
+						data-tip="Categories">
 						<FolderMinusIcon className="w-5 h-5" />
 						<span className="is-drawer-close:hidden text-sm">Categories</span>
-					</Link>
+					</NavLink>
 				</li>
 				<li>
-					<Link to="users" className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Utilisateurs">
+					<NavLink
+						to="users"
+						className={({isActive}) =>
+							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
+							${isActive ? "bg-sky/25" : ""}
+							focus:bg-sky/25
+							`
+						}
+						data-tip="Utilisateurs"
+					>
 						<UsersIcon className="w-5 h-5" />
 						<span className="is-drawer-close:hidden text-sm">Utilisateurs</span>
-					</Link>
+					</NavLink>
 				</li>
 				<li>
-					<Link to="stats" className="is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal" data-tip="Statistiques">
+					<NavLink
+						to="stats"
+						className={({isActive}) =>
+							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
+							${isActive ? "bg-sky/25" : ""}
+							focus:bg-sky/25
+							`
+						} 
+						data-tip="Statistiques"
+					>
 						<ChartBarSquareIcon className="w-5 h-5" />
 						<span className="is-drawer-close:hidden text-sm">Statistiques</span>
-					</Link>
+					</NavLink>
 				</li>
 			</ul>
 		</div>
