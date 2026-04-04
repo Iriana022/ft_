@@ -47,6 +47,8 @@ model User {
   googleId        String?  @unique 
   login           String?  @unique 
   email           String   @unique
+  firstName       String?
+  lastName        String?
   password        String?  // Pour l'auth classique
   avatar          String?
   role            UserRole @default(CLIENT)

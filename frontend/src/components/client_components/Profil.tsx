@@ -1,19 +1,70 @@
-import {useState} from 'react';
-import {ArrowLeftIcon} from '@heroicons/react/24/outline';
+import { useEffect, useState } from 'react';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import Separator from './Separator';
 import ContainerComp from '../../layout/layout_client/Container';
-import {useNavigate} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Avatar from './Avatar';
 import Footer from '../../layout/Footer';
+import { getMyProfile, updateMyProfile } from '../../services/profile';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
 function Profil() {
-	const [firstname, setFirstname] = useState('Jennifer');
-	const [lastname, setLastname] = useState('Lawrence');
-	const [email, setEmail] = useState('dontowoman@gmail.com');
+	const [firstname, setFirstname] = useState('');
+	const [lastname, setLastname] = useState('');
+	const [email, setEmail] = useState('');
 	const navigate = useNavigate();
+	const [username, setUsername] = useState('');
+	const [isLoading, setIsLoading] = useState(true);
+	const [error, setError] = useState('');
+	const handleSave = async () => {
+		if (!email.trim()) {
+			setError('Email is missing');
+			return;
+		}
+		try {
+			setIsLoading(true);
+			setError('');
 
+			const updated = await updateMyProfile({
+				login: username.trim(),
+				firstName: firstname.trim(),
+				lastName: lastname.trim(),
+				email: email.trim(),
+			});
+
+			const savedUsername = updated?.login ?? username.trim();
+			setUsername(savedUsername);
+			localStorage.setItem('username', savedUsername);
+		} catch (err) {
+			console.error('Erreur sauvegarde profil:', err);
+			setError('Impossible de sauvegarder le profil');
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	useEffect(() => {
+		const loadProfile = async () => {
+			try {
+				setIsLoading(true);
+				setError('');
+
+				const data = await getMyProfile();
+
+				setUsername(data?.login ?? '');
+				setFirstname(data?.firstName ?? '');
+				setLastname(data?.lastName ?? '');
+				setEmail(data?.email ?? '');
+			} catch (err) {
+				console.error('Error loading profile:', err);
+				setError('Loading profile information impossible');
+			} finally {
+				setIsLoading(false);
+			}
+		};
+		loadProfile();
+	}, []);
 	return (
 		<div>
 			<ContainerComp>
@@ -30,7 +81,7 @@ function Profil() {
 			<ContainerComp>
 				<div className="flex items-center flex-col md:flex-row gap-4 md:gap-8 pt-10 mb-4">
 					<Avatar src={avatar1} size="xl" />
-					<h3 className="text-md md:text-xl">{firstname} {lastname}</h3>
+					<h3 className="text-md md:text-xl">{username}</h3>
 				</div>
 				<div className="flex justify-center md:block">
 					<button className="btn btn-info">
@@ -38,7 +89,17 @@ function Profil() {
 					</button>
 				</div>
 				<h3 className="mt-8 mb-5 text-md md:text-xl font-semibold text-navy text-center md:text-start">Informations personnelles:</h3>
+				{error && (
+					<p className="mb-4 text-sm text-red-500">{error}</p>
+				)}
 				<div className="flex flex-col gap-6">
+					<div>
+						<label className="block mb-2">Username</label>
+						<input
+							type="text"
+							value={username} onChange={(e) => setUsername(e.target.value)}
+							className="border px-3 py-3 rounded w-full md:w-1/3 bg-gray-100 text-sm md:text-base" />
+					</div>
 					<div>
 						<label className="block mb-2">Nom</label>
 						<input
@@ -60,7 +121,7 @@ function Profil() {
 					<div>
 						<label className="block mb-3">Email</label>
 						<input
-							type="text"
+							type="email"
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
 							className="border px-3 py-3 rounded w-full md:w-1/3 bg-gray-100 text-sm md:text-base"
@@ -68,8 +129,14 @@ function Profil() {
 					</div>
 				</div>
 				<div className="mt-10 mb-8 flex justify-end">
-					<button className="btn btn-primary">Sauvegarder</button>
-				</div>
+					<button
+						className="btn btn-primary"
+						onClick={handleSave}
+						disabled={isLoading}>
+						
+						{isLoading ? 'Saving...':'Sauvegarder'}
+					</button>
+		</div>
 			</ContainerComp >
 			<Separator />
 			<Footer />
