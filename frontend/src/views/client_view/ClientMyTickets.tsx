@@ -9,7 +9,7 @@ import type { TicketType } from '../../types';
 import { io } from 'socket.io-client';
 
 function ClientMyTickets() {
-	const status = ["Tous", "Ouvert", "En cours", "En attente", "Resolu"];
+	const status = ["Tous", "Ouvert", "En cours", "Resolu"];
 	const priorities = ["Basse", "Moyenne", "Haute", "Urgente"];
 	const [tickets, setTickets] = useState<TicketType[]>([]);
 	const [isLoading, setIsLoading] = useState(true);

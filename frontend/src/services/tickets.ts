@@ -91,8 +91,8 @@ export const createClientTicket = async (payload: {
 export const getTicketStats = (tickets: Ticket[]) => ({
   total: tickets.length,
   open: tickets.filter((ticket) => ticket.status === TicketStatus.OPEN).length,
-  pending: tickets.filter((ticket) => ticket.status === TicketStatus.PENDING).length,
   inProgress: tickets.filter((ticket) => ticket.status === TicketStatus.IN_PROGRESS).length,
+  resolved: tickets.filter((t) => t.status === TicketStatus.RESOLVED).length,
 });
 
 export const getTicketMessages = async (ticketId: number): Promise<ChatMessage[]> => {
