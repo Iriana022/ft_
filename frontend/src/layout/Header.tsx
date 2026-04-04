@@ -13,6 +13,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { fetchMyTicketsForClientView } from '../services/tickets';
 import { io } from 'socket.io-client'
 import { type ClientNotificationItem } from '../components/client_components/NotificationView';
+import { getMyProfile } from '../services/profile';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -20,6 +21,7 @@ function Header() {
 	const [isMenuOpened, setIsMenuOpened] = useState(false);
 	const [unreadByTicket, setUnreadByTicket] = useState<Record<number, number>>({});
 	const [notifications, setNotifications] = useState<ClientNotificationItem[]>([]);
+	const [avatar, setAvatar] = useState(avatar1);
 	const clientTicketIdsRef = useRef<Set<number>>(new Set());
 	const navigate = useNavigate();
 	const hasNotification = useMemo(
@@ -31,8 +33,27 @@ function Header() {
 		localStorage.removeItem('access_token');
 		localStorage.removeItem('username');
 		localStorage.removeItem('user_role');
+		localStorage.removeItem('user_avatar');
 		navigate('/login');
 	};
+
+	useEffect(() => {
+		const cachedAvatar = localStorage.getItem('user_avatar');
+		if(cachedAvatar) {
+			setAvatar(cachedAvatar);
+		}
+		const loadProfilAvatar = async () => {
+			try {
+				const data = await getMyProfile();
+				const nextAvatar = data?.avatar ?? avatar1;
+				setAvatar(nextAvatar);
+				localStorage.setItem('user_avatar', nextAvatar);
+			} catch (error) {
+				console.error('Error on loading header avatar:', error);
+			}
+		};
+		loadProfilAvatar();
+	}, []);
 	useEffect(() => {
 		let mounted = true;
 
@@ -133,7 +154,7 @@ function Header() {
 							Déconnexion
 						</button>
 						<Link to='profil' className="hidden md:block">
-							<Avatar src={avatar1} size="md" />
+							<Avatar src={avatar || avatar1} size="md" />
 						</Link>
 					</div>
 				</header>

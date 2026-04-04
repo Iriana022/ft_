@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import Separator from './Separator';
 import ContainerComp from '../../layout/layout_client/Container';
 import { useNavigate } from 'react-router-dom';
 import Avatar from './Avatar';
 import Footer from '../../layout/Footer';
-import { getMyProfile, updateMyProfile } from '../../services/profile';
+import { getMyProfile, updateMyProfile, uploadMyAvatar } from '../../services/profile';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -17,6 +17,8 @@ function Profil() {
 	const [username, setUsername] = useState('');
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState('');
+	const [avatar, setAvatar] = useState(avatar1);
+	const fileInputRef = useRef<HTMLInputElement | null>(null);
 	const handleSave = async () => {
 		if (!email.trim()) {
 			setError('Email is missing');
@@ -43,6 +45,26 @@ function Profil() {
 			setIsLoading(false);
 		}
 	};
+	const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file)
+			return;
+		try {
+			setIsLoading(true);
+			setError('');
+			const updated = await uploadMyAvatar(file);
+			const nextAvatar = updated?.avatar ?? avatar1;
+			setAvatar(nextAvatar);
+			localStorage.setItem('user_avatar', nextAvatar);
+		} catch (err) {
+			console.error('Error on uploading your avatar:', err);
+			setError('changing the avatar is impossible');
+		} finally {
+			setIsLoading(false);
+			if (fileInputRef.current)
+				fileInputRef.current.value = '';
+		}
+	}
 
 	useEffect(() => {
 		const loadProfile = async () => {
@@ -56,6 +78,9 @@ function Profil() {
 				setFirstname(data?.firstName ?? '');
 				setLastname(data?.lastName ?? '');
 				setEmail(data?.email ?? '');
+				const nextAvatar = data?.avatar ?? avatar1;
+				setAvatar(nextAvatar);
+				localStorage.setItem('user_avatar', nextAvatar);
 			} catch (err) {
 				console.error('Error loading profile:', err);
 				setError('Loading profile information impossible');
@@ -80,12 +105,24 @@ function Profil() {
 			<Separator />
 			<ContainerComp>
 				<div className="flex items-center flex-col md:flex-row gap-4 md:gap-8 pt-10 mb-4">
-					<Avatar src={avatar1} size="xl" />
+					<Avatar src={avatar || avatar1} size="xl" />
 					<h3 className="text-md md:text-xl">{username}</h3>
 				</div>
+				<input
+					ref={fileInputRef}
+					type="file"
+					accept="image/*"
+					className="hidden"
+					onChange={handleAvatarChange}
+				/>
 				<div className="flex justify-center md:block">
-					<button className="btn btn-info">
-						Changer l'avatar
+					<button
+						className="btn btn-info"
+						onClick={() =>
+							fileInputRef.current?.click()
+						}
+						disabled={isLoading}>
+						{isLoading ? 'Upload...' : "Changer l'avatar"}
 					</button>
 				</div>
 				<h3 className="mt-8 mb-5 text-md md:text-xl font-semibold text-navy text-center md:text-start">Informations personnelles:</h3>
@@ -133,10 +170,10 @@ function Profil() {
 						className="btn btn-primary"
 						onClick={handleSave}
 						disabled={isLoading}>
-						
-						{isLoading ? 'Saving...':'Sauvegarder'}
+
+						{isLoading ? 'Saving...' : 'Sauvegarder'}
 					</button>
-		</div>
+				</div>
 			</ContainerComp >
 			<Separator />
 			<Footer />
