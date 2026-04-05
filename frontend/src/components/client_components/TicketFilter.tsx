@@ -24,12 +24,7 @@ export type TicketFilterOption = {
 }
 
 interface TicketFilterProps {
-<<<<<<< Updated upstream
 	list: TicketFilterOption[];
-=======
-	label: string,
-	list: {label: string, value: TicketStatus | TicketPriority | null}[],
->>>>>>> Stashed changes
 	currentFilterElement: string,
 	handleSelect: (e: React.MouseEvent, element: StatusFilter | PriorityFilter) => void;
 }

@@ -21,7 +21,7 @@ import TikeoLogo from '../../components/client_components/TikeoLogo';
 import Notification from '../../components/client_components/Notification';
 import Avatar from '../../components/client_components/Avatar';
 import {Outlet, Link, NavLink} from 'react-router-dom';
-import {type HeroIconType, TicketStatus, TicketPriority, StatCardType, HeroIconType} from '../../types';
+import {type HeroIconType, TicketStatus, TicketPriority, StatCardType} from '../../types';
 import {RechartsDevtools} from '@recharts/devtools';
 import {
 	LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -623,9 +623,9 @@ interface PriorityFilter {
 	value: TicketPriority | null,
 }
 
-function ActionIcon({icon: HeroIconType}: {icon: HeroIconType}) {
-	return ();
-}
+// function ActionIcon({icon: HeroIconType}: {icon: HeroIconType}) {
+// 	return ();
+// }
 
 export function AdminTickets() {
 	// TODO: refactor this code
