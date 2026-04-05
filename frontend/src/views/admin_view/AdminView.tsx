@@ -588,21 +588,21 @@ function TicketsFooter(props: TicketsFooterProps) {
 
 	return (
 		<div className="px-5 pt-3 flex items-center justify-between">
-			<span className="text-sm text-gray-600">
+			<span className="text-xs md:text-sm text-gray-600">
 				Affichage {start}-{end} sur {props.totalItems} tickets
 			</span>
 			<div className="flex items-center gap-3">
 				<button
 					onClick={props.onPrev}
 					disabled={props.currentPage == 1}
-					className="btn font-medium disabled:opacity-50 rounded-lg border border-1 bg-cream text-gray-600"
+					className="btn text-xs md:text-sm font-medium disabled:opacity-50 rounded-lg border border-1 bg-cream text-gray-600"
 				>
 					Precedent
 				</button>
 				<button
 					onClick={props.onNext}
 					disabled={props.currentPage === props.totalPages}
-					className="btn font-medium disabled:opacity-50 rounded-lg border border-1 bg-cream text-gray-600"
+					className="btn text-xs md:text-sm font-medium disabled:opacity-50 rounded-lg border border-1 bg-cream text-gray-600"
 				>
 					Suivant
 				</button>
@@ -684,14 +684,20 @@ export function AdminTickets() {
 	// TODO: fix the error here
 	return (
 		<div>
-			<div className="flex items-center justify-between">
-				<label className="hidden md:flex input text-sm border rounded-lg border-gray-200 max-w-[280px]">
+			<div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:justify-between">
+				<label className="input text-sm border rounded-lg border-gray-200 max-w-[280px]">
 					<MagnifyingGlassIcon className="w-4 h-4 text-gray-600" />
 					<input type="search" className="text-sm" required placeholder="Rechercher des tickets" />
 				</label>
 				<div className="flex items-center gap-4">
-					<TicketFilter list={statusFilterElements} currentFilterElement={currentFilterElementStatus?.label ?? "Tous"} handleSelect={handleSelectStatus} />
-					<TicketFilter list={priorityFilterElements} currentFilterElement={currentFilterElementPriority?.label ?? "Tous"} handleSelect={handleSelectPriority} />
+					<div className="flex items-center gap-2">
+						<span className="text-xs md:text-sm">Status:</span>
+						<TicketFilter list={statusFilterElements} currentFilterElement={currentFilterElementStatus?.label ?? "Tous"} handleSelect={handleSelectStatus} />
+					</div>
+					<div className="flex items-center gap-2">
+						<span className="text-xs md:text-sm">Priorite:</span>
+						<TicketFilter list={priorityFilterElements} currentFilterElement={currentFilterElementPriority?.label ?? "Tous"} handleSelect={handleSelectPriority} />
+					</div>
 				</div>
 			</div>
 			<div className="bg-white py-4 rounded-md shadow mt-8">
@@ -800,6 +806,12 @@ interface DrawerSideContentProps {
 }
 
 function DrawerSideContent(props: DraweSideContentProps) {
+	const handleNavClick = () => {
+		if (window.innerWidth < 1024) {
+			props.setIsOpen(false);
+		}
+	}
+
 	return (
 		<div className="flex min-h-full flex-col items-start pt-4 px-4 bg-navy is-drawer-close:w-30 is-drawer-open:w-64">
 			<div className="flex items-center w-full justify-between">
@@ -821,6 +833,7 @@ function DrawerSideContent(props: DraweSideContentProps) {
 							`
 						}
 						data-tip="Tableau de bord"
+						onClick={handleNavClick}
 					>
 						<Squares2X2Icon className="w-5 h-5" />
 						<span className="is-drawer-close:hidden text-sm">Tableau de bord</span>
@@ -836,6 +849,7 @@ function DrawerSideContent(props: DraweSideContentProps) {
 							`
 						}
 						data-tip="Tickets"
+						onClick={handleNavClick}
 					>
 						<TicketIcon className="w-5 h-5" />
 						<span className="is-drawer-close:hidden text-sm">Tickets</span>
@@ -850,7 +864,9 @@ function DrawerSideContent(props: DraweSideContentProps) {
 							focus:bg-sky/25
 							`
 						}
-						data-tip="Categories">
+						data-tip="Categories"
+						onClick={handleNavClick}
+					>
 						<FolderMinusIcon className="w-5 h-5" />
 						<span className="is-drawer-close:hidden text-sm">Categories</span>
 					</NavLink>
@@ -865,6 +881,7 @@ function DrawerSideContent(props: DraweSideContentProps) {
 							`
 						}
 						data-tip="Utilisateurs"
+						onClick={handleNavClick}
 					>
 						<UsersIcon className="w-5 h-5" />
 						<span className="is-drawer-close:hidden text-sm">Utilisateurs</span>
@@ -880,6 +897,7 @@ function DrawerSideContent(props: DraweSideContentProps) {
 							`
 						}
 						data-tip="Statistiques"
+						onClick={handleNavClick}
 					>
 						<ChartBarSquareIcon className="w-5 h-5" />
 						<span className="is-drawer-close:hidden text-sm">Statistiques</span>
