@@ -12,7 +12,7 @@ all: certs
 	@echo "$(GREEN)Pushing schema to database...$(RESET)"
 	@docker exec -it nest_backend npx prisma db push --accept-data-loss
 	@docker exec -it nest_backend npx prisma generate
-	@echo "$(GREEN)Tickeo is ready!$(RESET)"
+	@echo "$(GREEN)Tikeo is ready!$(RESET)"
 
 up:
 	@echo "$(GREEN)Restarting tikeo...$(RESET)"
