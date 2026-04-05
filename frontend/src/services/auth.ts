@@ -4,23 +4,63 @@ const isUserRole = (value: unknown): value is UserRole => {
   return value === UserRole.CLIENT || value === UserRole.AGENT || value === UserRole.ADMIN;
 };
 
-export const getRoleFromToken = (token: string | null): UserRole | null => {
-  if (!token) return null;
-
+// Base64URL decode safe pour JWT
+const decodeJwtPayload = (token: string): Record<string, unknown> | null => {
   try {
-    const payloadBase64 = token.split('.')[1];
-    if (!payloadBase64) return null;
+    const payloadBase64Url = token.split('.')[1];
+    if (!payloadBase64Url) return null;
 
-    const payloadJson = atob(payloadBase64);
-    const payload = JSON.parse(payloadJson) as { role?: string };
+    const base64 = payloadBase64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
 
-    return isUserRole(payload.role) ? payload.role : null;
+    const payloadJson = atob(padded);
+    return JSON.parse(payloadJson) as Record<string, unknown>;
   } catch {
     return null;
   }
 };
 
+export const clearAuthStorage = (): void => {
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('user_role');
+  localStorage.removeItem('username');
+  localStorage.removeItem('user_avatar');
+};
+
+export const isTokenExpired = (token: string | null): boolean => {
+  if (!token) return true;
+
+  const payload = decodeJwtPayload(token);
+  if (!payload) return true;
+
+  const exp = payload.exp;
+  if (typeof exp !== 'number') return true;
+
+  const nowInSeconds = Math.floor(Date.now() / 1000);
+  return exp <= nowInSeconds;
+};
+
+export const hasValidSession = (): boolean => {
+  const token = localStorage.getItem('access_token');
+  if (!token || isTokenExpired(token)) {
+    clearAuthStorage();
+    return false;
+  }
+  return true;
+};
+
+export const getRoleFromToken = (token: string | null): UserRole | null => {
+  if (!token) return null;
+
+  const payload = decodeJwtPayload(token);
+  const role = payload?.role;
+
+  return isUserRole(role) ? role : null;
+};
+
 export const getStoredUserRole = (): UserRole | null => {
+  if (!hasValidSession()) return null;
+
   const roleFromStorage = localStorage.getItem('user_role');
   if (isUserRole(roleFromStorage)) {
     return roleFromStorage;
@@ -35,11 +75,8 @@ export const getStoredUserRole = (): UserRole | null => {
 };
 
 export const getHomeRouteByRole = (role: UserRole | null): string => {
-  if (role === UserRole.CLIENT)
-    return '/client';
-  else if (role === UserRole.AGENT)
-    return '/agent';
-  else if (role === UserRole.ADMIN)
-    return '/admin';
+  if (role === UserRole.CLIENT) return '/client';
+  if (role === UserRole.AGENT) return '/agent';
+  if (role === UserRole.ADMIN) return '/admin';
   return '/login';
 };
