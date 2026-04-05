@@ -1,11 +1,11 @@
-import {createBrowserRouter, Navigate} from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import Login from '../views/Login_Page/Login';
 import { Dashboard } from "../views/view_agent/Dashboard";
 import { TicketsPage } from "../views/view_agent/TicketsPage";
 import ProtectedRoute from '../components/ProtectedRoute'
 import PublicRoute from '../components/PublicRoute'
-import {DashboardLayout} from '../layout/layout_agent/DashboardLayout';
-import {UserRole} from '../types';
+import { DashboardLayout } from '../layout/layout_agent/DashboardLayout';
+import { UserRole } from '../types';
 import Register from '../views/Login_Page/Register';
 import ClientLayout from "../layout/layout_client/ClientLayout";
 import ClientHome from "../views/client_view/ClientHome";
@@ -14,13 +14,17 @@ import ClientSettings from "../views/client_view/ClientSettings";
 import Profil from "../components/client_components/Profil";
 import ChatTicketView from '../views/chat_ticket/ChatTicketView';
 import ChatTicketViewClient from '../views/chat_ticket/ChatTicketViewClient';
-import {AdminView, AdminDashboard, AdminTickets, AdminUsers, AdminCategories, AdminStats} from "../views/admin_view/AdminView";
+import { AdminView, AdminDashboard, AdminTickets, AdminUsers, AdminCategories, AdminStats } from "../views/admin_view/AdminView";
 import { GoogleCallback } from '../views/Login_Page/GoogleCallback';
 
 export const router = createBrowserRouter([
 	{
 		path: 'admin',
-		element: <AdminView />,
+		element: (
+			<ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
+				<AdminView />
+			</ProtectedRoute>
+		),
 		children: [
 			{
 				index: true,
@@ -57,9 +61,9 @@ export const router = createBrowserRouter([
 		element: <PublicRoute><Register /></PublicRoute>
 	},
 	{
-        path: 'auth/callback',
-        element: <GoogleCallback />
-    },
+		path: 'auth/callback',
+		element: <GoogleCallback />
+	},
 	{
 		path: 'agent',
 		element: (
@@ -68,27 +72,27 @@ export const router = createBrowserRouter([
 			</ProtectedRoute >
 		),
 		children: [
-        {
-            index: true,
-            element: <Navigate to="dashboard" replace />,
-        },
-        {
-            path: 'dashboard',
-            element: <Dashboard />,
-        },
-        {
-            path: 'tickets',
-            element: <TicketsPage />,
-        },
-        {
-            path: 'notifications',
-            element: <div>Notifications — coming soon</div>,
-        },
-        {
-            path: 'settings',
-            element: <div>Paramètres — coming soon</div>,
-        },
-    ]
+			{
+				index: true,
+				element: <Navigate to="dashboard" replace />,
+			},
+			{
+				path: 'dashboard',
+				element: <Dashboard />,
+			},
+			{
+				path: 'tickets',
+				element: <TicketsPage />,
+			},
+			{
+				path: 'notifications',
+				element: <div>Notifications — coming soon</div>,
+			},
+			{
+				path: 'settings',
+				element: <div>Paramètres — coming soon</div>,
+			},
+		]
 	},
 	{
 		path: 'client',

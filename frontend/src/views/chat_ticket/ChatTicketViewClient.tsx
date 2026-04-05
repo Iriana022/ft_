@@ -7,7 +7,7 @@ import type { ChatMessage, TicketType } from '../../types';
 import { TicketStatus } from '../../types';
 import Avatar from '../../components/client_components/Avatar';
 import { getTicketMessages, sendTicketMessage } from '../../services/tickets';
-import { io } from 'socket.io-client';
+import { getSocket } from '../../services/singleton';
 import { markTicketMessagesAsRead } from '../../services/tickets';
 
 interface TicketMessageHeaderProps {
@@ -93,53 +93,52 @@ function ChatTicketViewClient() {
       }
     };
     loadMessages();
-
-    // Connexion WebSocket
-    const socket = io('/', {
-      path: '/socket.io',
-      transports: ['websocket'],
-      withCredentials: true,
-    });
-
-    // Rejoindre la room du ticket
-    socket.emit('joinTicket', { ticketId });
-
-    // Écouter les nouveaux messages
-    socket.on('newMessage', (message: ChatMessage) => {
-      setMessages((prev) => [...prev, {
-        ...message,
-        createdAt: new Date(message.createdAt)
-      }]);
-      if (message.isFromSupport) {
-        markTicketMessagesAsRead(ticketId).catch(() => {});
-      }
-    });
-
-    return () => {
-      socket.emit('leaveTicket', { ticketId });
-      socket.disconnect();
-    };
   }, [ticketId, chatUnlocked, currentStatus]);
 
   useEffect(() => {
-    if (!ticketId) return;
+    if (!ticketId)
+      return;
 
-    const socket = io('/', {
-      path: '/socket.io',
-      transports: ['websocket'],
-      withCredentials: true,
-    });
+    const socket = getSocket();
 
-    socket.on('ticketStatusUpdated', (updatedTicket: { id: number; status: TicketStatus }) => {
+    const joinRoom = () => {
+      socket.emit('joinTicket', { ticketId });
+    }
+
+    const onnewMessage = (message: ChatMessage) => {
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === message.id))
+          return prev;
+        return [...prev, { ...message, createdAt: new Date(message.createdAt) }];
+      });
+      if (message.isFromSupport) {
+        markTicketMessagesAsRead(ticketId).catch(() => { });
+      }
+    };
+
+    const onticketStatusUpdated = (updatedTicket: { id: number; status: TicketStatus }) => {
       if (updatedTicket.id !== ticketId) return;
       setCurrentStatus(updatedTicket.status);
-    });
+    };
 
-    socket.on('ticketClosed', () => {
-      setCurrentStatus(TicketStatus.CLOSED);
-    });
+    const onticketClosed = (payload?: { ticketId?: number }) => {
+      if (!payload?.ticketId || payload.ticketId === ticketId)
+        setCurrentStatus(TicketStatus.CLOSED);
+    };
 
-    return () => socket.disconnect();
+    socket.on('connect', joinRoom);
+    socket.on('newMessage', onnewMessage);
+    socket.on('ticketStatusUpdated', onticketStatusUpdated);
+    socket.on('ticketClosed', onticketClosed);
+    if (socket.connected)
+      joinRoom();
+    return () => {
+      socket.emit('leaveTicket', { ticketId });
+      socket.off('connect', joinRoom);
+      socket.off('newMessage', onnewMessage);
+      socket.off('ticketStatusUpdated', onticketStatusUpdated);
+      socket.off('ticketClosed', onticketClosed);
+    }
   }, [ticketId]);
 
   const handleSendMessage = async () => {
@@ -208,7 +207,7 @@ function ChatTicketViewClient() {
       </ContainerComp>
 
       {/* Input message */}
-      {chatUnlocked && !isClosed &&(
+      {chatUnlocked && !isClosed && (
         <div className="sticky bottom-0 left-0 right-0 z-50 bg-base-100 border-t">
           <ContainerComp>
             <div className="w-full px-4 py-3">

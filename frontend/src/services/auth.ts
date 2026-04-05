@@ -35,5 +35,11 @@ export const getStoredUserRole = (): UserRole | null => {
 };
 
 export const getHomeRouteByRole = (role: UserRole | null): string => {
-  return role === UserRole.CLIENT ? '/client' : '/agent';
+  if (role === UserRole.CLIENT)
+    return '/client';
+  else if (role === UserRole.AGENT)
+    return '/agent';
+  else if (role === UserRole.ADMIN)
+    return '/admin';
+  return '/login';
 };
