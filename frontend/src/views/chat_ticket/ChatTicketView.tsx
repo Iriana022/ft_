@@ -17,7 +17,7 @@ import { ThemeToggle } from '../../components/agent_components/ThemeToggle';
 import { useTheme } from '../../context/ThemeContext';
 import { TicketPriority, TicketStatus, type Ticket, type ChatMessage } from '../../types';
 import { markTicketMessagesAsRead, updateTicketStatus, getTicketMessages, sendTicketMessage } from '../../services/tickets';
-import { io } from 'socket.io-client';
+import { getSocket } from '../../services/singleton';
 
 type InternalNote = {
 	id: number;
@@ -158,15 +158,13 @@ function ChatTicketView() {
 		};
 		loadMessages();
 
-		const socket = io('/', {
-			path: '/socket.io',
-			transports: ['websocket'],
-			withCredentials: true
-		});
+		const socket = getSocket();
 
-		socket.emit('joinTicket', { ticketId: ticket.id });
+		const joinRoom = () => {
+			socket.emit('joinTicket', { ticketId: ticket.id });
+		}
 
-		socket.on('newMessage', (message: ChatMessage) => {
+		const onNewMessage = (message: ChatMessage) => {
 			setResponses((prev) => {
 				if (prev.some((m) => m.id === message.id))
 					return prev;
@@ -181,11 +179,16 @@ function ChatTicketView() {
 			if (!message.isFromSupport) {
 				markTicketMessagesAsRead(ticket.id).catch(() => { });
 			}
-		});
+		};
 
+		socket.on('connect', joinRoom);
+		socket.on('newMessage', onNewMessage);
+		if (socket.connected)
+			joinRoom();
 		return () => {
 			socket.emit('leaveTicket', { ticketId: ticket.id });
-			socket.disconnect();
+			socket.off('connect', joinRoom);
+			socket.off('newMessage', onNewMessage);
 		};
 	}, [ticket.id, ticket.status, chatUnlocked]);
 

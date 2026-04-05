@@ -1,11 +1,11 @@
-import {createBrowserRouter, Navigate} from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import Login from '../views/Login_Page/Login';
 import {Dashboard} from "../views/view_agent/Dashboard";
 import {TicketsPage} from "../views/view_agent/TicketsPage";
 import ProtectedRoute from '../components/ProtectedRoute'
 import PublicRoute from '../components/PublicRoute'
-import {DashboardLayout} from '../layout/layout_agent/DashboardLayout';
-import {UserRole} from '../types';
+import { DashboardLayout } from '../layout/layout_agent/DashboardLayout';
+import { UserRole } from '../types';
 import Register from '../views/Login_Page/Register';
 import ClientLayout from "../layout/layout_client/ClientLayout";
 import ClientHome from "../views/client_view/ClientHome";
@@ -21,7 +21,11 @@ import {GoogleCallback} from '../views/Login_Page/GoogleCallback';
 export const router = createBrowserRouter([
 	{
 		path: 'admin',
-		element: <AdminView />,
+		element: (
+			<ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
+				<AdminView />
+			</ProtectedRoute>
+		),
 		children: [
 			{
 				index: true,

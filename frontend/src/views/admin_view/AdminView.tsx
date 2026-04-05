@@ -775,7 +775,7 @@ export function AdminTickets() {
 					onPrev={() => setCurrentPage((p) => Math.max(p - 1, 1))}
 				/>
 			</div>
-		</div>
+		</div >
 	);
 }
 

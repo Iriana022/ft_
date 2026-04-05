@@ -6,15 +6,17 @@ import { ThemeToggle } from '../../components/agent_components/ThemeToggle';
 import { useTheme } from '../../context/ThemeContext';
 import { TicketStatus, UserRole, type Ticket as TicketType } from '../../types';
 import { fetchTickets, getTicketStats } from '../../services/tickets';
-import { io } from 'socket.io-client';
+import { getSocket } from '../../services/singleton';
 
 export function Dashboard() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const [tickets, setTickets] = useState<TicketType[]>([]);
-  const [notification, setNotification] = useState<String | null>();
+  const [notification, setNotification] = useState<string | null>(null);
 
   useEffect(() => {
+    let notificationTimer: ReturnType<typeof setTimeout> | null = null;
+
     const loadTickets = async () => {
       try {
         const data = await fetchTickets();
@@ -42,21 +44,24 @@ export function Dashboard() {
 
     loadTickets();
 
-		const socket = io('/', {
-			path: '/socket.io',
-			transports: ['websocket'],
-			withCredentials: true
-		});
-    socket.on('newTicket', (ticket: TicketType) => {
+    const socket = getSocket();
+
+    const handleNewTicket = (ticket: TicketType) => {
       console.log('New ticket received :', ticket);
       if (ticket.author.role === UserRole.CLIENT) {
         setTickets((prev) => [ticket, ...prev]);
         setNotification(`New ticket incoming : ${ticket.title}`);
-        setTimeout(() => setNotification(), 5000);
+        if (notificationTimer)
+          clearTimeout(notificationTimer);
+        notificationTimer = setTimeout(() => setNotification(null), 5000);
       }
-    });
+    };
 
-    socket.on('ticketUnreadUpdated', (payload: { ticketId: number; agentUnreadCount: number; clientUnreadCount: number }) => {
+    const handleticketUnreadUpdated = (payload: {
+      ticketId: number;
+      agentUnreadCount: number;
+      clientUnreadCount: number;
+    }) => {
       setTickets((prev) =>
         prev.map((t) =>
           t.id === payload.ticketId
@@ -68,9 +73,15 @@ export function Dashboard() {
             : t
         )
       );
-    });
+    };
+
+    socket.on('newTicket', handleNewTicket);
+    socket.on('ticketUnreadUpdated', handleticketUnreadUpdated);
     return () => {
-      socket.disconnect();
+      socket.off('newTicket', handleNewTicket);
+      socket.off('ticketUnreadUpdated', handleticketUnreadUpdated);
+      if (notificationTimer)
+        clearTimeout(notificationTimer);
     };
   }, []);
 
@@ -130,7 +141,7 @@ export function Dashboard() {
             icon={Clock}
             color="orange"
           />
-            <StatCard
+          <StatCard
             title="Tickets Resolus"
             value={stats.resolved}
             icon={CheckCircle2}

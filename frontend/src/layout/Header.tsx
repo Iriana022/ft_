@@ -11,9 +11,9 @@ import ContainerComp from './layout_client/Container';
 import MobileMenu from '../components/client_components/MobileMenu';
 import { Link, useNavigate } from 'react-router-dom';
 import { fetchMyTicketsForClientView } from '../services/tickets';
-import { io } from 'socket.io-client'
 import { type ClientNotificationItem } from '../components/client_components/NotificationView';
 import { getMyProfile } from '../services/profile';
+import { getSocket } from '../services/singleton';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -39,7 +39,7 @@ function Header() {
 
 	useEffect(() => {
 		const cachedAvatar = localStorage.getItem('user_avatar');
-		if(cachedAvatar) {
+		if (cachedAvatar) {
 			setAvatar(cachedAvatar);
 		}
 		const loadProfilAvatar = async () => {
@@ -79,13 +79,8 @@ function Header() {
 
 		loadClientTickets();
 
-		const socket = io('/', {
-			path: '/socket.io',
-			transports: ['websocket'],
-			withCredentials: true,
-		});
-
-		socket.on('ticketUnreadUpdated', (payload: { ticketId: number; clientUnreadCount: number }) => {
+		const socket = getSocket();
+		const handleticketUnreadUpdated = (payload: { ticketId: number; clientUnreadCount: number }) => {
 			if (!clientTicketIdsRef.current.has(payload.ticketId)) return;
 
 			setUnreadByTicket((prev) => {
@@ -110,13 +105,11 @@ function Header() {
 					[payload.ticketId]: nextCount,
 				};
 			});
-
-
-		});
-
+		};
+		socket.on('ticketUnreadUpdated', handleticketUnreadUpdated);
 		return () => {
 			mounted = false;
-			socket.disconnect();
+			socket.off('ticketUnreadUpdated', handleticketUnreadUpdated);
 		};
 	}, []);
 
