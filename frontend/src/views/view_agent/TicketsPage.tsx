@@ -6,7 +6,7 @@ import { TicketList } from './TicketList';
 import { ThemeToggle } from '../../components/agent_components/ThemeToggle';
 import { useTheme } from '../../context/ThemeContext';
 import { fetchTickets } from '../../services/tickets';
-import { io } from 'socket.io-client';
+import { getSocket } from '../../services/singleton';
 
 export function TicketsPage() {
   const { theme } = useTheme();
@@ -28,12 +28,8 @@ export function TicketsPage() {
         setIsLoading(false);
       }
     };
-    const socket = io('/', {
-      path: '/socket.io',
-      transports: ['websocket'],
-      withCredentials: true
-    });
-    socket.on('ticketUnreadUpdated', (payload: { ticketId: number; agentUnreadCount: number; clientUnreadCount: number }) => {
+    const socket = getSocket();
+    const onUnread = (payload: { ticketId: number; agentUnreadCount: number; clientUnreadCount: number }) => {
       setTickets((prev) =>
         prev.map((t) =>
           t.id === payload.ticketId
@@ -45,10 +41,11 @@ export function TicketsPage() {
             : t
         )
       );
-    });
+    };
     loadTickets();
+    socket.on('ticketUnreadUpdated', onUnread);
     return () => {
-      socket.disconnect();
+      socket.off('ticketUnreadUpdated', onUnread);
     };
   }, []);
 

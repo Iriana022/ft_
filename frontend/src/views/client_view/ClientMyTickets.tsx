@@ -1,28 +1,28 @@
-import {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import ContainerComp from "../../layout/layout_client/Container";
 import Ticket from "../../components/client_components/Ticket";
 import SearchInput from "../../components/client_components/SearchInput";
-import TicketFilter from "../../components/client_components/TicketFilter";
+import TicketFilter, { type TicketFilterOption } from "../../components/client_components/TicketFilter";
 import CreateTicketView from '../../components/client_components/CreateTicketView';
-import {fetchMyTicketsForClientView} from '../../services/tickets';
-import {type TicketType, TicketPriority, TicketStatus} from '../../types';
-import {io} from 'socket.io-client';
+import { fetchMyTicketsForClientView } from '../../services/tickets';
+import { type TicketType, TicketPriority, TicketStatus } from '../../types';
+import { getSocket } from '../../services/singleton';
 
 function ClientMyTickets() {
 	const status = [
-		{label: "Tous", value: null},
-		{label: "Ouverts", value: TicketStatus.OPEN},
-		{label: "En cours", value: TicketStatus.IN_PROGRESS},
-		{label: "Résolus", value: TicketStatus.RESOLVED},
-		{label: "Fermés", value: TicketStatus.CLOSED},
+		{ label: "Tous", value: null },
+		{ label: "Ouverts", value: TicketStatus.OPEN },
+		{ label: "En cours", value: TicketStatus.IN_PROGRESS },
+		{ label: "Résolus", value: TicketStatus.RESOLVED },
+		{ label: "Fermés", value: TicketStatus.CLOSED },
 	];
 
 	const priorities = [
-		{label: "Tous", value: null},
-		{label: "Basses", value: TicketPriority.LOW},
-		{label: "Moyennes", value: TicketPriority.MEDIUM},
-		{label: "Hautes", value: TicketPriority.HIGH},
-		{label: "Urgentes", value: TicketPriority.URGENT},
+		{ label: "Tous", value: null },
+		{ label: "Basses", value: TicketPriority.LOW },
+		{ label: "Moyennes", value: TicketPriority.MEDIUM },
+		{ label: "Hautes", value: TicketPriority.HIGH },
+		{ label: "Urgentes", value: TicketPriority.URGENT },
 	];
 
 	const [currentFilterStatus, setCurrentFilterStatus] = useState(status[0].label);
@@ -32,14 +32,15 @@ function ClientMyTickets() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [isCreateTicketOpen, setIsCreateTicketOpen] = useState(false);
 
-	const handleSelectStatus = (e: React.MouseEvent, element: string) => {
+
+	const handleSelectStatus = (e: React.MouseEvent, element: TicketFilterOption) => {
 		e.stopPropagation();
-		setCurrentFilterStatus(element.value);
+		setCurrentFilterStatus(element.label);
 	}
 
-	const handleSelectPriority = (e: React.MouseEvent, element: string) => {
+	const handleSelectPriority = (e: React.MouseEvent, element: TicketFilterOption) => {
 		e.stopPropagation();
-		setCurrentFilterPriority(element.value);
+		setCurrentFilterPriority(element.label);
 	}
 
 	const loadTickets = async () => {
@@ -56,17 +57,14 @@ function ClientMyTickets() {
 	useEffect(() => {
 		loadTickets();
 
-		const socket = io('/', {
-			path: '/socket.io',
-			transports: ['websocket'],
-			withCredentials: true,
-		});
-		socket.on('ticketStatusUpdated', (updatedTicket: {id: number; status: string}) => {
+		const socket = getSocket();
+
+		const handleticketStatusUpdated = (updatedTicket: { id: number; status: TicketStatus }) => {
 			setTickets((prev) =>
-				prev.map((t) => t.id === updatedTicket.id ? {...t, status: updatedTicket.status as any} : t)
+				prev.map((t) => t.id === updatedTicket.id ? { ...t, status: updatedTicket.status } : t)
 			);
-		});
-		socket.on('ticketUnreadUpdated', (payload: {ticketId: number; clientUnreadCount: number}) => {
+		};
+		const handleticketUnreadUpdated = (payload: { ticketId: number; clientUnreadCount: number }) => {
 			setTickets((prev) =>
 				prev.map((t) =>
 					t.id === payload.ticketId
@@ -78,9 +76,12 @@ function ClientMyTickets() {
 						: t
 				)
 			);
-		});
+		};
+		socket.on('ticketStatusUpdated', handleticketStatusUpdated);
+		socket.on('ticketUnreadUpdated', handleticketUnreadUpdated);
 		return () => {
-			socket.disconnect();
+			socket.off('ticketStatusUpdated', handleticketStatusUpdated);
+			socket.off('ticketUnreadUpdated', handleticketUnreadUpdated);
 		};
 	}, []);
 

@@ -1,7 +1,7 @@
-import React, {useState} from 'react';
-import {FunnelIcon} from '@heroicons/react/24/outline';
-import {ChevronDownIcon} from '@heroicons/react/24/outline';
-import {TicketStatus, TicketPriority} from '../../types';
+import React, { useState } from 'react';
+import { FunnelIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import { TicketStatus, TicketPriority } from '../../types';
 
 interface TicketFilterElementProps {
 	name: string,
@@ -18,18 +18,13 @@ function TicketFilterElement(props: TicketFilterElementProps) {
 	);
 }
 
-interface StatusFilter {
+export type TicketFilterOption = {
 	label: string,
-	value: TicketStatus | null,
-}
-
-interface PriorityFilter {
-	label: string,
-	value: TicketPriority | null,
+	value: TicketStatus | TicketPriority | null;
 }
 
 interface TicketFilterProps {
-	list: {label: string, value: TicketStatus | TicketPriority | null}[],
+	list: TicketFilterOption[];
 	currentFilterElement: string,
 	handleSelect: (e: React.MouseEvent, element: StatusFilter | PriorityFilter) => void;
 }
