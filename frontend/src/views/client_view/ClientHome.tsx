@@ -5,7 +5,7 @@ import ClientHomeHeroSection from '../../components/client_components/ClientHome
 import ClientHomeMyTicketsSection from '../../components/client_components/ClientHomeMyTicketsSection';
 import { fetchMyTicketsForClientView } from '../../services/tickets';
 import type { TicketType } from '../../types';
-import { io } from 'socket.io-client';
+import { getSocket } from '../../services/singleton';
 
 function ClientHome() {
 	const [tickets, setTickets] = useState<TicketType[]>([]);
@@ -24,18 +24,14 @@ function ClientHome() {
 
 	useEffect(() => {
 		loadTickets();
-		const socket = io('/', {
-			path: '/socket.io',
-			transports: ['websocket'],
-			withCredentials: true,
-		});
+		const socket = getSocket();
 
-		socket.on('ticketStatusUpdated', (updatedTicket: TicketType) => {
+		const handleticketStatusUpdated = (updatedTicket: TicketType) => {
 			setTickets((prev) =>
 				prev.map((t) => (t.id === updatedTicket.id ? updatedTicket : t)),
 			);
-		});
-		socket.on('ticketUnreadUpdated', (payload: { ticketId: number; clientUnreadCount: number }) => {
+		};
+		const handleticketUnreadUpdated = (payload: { ticketId: number; clientUnreadCount: number }) => {
 			setTickets((prev) =>
 				prev.map((t) =>
 					t.id === payload.ticketId
@@ -47,9 +43,12 @@ function ClientHome() {
 						: t,
 				),
 			);
-		});
+		};
+		socket.on('ticketStatusUpdated', handleticketStatusUpdated);
+		socket.on('ticketUnreadUpdated', handleticketUnreadUpdated);
 		return () => {
-			socket.disconnect();
+			socket.off('ticketStatusUpdated', handleticketStatusUpdated);
+			socket.off('ticketUnreadUpdated', handleticketUnreadUpdated);
 		};
 	}, [loadTickets]);
 

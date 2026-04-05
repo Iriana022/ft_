@@ -12,8 +12,8 @@ export default defineConfig({
 		host: '0.0.0.0',
 		port: 5173,
 		strictPort: true,
-		origin: 'http://localhost:5173',
-		hmr: { protocol: 'wss', host: 'localhost', port: 443, clientPort: 443 },
+		// origin: 'http://localhost',
+		// hmr: { protocol: 'wss', host: 'localhost', port: 443, clientPort: 443, path: '/vite-hmr' },
 		watch: {
 			usePolling: true,
 			interval: 100,
