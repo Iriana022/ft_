@@ -623,9 +623,18 @@ interface PriorityFilter {
 	value: TicketPriority | null,
 }
 
-// function ActionIcon({icon: HeroIconType}: {icon: HeroIconType}) {
-// 	return ();
-// }
+interface ActionIconProps {
+	icon: HeroIconType,
+	className: string,
+}
+
+function ActionIcon(props: ActionIconProps) {
+	return (
+		<div className="p-2 transition hover:bg-blue-200 rounded-full cursor-pointer">
+			<props.icon className={props.className} />
+		</div>
+	);
+}
 
 export function AdminTickets() {
 	// TODO: refactor this code
@@ -749,12 +758,8 @@ export function AdminTickets() {
 										{new Date(ticket.createdAt).toLocaleDateString("fr-FR").replace(/\//g, "-")}
 									</td>
 									<td className="px-5 py-3 text-gray-500 whitespace-nowrap flex items-center gap-5">
-										<div className="p-2 transition hover:bg-blue-200 rounded-full cursor-pointer">
-											<EyeIcon className="w-4 h-4" />
-										</div>
-										<div className="p-2 transition hover:bg-red-100 rounded-full cursor-pointer">
-											<TrashIcon className="w-4 h-4 text-red-500" />
-										</div>
+										<ActionIcon icon={EyeIcon} className="w-3 h-4" />
+										<ActionIcon icon={TrashIcon} className="w-4 h-4 text-red-500" />
 									</td>
 								</tr>
 							))
@@ -803,7 +808,7 @@ interface DrawerSideContentProps {
 	setIsOpen: (s: boolean) => void,
 }
 
-function DrawerSideContent(props: DraweSideContentProps) {
+function DrawerSideContent(props: DrawerSideContentProps) {
 	const handleNavClick = () => {
 		if (window.innerWidth < 1024) {
 			props.setIsOpen(false);
