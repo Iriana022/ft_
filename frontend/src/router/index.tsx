@@ -1,7 +1,7 @@
 import {createBrowserRouter, Navigate} from "react-router-dom";
 import Login from '../views/Login_Page/Login';
-import { Dashboard } from "../views/view_agent/Dashboard";
-import { TicketsPage } from "../views/view_agent/TicketsPage";
+import {Dashboard} from "../views/view_agent/Dashboard";
+import {TicketsPage} from "../views/view_agent/TicketsPage";
 import ProtectedRoute from '../components/ProtectedRoute'
 import PublicRoute from '../components/PublicRoute'
 import {DashboardLayout} from '../layout/layout_agent/DashboardLayout';
@@ -14,8 +14,9 @@ import ClientSettings from "../views/client_view/ClientSettings";
 import Profil from "../components/client_components/Profil";
 import ChatTicketView from '../views/chat_ticket/ChatTicketView';
 import ChatTicketViewClient from '../views/chat_ticket/ChatTicketViewClient';
+import SelectRole from "../views/Login_Page/SelectRole";
 import {AdminView, AdminDashboard, AdminTickets, AdminUsers, AdminCategories, AdminStats} from "../views/admin_view/AdminView";
-import { GoogleCallback } from '../views/Login_Page/GoogleCallback';
+import {GoogleCallback} from '../views/Login_Page/GoogleCallback';
 
 export const router = createBrowserRouter([
 	{
@@ -57,9 +58,13 @@ export const router = createBrowserRouter([
 		element: <PublicRoute><Register /></PublicRoute>
 	},
 	{
-        path: 'auth/callback',
-        element: <GoogleCallback />
-    },
+		path: 'select_role',
+		element: <SelectRole />
+	},
+	{
+		path: 'auth/callback',
+		element: <GoogleCallback />
+	},
 	{
 		path: 'agent',
 		element: (
@@ -68,27 +73,27 @@ export const router = createBrowserRouter([
 			</ProtectedRoute >
 		),
 		children: [
-        {
-            index: true,
-            element: <Navigate to="dashboard" replace />,
-        },
-        {
-            path: 'dashboard',
-            element: <Dashboard />,
-        },
-        {
-            path: 'tickets',
-            element: <TicketsPage />,
-        },
-        {
-            path: 'notifications',
-            element: <div>Notifications — coming soon</div>,
-        },
-        {
-            path: 'settings',
-            element: <div>Paramètres — coming soon</div>,
-        },
-    ]
+			{
+				index: true,
+				element: <Navigate to="dashboard" replace />,
+			},
+			{
+				path: 'dashboard',
+				element: <Dashboard />,
+			},
+			{
+				path: 'tickets',
+				element: <TicketsPage />,
+			},
+			{
+				path: 'notifications',
+				element: <div>Notifications — coming soon</div>,
+			},
+			{
+				path: 'settings',
+				element: <div>Paramètres — coming soon</div>,
+			},
+		]
 	},
 	{
 		path: 'client',
@@ -121,14 +126,6 @@ export const router = createBrowserRouter([
 			</ProtectedRoute>
 		)
 	},
-	// {
-	// 	path: 'client/ticket_message',
-	// 	element: (
-	// 		<ProtectedRoute allowedRoles={[UserRole.CLIENT]}>
-	// 			<ChatTicketViewClient />
-	// 		</ProtectedRoute>
-	// 	)
-	// },
 	{
 		path: 'chat_ticket_client',
 		element: (
