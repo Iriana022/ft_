@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { UserRole } from '../types';
-import { getHomeRouteByRole, getStoredUserRole } from '../services/auth';
+import { getHomeRouteByRole, getStoredUserRole, hasValidSession } from '../services/auth';
 
 const ProtectedRoute = ({
     children,
@@ -9,14 +9,11 @@ const ProtectedRoute = ({
     children: JSX.Element;
     allowedRoles?: UserRole[];
 }) => {
-    const token = localStorage.getItem('access_token');
-    const role = getStoredUserRole();
-
-    if (!token) {
-        // !token ? redirect to login
+    if (!hasValidSession()) {
         return <Navigate to="/login" replace />;
     }
-
+    
+    const role = getStoredUserRole();
     if (allowedRoles && allowedRoles.length > 0 && (!role || !allowedRoles.includes(role))) {
         return <Navigate to={getHomeRouteByRole(role)} replace />;
     }

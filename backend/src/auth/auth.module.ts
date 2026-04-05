@@ -14,7 +14,7 @@ import { GoogleModule } from './google/google.module';
     PassportModule.register({ defaultStrategy: '42' }), 
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'secret',
-      signOptions: { expiresIn: '1d' },
+      signOptions: { expiresIn: '60m' },
     }), GoogleModule,
   ],
   controllers: [AuthController],

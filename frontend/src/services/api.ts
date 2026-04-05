@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { clearAuthStorage } from './auth';
 
 const api = axios.create({
   baseURL: 'https://localhost:8443/api/', 
@@ -20,9 +21,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('username');
-      localStorage.removeItem('user_role');
+      clearAuthStorage();
     }
     return Promise.reject(error);
   },
