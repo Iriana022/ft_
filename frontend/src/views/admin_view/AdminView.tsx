@@ -782,7 +782,10 @@ export function AdminTickets() {
 export function AdminCategories() {
 	return (
 		<div>
-			Categories
+			<label className="input text-sm bg-white rounded-lg border border-gray-200 max-w-[280px]">
+				<MagnifyingGlassIcon className="w-4 h-4 text-gray-600" />
+				<input type="search" className="text-sm" required placeholder="Rechercher des categories" />
+			</label>
 		</div>
 	);
 }
