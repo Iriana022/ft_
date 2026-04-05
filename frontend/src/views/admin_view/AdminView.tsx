@@ -623,6 +623,19 @@ interface PriorityFilter {
 	value: TicketPriority | null,
 }
 
+interface ActionIconProps {
+	icon: HeroIconType,
+	className: string,
+}
+
+function ActionIcon(props: ActionIconProps) {
+	return (
+		<div className="p-2 transition hover:bg-blue-200 rounded-full cursor-pointer">
+			<props.icon className={props.className} />
+		</div>
+	);
+}
+
 export function AdminTickets() {
 	// TODO: refactor this code
 	const statusFilterElements = [
@@ -690,14 +703,8 @@ export function AdminTickets() {
 					<input type="search" className="text-sm" required placeholder="Rechercher des tickets" />
 				</label>
 				<div className="flex items-center gap-4">
-					<div className="flex items-center gap-2">
-						<span className="text-xs md:text-sm">Status:</span>
-						<TicketFilter list={statusFilterElements} currentFilterElement={currentFilterElementStatus?.label ?? "Tous"} handleSelect={handleSelectStatus} />
-					</div>
-					<div className="flex items-center gap-2">
-						<span className="text-xs md:text-sm">Priorite:</span>
-						<TicketFilter list={priorityFilterElements} currentFilterElement={currentFilterElementPriority?.label ?? "Tous"} handleSelect={handleSelectPriority} />
-					</div>
+					<TicketFilter label="Status" list={statusFilterElements} currentFilterElement={currentFilterElementStatus?.label ?? "Tous"} handleSelect={handleSelectStatus} />
+					<TicketFilter label="Priorite" list={priorityFilterElements} currentFilterElement={currentFilterElementPriority?.label ?? "Tous"} handleSelect={handleSelectPriority} />
 				</div>
 			</div>
 			<div className="bg-white py-4 rounded-md shadow mt-8">
@@ -751,12 +758,8 @@ export function AdminTickets() {
 										{new Date(ticket.createdAt).toLocaleDateString("fr-FR").replace(/\//g, "-")}
 									</td>
 									<td className="px-5 py-3 text-gray-500 whitespace-nowrap flex items-center gap-5">
-										<div className="p-2 transition hover:bg-blue-200 rounded-full cursor-pointer">
-											<EyeIcon className="w-4 h-4" />
-										</div>
-										<div className="p-2 transition hover:bg-red-100 rounded-full cursor-pointer">
-											<TrashIcon className="w-4 h-4 text-red-500" />
-										</div>
+										<ActionIcon icon={EyeIcon} className="w-3 h-4" />
+										<ActionIcon icon={TrashIcon} className="w-4 h-4 text-red-500" />
 									</td>
 								</tr>
 							))
@@ -805,7 +808,7 @@ interface DrawerSideContentProps {
 	setIsOpen: (s: boolean) => void,
 }
 
-function DrawerSideContent(props: DraweSideContentProps) {
+function DrawerSideContent(props: DrawerSideContentProps) {
 	const handleNavClick = () => {
 		if (window.innerWidth < 1024) {
 			props.setIsOpen(false);
