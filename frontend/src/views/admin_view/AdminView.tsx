@@ -21,7 +21,7 @@ import TikeoLogo from '../../components/client_components/TikeoLogo';
 import Notification from '../../components/client_components/Notification';
 import Avatar from '../../components/client_components/Avatar';
 import {Outlet, Link, NavLink} from 'react-router-dom';
-import {type HeroIconType, TicketStatus, TicketPriority, StatCardType} from '../../types';
+import {type HeroIconType, TicketStatus, TicketPriority, StatCardType, HeroIconType} from '../../types';
 import {RechartsDevtools} from '@recharts/devtools';
 import {
 	LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -623,6 +623,10 @@ interface PriorityFilter {
 	value: TicketPriority | null,
 }
 
+function ActionIcon({icon: HeroIconType}: {icon: HeroIconType}) {
+	return ();
+}
+
 export function AdminTickets() {
 	// TODO: refactor this code
 	const statusFilterElements = [
@@ -690,14 +694,8 @@ export function AdminTickets() {
 					<input type="search" className="text-sm" required placeholder="Rechercher des tickets" />
 				</label>
 				<div className="flex items-center gap-4">
-					<div className="flex items-center gap-2">
-						<span className="text-xs md:text-sm">Status:</span>
-						<TicketFilter list={statusFilterElements} currentFilterElement={currentFilterElementStatus?.label ?? "Tous"} handleSelect={handleSelectStatus} />
-					</div>
-					<div className="flex items-center gap-2">
-						<span className="text-xs md:text-sm">Priorite:</span>
-						<TicketFilter list={priorityFilterElements} currentFilterElement={currentFilterElementPriority?.label ?? "Tous"} handleSelect={handleSelectPriority} />
-					</div>
+					<TicketFilter label="Status" list={statusFilterElements} currentFilterElement={currentFilterElementStatus?.label ?? "Tous"} handleSelect={handleSelectStatus} />
+					<TicketFilter label="Priorite" list={priorityFilterElements} currentFilterElement={currentFilterElementPriority?.label ?? "Tous"} handleSelect={handleSelectPriority} />
 				</div>
 			</div>
 			<div className="bg-white py-4 rounded-md shadow mt-8">
@@ -772,7 +770,7 @@ export function AdminTickets() {
 					onPrev={() => setCurrentPage((p) => Math.max(p - 1, 1))}
 				/>
 			</div>
-		</div>
+		</div >
 	);
 }
 

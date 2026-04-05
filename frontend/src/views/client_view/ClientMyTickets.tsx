@@ -108,8 +108,8 @@ function ClientMyTickets() {
 					</div >
 					<div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-10">
 						<SearchInput />
-						<TicketFilter list={status} currentFilterElement={currentFilterStatus} handleSelect={handleSelectStatus} />
-						<TicketFilter list={priorities} currentFilterElement={currentFilterPriority} handleSelect={handleSelectPriority} />
+						<TicketFilter label="Status" list={status} currentFilterElement={currentFilterStatus} handleSelect={handleSelectStatus} />
+						<TicketFilter label="Priorite" list={priorities} currentFilterElement={currentFilterPriority} handleSelect={handleSelectPriority} />
 					</div>
 					<p className="my-4">Tous les tickets</p>
 					{
