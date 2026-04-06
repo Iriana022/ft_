@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
-import { getHomeRouteByRole, getRoleFromToken } from '../../services/auth';
-import { UserRole } from '../../types';
+// import { getHomeRouteByRole, getRoleFromToken } from '../../services/auth';
+// import { UserRole } from '../../types';
 
 export function GoogleCallback() {
     const [searchParams] = useSearchParams();
@@ -21,18 +21,25 @@ export function GoogleCallback() {
                     console.log("meResponse:", meResponse)
                     const username = meResponse.data?.username;
                     console.log("username:", username);
-                    const role = UserRole.CLIENT;
-                    // const role = meResponse.data?.role ?? getRoleFromToken(token);
-                    console.log("role:", role);
-                    
+                    // const role = UserRole.CLIENT;
+                    // // const role = meResponse.data?.role ?? getRoleFromToken(token);
+                    // console.log("role:", role);
+
                     if (username) localStorage.setItem('username', username);
-                    if (role) localStorage.setItem('user_role', role);
-                    navigate(getHomeRouteByRole(role));
+                    // if (role) localStorage.setItem('user_role', role);
+                    // navigate(getHomeRouteByRole(role));
+
+                    localStorage.removeItem('user_role');
+                    navigate('/select_role', { replace: true });
                 } catch (profileErr) {
                     console.warn('Erreur profil après Google:', profileErr);
-                    const role = getRoleFromToken(token);
-                    if (role) localStorage.setItem('user_role', role);
-                    navigate(getHomeRouteByRole(role));
+                    // const role = getRoleFromToken(token);
+                    // if (role) localStorage.setItem('user_role', role);
+                    // navigate(getHomeRouteByRole(role));
+                    localStorage.removeItem('access_token');
+                    localStorage.removeItem('user_role');
+                    localStorage.removeItem('username');
+                    navigate('/login?error=google_failed', { replace: true });
                 }
             };
 

@@ -1,6 +1,15 @@
-import {UserIcon, BriefcaseIcon} from "@heroicons/react/24/outline";
+import { UserIcon, BriefcaseIcon } from "@heroicons/react/24/outline";
+import { useNavigate } from "react-router-dom";
+import { getHomeRouteByRole } from "../../services/auth";
+import { UserRole } from "../../types";
 
 export function SelectRole() {
+	const navigate = useNavigate();
+
+	const handleSelectRole = (role: UserRole) => {
+		localStorage.setItem("user_role", role);
+		navigate(getHomeRouteByRole(role), { replace: true });
+	};
 	return (
 		<div className="min-h-screen flex items-center justify-center bg-gray-50">
 			<div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
@@ -9,6 +18,8 @@ export function SelectRole() {
 				</h1>
 				<div className="flex flex-col gap-4">
 					<button
+						type="button"
+						onClick={() => handleSelectRole(UserRole.CLIENT)}
 						className="flex items-center gap-4 p-4 border rounded-xl hover:bg-gray-100 transition"
 					>
 						<UserIcon className="w-6 h-6 text-blue-500" />
@@ -20,6 +31,8 @@ export function SelectRole() {
 						</div>
 					</button>
 					<button
+						type="button"
+						onClick={() => handleSelectRole(UserRole.AGENT)}
 						className="flex items-center gap-4 p-4 border rounded-xl hover:bg-gray-100 transition"
 					>
 						<BriefcaseIcon className="w-6 h-6 text-green-500" />
