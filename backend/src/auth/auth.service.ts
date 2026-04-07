@@ -78,25 +78,6 @@ export class AuthService {
     return user;
   }
 
-  async validateUser(profile: any) {
-    let user = await this.prisma.user.findUnique({
-      where: { fortyTwoId: Number(profile.fortyTwoId) },
-    });
-
-    if (!user) {
-      user = await this.prisma.user.create({
-        data: {
-          fortyTwoId: Number(profile.fortyTwoId),
-          login: profile.login,
-          email: profile.email,
-          avatar: profile.avatar,
-          role: 'CLIENT', // Role here
-        },
-      });
-    }
-    return user;
-  }
-
   async completeGoogleRoleSelection(userId: number, role: 'CLIENT' | 'AGENT') {
     if (role !== 'CLIENT' && role !== 'AGENT') {
       throw new BadRequestException('Role invalide');

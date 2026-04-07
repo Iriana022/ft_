@@ -16,7 +16,7 @@ export class UserService {
         return join(process.cwd(), 'uploads', basename(avatarUrl));
     }
 
-    async create(data: { fortyTwoId: number, login: string, email: string }) {
+    async create(data: { login: string, email: string }) {
         return this.prisma.user.create({ data })
     }
 

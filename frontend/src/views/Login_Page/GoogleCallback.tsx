@@ -33,29 +33,16 @@ export function GoogleCallback() {
                     const meResponse = await api.get('/auth/me');
                     // console.log("meResponse:", meResponse)
                     const username = meResponse.data?.username;
-                    // console.log("username:", username);
+                    console.log("username:", username);
                     // const role = UserRole.CLIENT;
                     const role = meResponse.data?.role ?? getRoleFromToken(token);
-                    // console.log("role:", role);
-                    const profileResponse = await api.get('/user/me');
-                    const freshAvatar = profileResponse.data?.avatar;
-                    if (freshAvatar) {
-                        localStorage.setItem('user_avatar', freshAvatar);
-                    }
-                    if (username)
-                        localStorage.setItem('username', username);
-                    if (role)
-                        localStorage.setItem('user_role', role);
-                    // navigate(getHomeRouteByRole(role));
-                    else {
-                        clearAuthStorage();
-                        navigate('/login?error=google_failed', { replace: true });
-                        return;
-                    }
-                    // localStorage.removeItem('user_role');
-                    navigate(getHomeRouteByRole(role), { replace: true });
-                } catch {
-                    // console.warn('Erreur profil après Google:', profileErr);
+                    console.log("role:", role);
+                    
+                    if (username) localStorage.setItem('username', username);
+                    if (role) localStorage.setItem('user_role', role);
+                    navigate(getHomeRouteByRole(role));
+                } catch (profileErr) {
+                    console.warn('Erreur profil après Google:', profileErr);
                     const role = getRoleFromToken(token);
                     if (role) {
                         localStorage.setItem('user_role', role);
