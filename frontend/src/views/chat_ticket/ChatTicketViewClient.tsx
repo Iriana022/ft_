@@ -63,8 +63,7 @@ function ChatTicketViewClient() {
   }, [messages]);
 
   useEffect(() => {
-    if (currentStatus === TicketStatus.IN_PROGRESS) setChatUnlocked(true);
-    if (currentStatus === TicketStatus.CLOSED) setChatUnlocked(false);
+    setChatUnlocked(currentStatus === TicketStatus.IN_PROGRESS);
   }, [currentStatus]);
 
   useEffect(() => {

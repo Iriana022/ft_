@@ -45,9 +45,9 @@ export class TicketsController {
     @UseGuards(JwtAuthGuard)
     async getMessages(
         @Param('id', ParseIntPipe) id: number,
-        @Req() req: { user: { userId: number } },
+        @Req() req: { user: { userId: number; role: 'CLIENT' | 'AGENT' | 'ADMIN' } },
     ) {
-        return this.ticketsService.getMessage(id);
+        return this.ticketsService.getMessage(id, req.user.userId, req.user.role as any);
     }
 
     @Post(':id/messages')

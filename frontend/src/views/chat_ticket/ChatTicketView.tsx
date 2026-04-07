@@ -16,6 +16,7 @@ import {
 import {TicketPriority, TicketStatus, type Ticket, type ChatMessage} from '../../types';
 import {markTicketMessagesAsRead, updateTicketStatus, getTicketMessages, sendTicketMessage} from '../../services/tickets';
 import {getSocket} from '../../services/singleton';
+import {getUserIdFromToken} from '../../services/auth';
 
 type InternalNote = {
 	id: number;
@@ -62,6 +63,7 @@ function ChatTicketView() {
 	const navigate = useNavigate();
 	const location = useLocation() as {state?: LocationState};
 	const [searchParams] = useSearchParams();
+	const currentUserId = getUserIdFromToken(localStorage.getItem('access_token'));
 	const [activeTab, setActiveTab] = useState<'responses' | 'notes'>('responses');
 	const [newResponse, setNewResponse] = useState('');
 	const [newNote, setNewNote] = useState('');
@@ -111,10 +113,22 @@ function ChatTicketView() {
 	const [chatUnlocked, setChatUnlocked] = useState(
 		initialTicket.status === TicketStatus.IN_PROGRESS
 	);
+	const isTicketHandledByAnotherAgent =
+		ticket.status === TicketStatus.IN_PROGRESS &&
+		ticket.assignedToId !== undefined &&
+		ticket.assignedToId !== null &&
+		currentUserId !== null &&
+		ticket.assignedToId !== currentUserId;
+	const canViewResponses =
+		chatUnlocked &&
+		ticket.status !== TicketStatus.CLOSED;
+	const canUseResponses =
+		chatUnlocked &&
+		ticket.status !== TicketStatus.CLOSED &&
+		!isTicketHandledByAnotherAgent;
 
 	useEffect(() => {
-		if (ticket.status === TicketStatus.IN_PROGRESS) setChatUnlocked(true);
-		if (ticket.status === TicketStatus.CLOSED) setChatUnlocked(false);
+		setChatUnlocked(ticket.status === TicketStatus.IN_PROGRESS);
 	}, [ticket.status]);
 
 	useEffect(() => {
@@ -127,13 +141,14 @@ function ChatTicketView() {
 
 	useEffect(() => {
 		if (!ticket.id) return;
+		if (isTicketHandledByAnotherAgent) return;
 		markTicketMessagesAsRead(ticket.id).catch((error) => {
 			console.error('Erreur reset unread agent:', error);
 		});
-	}, [ticket.id]);
+	}, [ticket.id, isTicketHandledByAnotherAgent]);
 
 	useEffect(() => {
-		if (!chatUnlocked || ticket.status === TicketStatus.CLOSED) {
+		if (!canViewResponses) {
 			setIsLoadingMessages(false);
 			return;
 		}
@@ -168,21 +183,28 @@ function ChatTicketView() {
 					},
 				];
 			});
-			if (!message.isFromSupport) {
+			if (!message.isFromSupport && !isTicketHandledByAnotherAgent) {
 				markTicketMessagesAsRead(ticket.id).catch(() => {});
 			}
 		};
 
+		const onTicketStatusUpdated = (updatedTicket: Ticket) => {
+			if (updatedTicket.id !== ticket.id) return;
+			setTicket(updatedTicket);
+		};
+
 		socket.on('connect', joinRoom);
 		socket.on('newMessage', onNewMessage);
+		socket.on('ticketStatusUpdated', onTicketStatusUpdated);
 		if (socket.connected)
 			joinRoom();
 		return () => {
 			socket.emit('leaveTicket', {ticketId: ticket.id});
 			socket.off('connect', joinRoom);
 			socket.off('newMessage', onNewMessage);
+			socket.off('ticketStatusUpdated', onTicketStatusUpdated);
 		};
-	}, [ticket.id, ticket.status, chatUnlocked]);
+	}, [ticket.id, canViewResponses, isTicketHandledByAnotherAgent]);
 
 	const formatDate = (dateValue: Date | string) => {
 		const date = new Date(dateValue);
@@ -206,7 +228,7 @@ function ChatTicketView() {
 	};
 
 	const handleSendResponse = async () => {
-		if (!newResponse.trim()) return;
+		if (!newResponse.trim() || !canUseResponses) return;
 
 		try {
 			const created = await sendTicketMessage(ticket.id, newResponse, true);
@@ -333,13 +355,19 @@ function ChatTicketView() {
 						<div className="p-6">
 							{activeTab === 'responses' ? (
 								<div className="space-y-6">
-									{!chatUnlocked && (
+									{isTicketHandledByAnotherAgent && (
+										<div className="rounded-lg p-3 text-center text-sm bg-red-50 text-red-700">
+											🔒 Ce ticket est déjà en cours de traitement par un autre agent.
+										</div>
+									)}
+
+									{!chatUnlocked && !isTicketHandledByAnotherAgent && (
 										<div className="rounded-lg p-3 text-center text-sm bg-yellow-50 text-yellow-700">
 											⚠️ Le canal de messagerie s'ouvrira quand le statut sera "En cours".
 										</div>
 									)}
 
-									{chatUnlocked && ticket.status !== TicketStatus.CLOSED && (
+									{canUseResponses && (
 										<div className="rounded-lg border p-4 bg-gray-50 border-gray-200">
 											<div className="mb-3 flex items-center gap-2">
 												<MessageSquare className="h-5 w-5 text-indigo-600" />
@@ -350,9 +378,7 @@ function ChatTicketView() {
 												onChange={(e) => setNewResponse(e.target.value)}
 												placeholder="Écrivez votre réponse au client..."
 												rows={3}
-												className="w-full resize-none rounded-lg border px-4 py-3 transition-colorsi
-												bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-indigo-600'
-												focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+												className="w-full resize-none rounded-lg border px-4 py-3 transition-colors bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
 											/>
 											<div className="mt-3 flex justify-end">
 												<button
@@ -474,6 +500,7 @@ function ChatTicketView() {
 								<select
 									value={selectedStatus}
 									onChange={(e) => setSelectedStatus(e.target.value as TicketStatus)}
+									disabled={isTicketHandledByAnotherAgent}
 									className="w-full rounded-lg border px-3 py-2 text-sm bg-white border-gray-300 text-gray-900"
 								>
 									<option value={TicketStatus.OPEN}>Ouvert</option>
@@ -484,11 +511,16 @@ function ChatTicketView() {
 								<button
 									type="button"
 									onClick={handleUpdateStatus}
-									disabled={isSavingStatus || selectedStatus === ticket.status}
+									disabled={isTicketHandledByAnotherAgent || isSavingStatus || selectedStatus === ticket.status}
 									className="mt-2 w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
 								>
 									{isSavingStatus ? 'Mise a jour...' : 'Appliquer le statut'}
 								</button>
+								{isTicketHandledByAnotherAgent && (
+									<p className="mt-2 text-xs text-red-600">
+										Ticket verrouillé: déjà assigné à un autre agent.
+									</p>
+								)}
 							</div>
 							<div>
 								<div className="mb-2 flex items-center gap-2 text-sm text-gray-599">

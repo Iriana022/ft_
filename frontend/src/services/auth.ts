@@ -58,6 +58,15 @@ export const getRoleFromToken = (token: string | null): UserRole | null => {
   return isUserRole(role) ? role : null;
 };
 
+export const getUserIdFromToken = (token: string | null): number | null => {
+  if (!token) return null;
+
+  const payload = decodeJwtPayload(token);
+  const sub = payload?.sub;
+
+  return typeof sub === 'number' ? sub : null;
+};
+
 export const getStoredUserRole = (): UserRole | null => {
   if (!hasValidSession()) return null;
 
