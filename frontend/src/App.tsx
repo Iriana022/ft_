@@ -1,10 +1,9 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import { ThemeProvider } from './context/ThemeContext'
-import { router } from './router';
-import { useEffect } from 'react';
-import { getSocket } from './services/singleton';
+import {RouterProvider} from 'react-router-dom'
+import {router} from './router';
+import {useEffect} from 'react';
+import {getSocket} from './services/singleton';
 
-function SocketBootstrap({ children }: { children: React.ReactNode }) {
+function SocketBootstrap({children}: {children: React.ReactNode}) {
 	useEffect(() => {
 		const socket = getSocket();
 
@@ -34,12 +33,10 @@ function SocketBootstrap({ children }: { children: React.ReactNode }) {
 
 function App() {
 	return (
-		<ThemeProvider>
-			<SocketBootstrap>
-				<RouterProvider router={router} />
-			</SocketBootstrap>
-		</ThemeProvider>
+		<SocketBootstrap>
+			<RouterProvider router={router} />
+		</SocketBootstrap>
 	)
 }
 
-export default App
+export default App;

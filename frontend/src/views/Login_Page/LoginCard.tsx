@@ -1,12 +1,12 @@
-import { Mail, Lock, Eye, EyeOff, Sun, Moon } from 'lucide-react';
-import { useState, useEffect, type FormEvent } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Button } from '../../components/login_components/button';
-import { Input } from '../../components/login_components/input';
+import {Mail, Lock, Eye, EyeOff, Sun, Moon} from 'lucide-react';
+import {useState, useEffect, type FormEvent} from 'react';
+import {useNavigate, useLocation} from 'react-router-dom';
+import {Button} from '../../components/login_components/button';
+import {Input} from '../../components/login_components/input';
 import Separator from '../../components/login_components/Separator';
-import { useTheme } from '../../context/ThemeContext';
 import api from '../../services/api';
-import { getHomeRouteByRole, getRoleFromToken } from '../../services/auth';
+import {getHomeRouteByRole, getRoleFromToken} from '../../services/auth';
+import GoogleButton from '../../components/login_components/GoogleButton';
 
 export function LoginCard() {
 	const [showPassword, setShowPassword] = useState(false);
@@ -14,52 +14,44 @@ export function LoginCard() {
 	const [password, setPassword] = useState('');
 	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
-	const { theme, setTheme } = useTheme();
+
 	const navigate = useNavigate();
 	const location = useLocation();
+
 	const [successMessage, setSuccessMessage] = useState(location.state?.message || '');
 
 	useEffect(() => {
 		if (successMessage) {
-			const timer = setTimeout(() => {
-				setSuccessMessage('');
-			}, 7000);   // 7 secondes
-
-			return () => clearTimeout(timer);  // nettoyage si composant démonté
+			const timer = setTimeout(() => setSuccessMessage(''), 7000);
+			return () => clearTimeout(timer);
 		}
 	}, [successMessage]);
 
 	useEffect(() => {
 		const qpError = new URLSearchParams(location.search).get('error');
+
 		if (qpError === 'email_exists_google') {
 			setError('Email deja associe a un compte, veuillez vous connecter.');
 		} else if (qpError === 'google_failed' || qpError === 'auth_failed') {
 			setError('Echec de l authentification Google.');
 		}
 	}, [location.search]);
-	
-	const isDark = theme === 'dark';
 
-	// --- FONCTION REDIRECTION GOOGLE ---
 	const handleGoogleLogin = () => {
-		// Redirection vers le backend NestJS via le proxy Nginx
 		window.location.href = 'https://localhost:8443/api/auth/google/login?flow=login';
 	};
 
-	const handleSubmit = async (e: FormEvent) => {
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setError('');
 		setLoading(true);
 
 		try {
-			// Appel au backend NestJS pour le login classique
-			const response = await api.post('/auth/login', { email, password });
-			const { access_token } = response.data;
+			const response = await api.post('/auth/login', {email, password});
+			const {access_token} = response.data;
 
-			// Stockage du token
 			localStorage.setItem('access_token', access_token);
 
-			// Récupération du profil utilisateur
 			try {
 				const meResponse = await api.get('/auth/me');
 				const username = meResponse.data?.username;
@@ -69,15 +61,13 @@ export function LoginCard() {
 				if (role) localStorage.setItem('user_role', role);
 
 				navigate(getHomeRouteByRole(role));
-			} catch (profileErr) {
-				console.warn('Profil introuvable, tentative via token:', profileErr);
+			} catch {
 				const role = getRoleFromToken(access_token);
 				if (role) localStorage.setItem('user_role', role);
 				navigate(getHomeRouteByRole(role));
 			}
 
 		} catch (err: any) {
-			console.error("Erreur de connexion :", err.response?.data?.message || err.message);
 			setError(err.response?.data?.message || "Identifiants incorrects");
 		} finally {
 			setLoading(false);
@@ -85,85 +75,61 @@ export function LoginCard() {
 	};
 
 	return (
-		<div
-			className={`w-full max-w-md p-8 rounded-2xl transition-all relative ${isDark
-				? 'bg-[#121212] border border-[#2a2a2a] shadow-[0_0_40px_rgba(99,102,241,0.15)]'
-				: 'bg-white border border-gray-200 shadow-[0_4px_40px_rgba(0,0,0,0.08)]'
-				}`}
-		>
-			{/* Theme Toggle Button */}
-			<button
-				onClick={() => setTheme(isDark ? 'light' : 'dark')}
-				className={`absolute top-6 right-6 p-2 rounded-lg border transition-all ${isDark
-					? 'bg-[#1a1a1a] border-[#2a2a2a] text-gray-300 hover:bg-[#242424]'
-					: 'bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100'
-					}`}
-			>
-				{isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-			</button>
+		<div className="w-full max-w-md p-8 rounded-2xl bg-white border border-gray-200 shadow-[0_4px_40px_rgba(0,0,0,0.08)]">
 
 			{/* Title */}
 			<div className="text-center mb-8">
-				<h1
-					className={`text-2xl font-bold mb-2 ${isDark ? 'text-gray-100' : 'text-gray-900'
-						}`}
-				>
+				<h1 className="text-2xl font-bold mb-2 text-gray-900">
 					LOGIN
 				</h1>
-				<p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+				<p className="text-gray-600">
 					Sign in to your account to continue
 				</p>
 			</div>
+
 			{/* Success Message */}
 			{successMessage && (
-				<div className={`mb-4 p-3 rounded-lg ${isDark
-					? 'bg-green-900/20 border border-green-800 text-green-400'
-					: 'bg-green-50 border border-green-200 text-green-600'
-					}`}>
+				<div className="mb-4 p-3 rounded-lg bg-green-50 border border-green-200 text-green-600">
 					{successMessage}
 				</div>
 			)}
+
 			{/* Error Message */}
 			{error && (
-				<div className={`mb-4 p-3 rounded-lg ${isDark ? 'bg-red-900/20 border border-red-800 text-red-400' : 'bg-red-50 border border-red-200 text-red-600'
-					}`}>
+				<div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600">
 					{error}
 				</div>
 			)}
 
 			<form onSubmit={handleSubmit}>
-				{/* Email Field */}
+				{/* Email */}
 				<div className="mb-4">
-					<label className={`label mb-2 block ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-						Email
-					</label>
+					<label className="block mb-2 text-gray-700">Email</label>
 					<div className="relative">
-						<Mail className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
+						<Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
 						<Input
 							type="email"
-							placeholder="Enter your email"
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
 							required
-							className={`pl-10 h-11 ${isDark ? 'bg-[#1a1a1a] text-gray-100' : 'bg-white'}`}
+							className="pl-10 h-11 bg-white"
+							placeholder="Enter your email"
 						/>
 					</div>
 				</div>
 
-				{/* Password Field */}
+				{/* Password */}
 				<div className="mb-2">
-					<label className={`label mb-2 block ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-						Password
-					</label>
+					<label className="block mb-2 text-gray-700">Password</label>
 					<div className="relative">
-						<Lock className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
+						<Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
 						<Input
 							type={showPassword ? 'text' : 'password'}
-							placeholder="Enter your password"
 							value={password}
 							onChange={(e) => setPassword(e.target.value)}
 							required
-							className={`pl-10 pr-10 h-11 ${isDark ? 'bg-[#1a1a1a] text-gray-100' : 'bg-white'}`}
+							className="pl-10 pr-10 h-11 bg-white"
+							placeholder="Enter your password"
 						/>
 						<button
 							type="button"
@@ -175,12 +141,14 @@ export function LoginCard() {
 					</div>
 				</div>
 
-				{/* Forgot Password */}
+				{/* Forgot */}
 				<div className="mb-6 text-right">
-					<a href="#" className="text-sm text-indigo-500 hover:underline">Forgot Password?</a>
+					<a href="#" className="text-sm text-indigo-500 hover:underline">
+						Forgot Password?
+					</a>
 				</div>
 
-				{/* Sign In Button */}
+				{/* Submit */}
 				<Button type="submit" disabled={loading} className="w-full h-11 mb-6 font-semibold bg-indigo-600 text-white">
 					{loading ? 'Signing in...' : 'Sign In'}
 				</Button>
@@ -189,31 +157,16 @@ export function LoginCard() {
 			{/* Separator */}
 			<div className="relative mb-6">
 				<Separator />
-				<span className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-3 text-sm ${isDark ? 'bg-[#121212] text-gray-500' : 'bg-white text-gray-500'}`}>
+				<span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-3 text-sm bg-white text-gray-500">
 					Or continue with
 				</span>
 			</div>
 
-			{/* Google Button */}
-			<button
-				type="button"
-				onClick={handleGoogleLogin}
-				className={`flex items-center justify-center gap-2 py-2.5 w-full rounded-lg border transition-all ${isDark
-					? 'border-[#2a2a2a] hover:bg-[#1a1a1a] text-gray-300'
-					: 'border-gray-300 hover:bg-gray-50 text-gray-700'
-					}`}
-			>
-				<svg width="20" height="20" viewBox="0 0 20 20">
-					<path d="M19.6 10.227c0-.709-.064-1.39-.182-2.045H10v3.868h5.382a4.6 4.6 0 01-1.996 3.018v2.51h3.232c1.891-1.742 2.982-4.305 2.982-7.35z" fill="#4285F4" />
-					<path d="M10 20c2.7 0 4.964-.895 6.618-2.423l-3.232-2.509c-.895.6-2.04.955-3.386.955-2.605 0-4.81-1.76-5.595-4.123H1.064v2.59A9.996 9.996 0 0010 20z" fill="#34A853" />
-					<path d="M4.405 11.9c-.2-.6-.314-1.24-.314-1.9 0-.66.114-1.3.314-1.9V5.51H1.064A9.996 9.996 0 000 10c0 1.614.386 3.14 1.064 4.49l3.34-2.59z" fill="#FBBC05" />
-					<path d="M10 3.977c1.468 0 2.786.505 3.823 1.496l2.868-2.868C14.959.99 12.695 0 10 0 6.09 0 2.71 2.24 1.064 5.51l3.34 2.59C5.19 5.736 7.395 3.977 10 3.977z" fill="#EA4335" />
-				</svg>
-				<span className="font-medium">Google</span>
-			</button>
+			{/* Google */}
+			<GoogleButton handleClick={handleGoogleLogin} label="Google" />
 
-			{/* Create Account Link */}
-			<div className={`mt-6 text-center text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+			{/* Register */}
+			<div className="mt-6 text-center text-sm text-gray-600">
 				Don't have an account?{' '}
 				<a href="/register" className="font-semibold text-indigo-500 hover:underline">
 					Create an account

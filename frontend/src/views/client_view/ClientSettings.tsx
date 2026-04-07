@@ -1,10 +1,9 @@
 import ContainerComp from "../../layout/layout_client/Container";
 import Separator from "../../components/client_components/Separator";
 import LanguageSelector from "../../components/client_components/LanguageSelector";
-import ThemeController from "../../components/client_components/ThemeController";
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { deleteMyAccount } from "../../services/profile";
+import {useState} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {deleteMyAccount} from "../../services/profile";
 
 function ClientSettings() {
 	const [isDeleting, setIsDeleting] = useState(false);
@@ -43,11 +42,6 @@ function ClientSettings() {
 				<div className="flex items-center justify-between py-3">
 					<h3 className="text-base">Langage</h3>
 					<LanguageSelector />
-				</div>
-				<Separator />
-				<div className="flex items-center justify-between py-3">
-					<h3 className="text-base">Mode sombre</h3>
-					<ThemeController />
 				</div>
 				<Separator />
 				<div className="flex items-center justify-between py-3">
