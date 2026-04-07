@@ -1,12 +1,18 @@
-import {Mail, Lock, Eye, EyeOff, Sun, Moon} from 'lucide-react';
 import {useState, useEffect, type FormEvent} from 'react';
 import {useNavigate, useLocation} from 'react-router-dom';
 import {Button} from '../../components/login_components/button';
-import {Input} from '../../components/login_components/input';
 import Separator from '../../components/login_components/Separator';
 import api from '../../services/api';
 import {getHomeRouteByRole, getRoleFromToken} from '../../services/auth';
 import GoogleButton from '../../components/login_components/GoogleButton';
+import {Link} from 'react-router-dom';
+import {
+	EnvelopeIcon,
+	LockClosedIcon,
+	EyeIcon,
+	EyeSlashIcon,
+} from '@heroicons/react/24/outline';
+import TikeoLogo from '../../components/client_components/TikeoLogo';
 
 export function LoginCard() {
 	const [showPassword, setShowPassword] = useState(false);
@@ -75,26 +81,25 @@ export function LoginCard() {
 	};
 
 	return (
-		<div className="w-full max-w-md p-8 rounded-2xl bg-white border border-gray-200 shadow-[0_4px_40px_rgba(0,0,0,0.08)]">
-
-			{/* Title */}
-			<div className="text-center mb-8">
-				<h1 className="text-2xl font-bold mb-2 text-gray-900">
-					LOGIN
-				</h1>
-				<p className="text-gray-600">
-					Sign in to your account to continue
-				</p>
+		<div className="w-full max-w-md p-8 rounded-2xl bg-gray-50 border border-gray-200 shadow-[0_4px_40px_rgba(0,0,0,0.08)]">
+			<div className="text-center mb-8 flex flex-col gap-5">
+				<TikeoLogo href="/login" color="text-navy" size="text-3xl" />
+				<div>
+					<h1 className="text-xl font-semibold mb-1 text-navy">
+						Se connecter
+					</h1>
+					<p className="text-sm text-gray-600">
+						Connectez-vous à votre compte pour continuer
+					</p>
+				</div>
 			</div>
 
-			{/* Success Message */}
 			{successMessage && (
 				<div className="mb-4 p-3 rounded-lg bg-green-50 border border-green-200 text-green-600">
 					{successMessage}
 				</div>
 			)}
 
-			{/* Error Message */}
 			{error && (
 				<div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600">
 					{error}
@@ -102,63 +107,79 @@ export function LoginCard() {
 			)}
 
 			<form onSubmit={handleSubmit}>
-				{/* Email */}
 				<div className="mb-4">
 					<label className="block mb-2 text-gray-700">Email</label>
 					<div className="relative">
-						<Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-						<Input
+						<EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+						<input
 							type="email"
+							data-slot="input"
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
+							className="pl-10 h-11 w-full rounded-lg border border-gray-300
+								bg-cream/50 text-sm text-gray-800 placeholder-gray-500
+								focus:outline-none focus:ring-2 focus:ring-navy focus:ring-opacity-50
+								focus:border-navy/81
+								hover:border-gray-399
+								disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed
+								transition-colors duration-200 ease-in-out"
+							placeholder="Entrer votre email"
 							required
-							className="pl-10 h-11 bg-white"
-							placeholder="Enter your email"
 						/>
 					</div>
 				</div>
 
-				{/* Password */}
 				<div className="mb-2">
-					<label className="block mb-2 text-gray-700">Password</label>
+					<label className="block mb-2 text-gray-700">Mot de passe</label>
 					<div className="relative">
-						<Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-						<Input
-							type={showPassword ? 'text' : 'password'}
+						<LockClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+						<input
+							type={showPassword ? "text" : "password"}
+							data-slot="input"
 							value={password}
 							onChange={(e) => setPassword(e.target.value)}
+							className="pl-10 h-11 pr-10 w-full rounded-lg border border-gray-300
+								bg-cream/50 text-sm text-gray-800 placeholder-gray-500
+								focus:outline-none focus:ring-2 focus:ring-navy focus:ring-opacity-50
+								focus:border-navy/81
+								hover:border-gray-399
+								disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed
+								transition-colors duration-200 ease-in-out"
+							placeholder="Entrer votre mot de passe"
 							required
-							className="pl-10 pr-10 h-11 bg-white"
-							placeholder="Enter your password"
 						/>
 						<button
 							type="button"
 							onClick={() => setShowPassword(!showPassword)}
 							className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
 						>
-							{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+							{showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
 						</button>
 					</div>
 				</div>
 
 				{/* Forgot */}
 				<div className="mb-6 text-right">
-					<a href="#" className="text-sm text-indigo-500 hover:underline">
-						Forgot Password?
-					</a>
+					<Link to="/login" className="text-sm text-navy hover:underline">
+						Mot de passe oublié ?
+					</Link>
 				</div>
 
 				{/* Submit */}
-				<Button type="submit" disabled={loading} className="w-full h-11 mb-6 font-semibold bg-indigo-600 text-white">
-					{loading ? 'Signing in...' : 'Sign In'}
+				<Button
+					type="submit"
+					disabled={loading}
+					className="w-full h-11 mb-6 font-semibold bg-navy text-white hover:bg-[#2e4f70] transition-colors"
+				>
+					{loading ? 'Connexion en cours...' : 'Se connecter'}
 				</Button>
 			</form>
 
 			{/* Separator */}
 			<div className="relative mb-6">
 				<Separator />
-				<span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-3 text-sm bg-white text-gray-500">
-					Or continue with
+				<span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-3 text-sm bg-gray-50 text-gray-500">
+					Ou continuer avec
 				</span>
 			</div>
 
@@ -167,9 +188,9 @@ export function LoginCard() {
 
 			{/* Register */}
 			<div className="mt-6 text-center text-sm text-gray-600">
-				Don't have an account?{' '}
-				<a href="/register" className="font-semibold text-indigo-500 hover:underline">
-					Create an account
+				Pas de compte ?{' '}
+				<a href="/register" className="font-semibold text-navy hover:underline">
+					Créer un compte
 				</a>
 			</div>
 		</div>
