@@ -5,6 +5,7 @@ import {TicketsPage} from "../views/view_agent/TicketsPage";
 import ProtectedRoute from '../components/ProtectedRoute'
 import PublicRoute from '../components/PublicRoute'
 import { DashboardLayout } from '../layout/layout_agent/DashboardLayout';
+import Settings from '../components/agent_components/Settings';
 import { UserRole } from '../types';
 import Register from '../views/Login_Page/Register';
 import ClientLayout from "../layout/layout_client/ClientLayout";
@@ -95,7 +96,7 @@ export const router = createBrowserRouter([
 			},
 			{
 				path: 'settings',
-				element: <div>Paramètres — coming soon</div>,
+				element: <Settings />,
 			},
 		]
 	},

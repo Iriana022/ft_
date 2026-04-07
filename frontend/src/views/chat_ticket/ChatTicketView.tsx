@@ -120,7 +120,6 @@ function ChatTicketView() {
 		currentUserId !== null &&
 		ticket.assignedToId !== currentUserId;
 	const canViewResponses =
-		chatUnlocked &&
 		ticket.status !== TicketStatus.CLOSED;
 	const canUseResponses =
 		chatUnlocked &&

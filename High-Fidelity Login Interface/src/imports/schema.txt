@@ -1,0 +1,60 @@
+generator client{
+	provider = "prisma-client-js"
+}
+
+datasource db{
+	provider = "postgresql"
+	url	 = env("DATABASE_URL")
+}
+
+enum TicketStatus{
+	OPEN 
+	IN_PROGRESS
+	RESOLVED
+	CLOSED
+}
+
+enum UserRole {
+  CLIENT
+  AGENT
+  ADMIN
+}
+
+enum Priority{
+	LOW
+	MEDIUM
+	HIGH
+	URGENT
+}
+
+model User {
+  id              Int      @id @default(autoincrement())
+  fortyTwoId      Int?     @unique 
+  googleId        String?  @unique 
+  login           String?  @unique 
+  email           String   @unique
+  password        String?  // Pour l'auth classique
+  avatar          String?
+  role            UserRole @default(CLIENT)
+  createdAt       DateTime @default(now())
+  ticketsCreated  Ticket[] @relation("CreatedBy")
+  ticketsAssigned Ticket[] @relation("AssignedTo")
+  twoFactorSecret   String?
+  isTwoFactorEnabled Boolean  @default(false)
+}
+
+model Ticket {
+	id 				Int 			@id @default(autoincrement())
+	title 			String
+	description 	String
+	status			TicketStatus	@default(OPEN)
+	priority		Priority		@default(MEDIUM)
+	createdAt		DateTime		@default(now())
+	updatedAt		DateTime		@updatedAt
+
+	author			User			@relation("CreatedBy", fields: [authorId], references: [id])
+	authorId		Int
+
+	AssignedTo		User?			@relation("AssignedTo", fields: [AssignedToId], references: [id])
+	AssignedToId	Int?
+}
