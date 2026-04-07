@@ -33,6 +33,9 @@ clear-volume:
 
 re: fclean all
 
+prisma-studio:
+	@docker exec nest_backend npx prisma studio
+
 certs:
 	@mkdir -p ./nginx/certs
 	@if [ ! -f ./nginx/certs/fullchain.pem ]; then \

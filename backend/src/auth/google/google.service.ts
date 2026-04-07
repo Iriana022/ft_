@@ -2,14 +2,28 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 
+type GoogleFlow = 'login' | 'register';
+
+type GooglAuthResult =
+  | { status: 'EMAIL_EXISTS' }
+  | { status: 'ROLE_SELECTION_REQUIRED'; access_token: string }
+  | { status: 'LOGIN_OK'; access_token: string }
+
 @Injectable()
 export class GoogleService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService
-  ) {}
-
-  async exchangeTicket(code: string) {
+  ) { }
+  private buildToken(user: { id: number; login: string | null; email: string; role: string }) {
+    const payload = {
+      sub: user.id,
+      username: user.login || user.email,
+      role: user.role,
+    };
+    return this.jwtService.sign(payload)
+  }
+  async exchangeTicket(code: string, flow: GoogleFlow): Promise<GooglAuthResult> {
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     const redirectUri = process.env.GOOGLE_REDIRECT_URI;
@@ -45,7 +59,7 @@ export class GoogleService {
       const userResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
         headers: { Authorization: `Bearer ${tokens.access_token}` },
       });
-      
+
       const profile = await userResponse.json();
 
       if (!userResponse.ok) {
@@ -53,29 +67,75 @@ export class GoogleService {
         throw new UnauthorizedException('Impossible de récupérer le profil Google');
       }
 
-      // 3. Persistance avec Prisma (Upsert)
-      // Note: On ajoute un suffixe aléatoire au login pour éviter les collisions si 2 users ont le même prénom
-      const user = await this.prisma.user.upsert({
-        where: { googleId: profile.sub },
-        update: {
-          avatar: profile.picture,
-        },
-        create: {
-          googleId: profile.sub,
-          email: profile.email,
-          login: `${profile.given_name.toLowerCase()}_${Math.floor(1000 + Math.random() * 9000)}`,
-          avatar: profile.picture,
-          role: 'CLIENT',
-        },
+      const googleId = profile.sub as string;
+      const email = profile.email as string;
+      const avatar = profile.picture as string | undefined;
+      const givenName = (profile.given_name as string | undefined)
+
+      const userByGoogleId = await this.prisma.user.findUnique({
+        where: { googleId },
+      });
+      const userByEmail = await this.prisma.user.findUnique({
+        where: { email },
       });
 
-      // 4. Génération du JWT interne
-      const payload = { sub: user.id, email: user.email };
+      if (flow === 'register') {
+        if (userByEmail) {
+          return { status: 'EMAIL_EXISTS' };
+        }
+        const safeName = (givenName || 'user').toLowerCase();
+        const created = await this.prisma.user.create({
+          data: {
+            googleId,
+            email,
+            login: safeName + '_' + Math.floor(1000 + Math.random() * 9000),
+            avatar,
+            role: 'CLIENT',
+            roleSelectionRequired: true,
+          },
+        });
 
-      return {
-        access_token: this.jwtService.sign(payload),
-        user: user,
-      };
+        return {
+          status: 'ROLE_SELECTION_REQUIRED',
+          access_token: this.buildToken(created),
+        };
+      }
+
+      let user = userByGoogleId;
+      if (user) {
+        if (avatar && avatar !== user.avatar) {
+          user = await this.prisma.user.update({
+            where: { id: user.id },
+            data: { avatar },
+          });
+        }
+      }
+      else if (userByEmail) {
+        user = await this.prisma.user.update({
+          where: { id: userByEmail.id },
+          data: { googleId, avatar: avatar ?? userByEmail.avatar },
+        });
+      }
+      const safeName = (givenName || 'user').toLowerCase();
+      if (!user) {
+        user = await this.prisma.user.create({
+          data: {
+            googleId,
+            email,
+            login: safeName + '_' + Math.floor(1000 + Math.random() * 9000),
+            avatar,
+            role: 'CLIENT',
+            roleSelectionRequired: true,
+          },
+        });
+      }
+
+      const token = this.buildToken(user);
+
+      if (user.roleSelectionRequired) {
+        return { status: 'ROLE_SELECTION_REQUIRED', access_token: token };
+      }
+      return { status: 'LOGIN_OK', access_token: token };
 
     } catch (error) {
       // On log l'erreur réelle pour le debug Docker mais on renvoie une exception propre

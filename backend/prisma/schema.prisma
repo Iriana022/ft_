@@ -52,6 +52,7 @@ model User {
   password        String?  // Pour l'auth classique
   avatar          String?
   role            UserRole @default(CLIENT)
+  roleSelectionRequired  Boolean @default(false)
   createdAt       DateTime @default(now())
   ticketsCreated  Ticket[] @relation("CreatedBy")
   ticketsAssigned Ticket[] @relation("AssignedTo")

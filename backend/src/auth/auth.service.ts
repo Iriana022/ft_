@@ -1,79 +1,78 @@
-import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt'
 
+
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService, private jwt: JwtService) {}
-  
+  constructor(private prisma: PrismaService, private jwt: JwtService) { }
+
   async login(user: any) {
-    const payload = { 
-      username: user.login || user.email, 
-      sub: user.id, 
-      role: user.role || 'CLIENT' 
+    const payload = {
+      username: user.login || user.email,
+      sub: user.id,
+      role: user.role || 'CLIENT'
     };
     return {
       access_token: this.jwt.sign(payload),
     };
   }
 
+  async register(dto: any) {
+    // 1. If user exists (email or login)
+    const userByEmail = await this.prisma.user.findUnique({
+      where: { email: dto.email }
+    });
+    if (userByEmail) throw new ConflictException('Email déjà utilisé');
 
-  
-    async register(dto: any) {
-      // 1. If user exists (email or login)
-      const userByEmail = await this.prisma.user.findUnique({
-        where: { email: dto.email }
+    const userByLogin = await this.prisma.user.findUnique({
+      where: { login: dto.login }
+    });
+    if (userByLogin) throw new ConflictException('Login déjà utilisé');
+
+    // 2. Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(dto.password, salt);
+    const selectedRole = dto.role === 'AGENT' ? 'AGENT' : 'CLIENT';
+
+    // 3. Base create
+    try {
+      await this.prisma.user.create({//modif srasolom
+        data: {
+          email: dto.email,
+          password: hashedPassword,
+          login: dto.login,
+          role: selectedRole,
+        },
       });
-      if (userByEmail) throw new ConflictException('Email déjà utilisé');
-
-      const userByLogin = await this.prisma.user.findUnique({
-        where: { login: dto.login }
-      });
-      if (userByLogin) throw new ConflictException('Login déjà utilisé');
-
-      // 2. Hash password
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(dto.password, salt);
-      const selectedRole = dto.role === 'AGENT' ? 'AGENT' : 'CLIENT';
-
-      // 3. Base create
-      try {
-        await this.prisma.user.create({//modif srasolom
-          data: {
-            email: dto.email,
-            password: hashedPassword,
-            login: dto.login,
-            role: selectedRole,
-          },
-        });
-      } catch (error: any) {
-        if (error?.code === 'P2002') {
-          const target = Array.isArray(error?.meta?.target) ? error.meta.target : [];
-          if (target.includes('email')) {
-            throw new ConflictException('Email déjà utilisé');
-          }
-          if (target.includes('login')) {
-            throw new ConflictException('Login déjà utilisé');
-          }
-          throw new ConflictException('Données déjà utilisées');
+    } catch (error: any) {
+      if (error?.code === 'P2002') {
+        const target = Array.isArray(error?.meta?.target) ? error.meta.target : [];
+        if (target.includes('email')) {
+          throw new ConflictException('Email déjà utilisé');
         }
-        throw error;
+        if (target.includes('login')) {
+          throw new ConflictException('Login déjà utilisé');
+        }
+        throw new ConflictException('Données déjà utilisées');
       }
+      throw error;
     }
+  }
 
 
-    async validateLocalUser(email: string, pass: string) {
+  async validateLocalUser(email: string, pass: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
-    
+
     if (!user || !user.password) {
-        throw new UnauthorizedException('Identifiants invalides');
+      throw new UnauthorizedException('Identifiants invalides');
     }
 
     const isMatch = await bcrypt.compare(pass, user.password);
-    
+
     if (!isMatch) {
-        throw new UnauthorizedException('Identifiants invalides');
+      throw new UnauthorizedException('Identifiants invalides');
     }
 
     return user;
@@ -96,5 +95,21 @@ export class AuthService {
       });
     }
     return user;
+  }
+
+  async completeGoogleRoleSelection(userId: number, role: 'CLIENT' | 'AGENT') {
+    if (role !== 'CLIENT' && role !== 'AGENT') {
+      throw new BadRequestException('Role invalide');
+    }
+
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        role,
+        roleSelectionRequired: false,
+      },
+    });
+
+    return this.login(updated);
   }
 }

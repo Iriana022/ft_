@@ -1,12 +1,12 @@
-import {Mail, Lock, Eye, EyeOff, Sun, Moon, User} from 'lucide-react';
-import {useState, type FormEvent} from 'react';
-import {useNavigate} from 'react-router-dom';
-import {Button} from '../../components/login_components/button';
-import {Input} from '../../components/login_components/input';
+import { Mail, Lock, Eye, EyeOff, Sun, Moon, User } from 'lucide-react';
+import { useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '../../components/login_components/button';
+import { Input } from '../../components/login_components/input';
 import Separator from '../../components/login_components/Separator';
-import {useTheme} from '../../context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 import api from '../../services/api';
-import { getHomeRouteByRole, getRoleFromToken } from '../../services/auth';
+// import { getHomeRouteByRole, getRoleFromToken } from '../../services/auth';
 
 export function RegisterCard() {
 	const [showPassword, setShowPassword] = useState(false);
@@ -17,7 +17,7 @@ export function RegisterCard() {
 	const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
 	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
-	const {theme, setTheme} = useTheme();
+	const { theme, setTheme } = useTheme();
 	const navigate = useNavigate();
 
 	const isDark = theme === 'dark';
@@ -28,6 +28,10 @@ export function RegisterCard() {
 		e.preventDefault();
 		await handleCreateAccount();
 		// setIsRoleModalOpen(true);
+	};
+
+	const handleGoogleRegister = () => {
+		window.location.href = 'https://localhost:8443/api/auth/google/login?flow=register';
 	};
 
 	const handleCreateAccount = async () => {
@@ -201,13 +205,12 @@ export function RegisterCard() {
 						Account Type
 					</label>
 					<div className="flex gap-3">
-						<label className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border transition-colors ${
-							selectedRole === 'CLIENT'
-								? 'border-indigo-600 bg-indigo-600 text-white'
-								: isDark
-									? 'border-[#2a2a2a] text-gray-300 hover:bg-[#1a1a1a]'
-									: 'border-gray-300 text-gray-700 hover:bg-gray-50'
-						}`}>
+						<label className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border transition-colors ${selectedRole === 'CLIENT'
+							? 'border-indigo-600 bg-indigo-600 text-white'
+							: isDark
+								? 'border-[#2a2a2a] text-gray-300 hover:bg-[#1a1a1a]'
+								: 'border-gray-300 text-gray-700 hover:bg-gray-50'
+							}`}>
 							<input
 								type="radio"
 								name="role"
@@ -218,13 +221,12 @@ export function RegisterCard() {
 							/>
 							Client
 						</label>
-						<label className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border transition-colors ${
-							selectedRole === 'AGENT'
-								? 'border-indigo-600 bg-indigo-600 text-white'
-								: isDark
-									? 'border-[#2a2a2a] text-gray-300 hover:bg-[#1a1a1a]'
-									: 'border-gray-300 text-gray-700 hover:bg-gray-50'
-						}`}>
+						<label className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border transition-colors ${selectedRole === 'AGENT'
+							? 'border-indigo-600 bg-indigo-600 text-white'
+							: isDark
+								? 'border-[#2a2a2a] text-gray-300 hover:bg-[#1a1a1a]'
+								: 'border-gray-300 text-gray-700 hover:bg-gray-50'
+							}`}>
 							<input
 								type="radio"
 								name="role"
@@ -327,12 +329,14 @@ export function RegisterCard() {
 
 			{/* Social Auth Buttons */}
 			<button
-				className={`flex items-center justify-center gap-2 py-2 w-full bg-red ${isDark
+				type="button"
+				onClick={handleGoogleRegister}
+				className={`flex items-center justify-center gap-2 py-2.5 w-full rounded-lg border transition-all ${isDark
 					? 'border-[#2a2a2a] hover:bg-[#1a1a1a] text-gray-300'
 					: 'border-gray-300 hover:bg-gray-50 text-gray-700'
 					}`}
 			>
-				<svg width="30" height="20" viewBox="0 0 20 20" fill="none">
+				<svg width="20" height="20" viewBox="0 0 20 20">
 					<path
 						d="M19.6 10.227c0-.709-.064-1.39-.182-2.045H10v3.868h5.382a4.6 4.6 0 01-1.996 3.018v2.51h3.232c1.891-1.742 2.982-4.305 2.982-7.35z"
 						fill="#4285F4"
@@ -350,7 +354,7 @@ export function RegisterCard() {
 						fill="#EA4335"
 					/>
 				</svg>
-				<span>Google</span>
+				<span className="font-medium">Google</span>
 			</button>
 
 			{/* Login Link */}
