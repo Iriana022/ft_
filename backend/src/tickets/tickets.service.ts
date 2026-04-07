@@ -100,8 +100,6 @@ export class TicketsService {
 		});
 		if (!ticket)
 			throw new NotFoundException('TIcket not found');
-		if (!ticket.chatUnlocked || ticket.status === TicketStatus.CLOSED)
-			throw new ForbiddenException('Canal Message is closed');
 		if (role === UserRole.CLIENT && ticket.authorId !== userId)
 			throw new ForbiddenException('Accès interdit à ce ticket');
 		return this.prisma.chatMessage.findMany({
@@ -111,35 +109,6 @@ export class TicketsService {
 		});
 	}
 
-	// 	async createMessage(ticketId: number, dto: CreateChatMessageDto, authorId: number) {
-	// 		const ticket = await this.prisma.ticket.findUnique({
-	// 			where: { id: ticketId },
-	// 		});
-	// 		if (!ticket)
-	// 			throw new NotFoundException('Ticket not found');
-	// 		if (!ticket.chatUnlocked || ticket.status === TicketStatus.CLOSED)
-	// 			throw new ForbiddenException('Canal Message is closed');
-	// 		const author = await this.prisma.user.findUnique({
-	// 			where: { id: authorId },
-	// 		});
-
-	// 		if (!author) {
-	// 			throw new ForbiddenException('Utilisateur invalide ou session expirée');
-	// 		}
-	// 		console.log('createMessage authorId=', authorId, 'ticketId=', ticketId);
-	// 		const message = await this.prisma.chatMessage.create({
-	// 			data: {
-	// 				content: dto.content,
-	// 				isFromSupport: dto.isFromSupport ?? false,
-	// 				ticketId,
-	// 				authorId,
-	// 			},
-	// 			include: { author: true },
-	// 		});
-	// 		this.ticketsGateway.emitNewMessage(ticketId, message);
-	// 		return message;
-	// 	}
-	// }
 
 	async createMessage(ticketId: number, dto: CreateChatMessageDto, authorId: number) {
 		const ticket = await this.prisma.ticket.findUnique({

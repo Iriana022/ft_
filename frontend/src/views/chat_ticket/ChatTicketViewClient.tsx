@@ -46,6 +46,7 @@ function ChatTicketViewClient() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const isClosed = currentStatus === TicketStatus.CLOSED;
+  const canSendMessage = currentStatus === TicketStatus.IN_PROGRESS;
   const [isLoading, setIsLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -76,7 +77,7 @@ function ChatTicketViewClient() {
 
   // Charger les messages au démarrage
   useEffect(() => {
-    if (!ticketId || !chatUnlocked || currentStatus === TicketStatus.CLOSED) {
+    if (!ticketId) {
       setIsLoading(false);
       return;
     }
@@ -92,7 +93,7 @@ function ChatTicketViewClient() {
       }
     };
     loadMessages();
-  }, [ticketId, chatUnlocked, currentStatus]);
+  }, [ticketId]);
 
   useEffect(() => {
     if (!ticketId)
@@ -141,7 +142,7 @@ function ChatTicketViewClient() {
   }, [ticketId]);
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || isClosed) return;
+    if (!newMessage.trim() || !canSendMessage || isClosed) return;
 
     try {
       await sendTicketMessage(ticketId, newMessage, false);
@@ -206,31 +207,30 @@ function ChatTicketViewClient() {
       </ContainerComp>
 
       {/* Input message */}
-      {chatUnlocked && !isClosed && (
-        <div className="sticky bottom-0 left-0 right-0 z-50 bg-base-100 border-t">
-          <ContainerComp>
-            <div className="w-full px-4 py-3">
-              <div className="flex gap-2 w-full items-center">
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                  placeholder="Écrire un message..."
-                  className="input input-bordered w-full min-h-[50px] bg-gray-100 text-sm md:text-base"
-                />
-                <button
-                  onClick={handleSendMessage}
-                  disabled={!newMessage.trim()}
-                  className="btn btn-primary"
-                >
-                  Envoyer
-                </button>
-              </div>
+      <div className="sticky bottom-0 left-0 right-0 z-50 bg-base-100 border-t">
+        <ContainerComp>
+          <div className="w-full px-4 py-3">
+            <div className="flex gap-2 w-full items-center">
+              <input
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                  placeholder={canSendMessage ? 'Écrire un message...' : 'Envoi désactivé : pas d’agent disponible'}
+                disabled={!canSendMessage || isClosed}
+                className="input input-bordered w-full min-h-[50px] bg-gray-100 text-sm md:text-base"
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={!canSendMessage || isClosed || !newMessage.trim()}
+                className="btn btn-primary"
+              >
+                Envoyer
+              </button>
             </div>
-          </ContainerComp>
-        </div>
-      )}
+          </div>
+        </ContainerComp>
+      </div>
     </>
   );
 }
