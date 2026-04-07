@@ -1,12 +1,12 @@
-import {Mail, Lock, Eye, EyeOff, Sun, Moon} from 'lucide-react';
-import {useState, useEffect, type FormEvent} from 'react';
-import {useNavigate, useLocation} from 'react-router-dom';
-import {Button} from '../../components/login_components/button';
-import {Input} from '../../components/login_components/input';
+import { Mail, Lock, Eye, EyeOff, Sun, Moon } from 'lucide-react';
+import { useState, useEffect, type FormEvent } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Button } from '../../components/login_components/button';
+import { Input } from '../../components/login_components/input';
 import Separator from '../../components/login_components/Separator';
-import {useTheme} from '../../context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 import api from '../../services/api';
-import {getHomeRouteByRole, getRoleFromToken} from '../../services/auth';
+import { getHomeRouteByRole, getRoleFromToken } from '../../services/auth';
 
 export function LoginCard() {
 	const [showPassword, setShowPassword] = useState(false);
@@ -14,7 +14,7 @@ export function LoginCard() {
 	const [password, setPassword] = useState('');
 	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
-	const {theme, setTheme} = useTheme();
+	const { theme, setTheme } = useTheme();
 	const navigate = useNavigate();
 	const location = useLocation();
 	const [successMessage, setSuccessMessage] = useState(location.state?.message || '');
@@ -29,12 +29,21 @@ export function LoginCard() {
 		}
 	}, [successMessage]);
 
+	useEffect(() => {
+		const qpError = new URLSearchParams(location.search).get('error');
+		if (qpError === 'email_exists_google') {
+			setError('Email deja associe a un compte, veuillez vous connecter.');
+		} else if (qpError === 'google_failed' || qpError === 'auth_failed') {
+			setError('Echec de l authentification Google.');
+		}
+	}, [location.search]);
+	
 	const isDark = theme === 'dark';
 
 	// --- FONCTION REDIRECTION GOOGLE ---
 	const handleGoogleLogin = () => {
 		// Redirection vers le backend NestJS via le proxy Nginx
-		window.location.href = 'https://localhost:8443/api/auth/google/login';
+		window.location.href = 'https://localhost:8443/api/auth/google/login?flow=login';
 	};
 
 	const handleSubmit = async (e: FormEvent) => {
@@ -44,8 +53,8 @@ export function LoginCard() {
 
 		try {
 			// Appel au backend NestJS pour le login classique
-			const response = await api.post('/auth/login', {email, password});
-			const {access_token} = response.data;
+			const response = await api.post('/auth/login', { email, password });
+			const { access_token } = response.data;
 
 			// Stockage du token
 			localStorage.setItem('access_token', access_token);
