@@ -331,12 +331,12 @@ export function RegisterCard() {
 			<button
 				type="button"
 				onClick={handleGoogleRegister}
-				className={`flex items-center justify-center gap-2 py-2 w-full bg-red ${isDark
+				className={`flex items-center justify-center gap-2 py-2.5 w-full rounded-lg border transition-all ${isDark
 					? 'border-[#2a2a2a] hover:bg-[#1a1a1a] text-gray-300'
 					: 'border-gray-300 hover:bg-gray-50 text-gray-700'
 					}`}
 			>
-				<svg width="30" height="20" viewBox="0 0 20 20" fill="none">
+				<svg width="20" height="20" viewBox="0 0 20 20">
 					<path
 						d="M19.6 10.227c0-.709-.064-1.39-.182-2.045H10v3.868h5.382a4.6 4.6 0 01-1.996 3.018v2.51h3.232c1.891-1.742 2.982-4.305 2.982-7.35z"
 						fill="#4285F4"
@@ -354,7 +354,7 @@ export function RegisterCard() {
 						fill="#EA4335"
 					/>
 				</svg>
-				<span>Google</span>
+				<span className="font-medium">Google</span>
 			</button>
 
 			{/* Login Link */}

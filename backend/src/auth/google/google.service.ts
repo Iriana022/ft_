@@ -102,7 +102,15 @@ export class GoogleService {
       }
 
       let user = userByGoogleId;
-      if (!user && userByEmail) {
+      if (user) {
+        if (avatar && avatar !== user.avatar) {
+          user = await this.prisma.user.update({
+            where: { id: user.id },
+            data: { avatar },
+          });
+        }
+      }
+      else if (userByEmail) {
         user = await this.prisma.user.update({
           where: { id: userByEmail.id },
           data: { googleId, avatar: avatar ?? userByEmail.avatar },
@@ -128,30 +136,6 @@ export class GoogleService {
         return { status: 'ROLE_SELECTION_REQUIRED', access_token: token };
       }
       return { status: 'LOGIN_OK', access_token: token };
-
-      // 3. Persistance avec Prisma (Upsert)
-      // Note: On ajoute un suffixe aléatoire au login pour éviter les collisions si 2 users ont le même prénom
-      // const user = await this.prisma.user.upsert({
-      //   where: { googleId: profile.sub },
-      //   update: {
-      //     avatar: profile.picture,
-      //   },
-      //   create: {
-      //     googleId: profile.sub,
-      //     email: profile.email,
-      //     login: `${profile.given_name.toLowerCase()}_${Math.floor(1000 + Math.random() * 9000)}`,
-      //     avatar: profile.picture,
-      //     role: 'CLIENT',
-      //   },
-      // });
-
-      // // 4. Génération du JWT interne
-      // const payload = { sub: user.id, email: user.email };
-
-      // return {
-      //   access_token: this.jwtService.sign(payload),
-      //   user: user,
-      // };
 
     } catch (error) {
       // On log l'erreur réelle pour le debug Docker mais on renvoie une exception propre

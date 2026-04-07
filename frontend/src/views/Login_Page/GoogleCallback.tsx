@@ -22,6 +22,7 @@ export function GoogleCallback() {
         if (token) {
             // --- ON SUIT TA LOGIQUE EXACTE DU LOGIN CARD ---
             localStorage.setItem('access_token', token);
+            localStorage.removeItem('user_avatar');
             if (next === 'select_role') {
                 localStorage.removeItem('user_role');
                 navigate('/select_role', { replace: true });
@@ -30,13 +31,17 @@ export function GoogleCallback() {
             const handleProfileSync = async () => {
                 try {
                     const meResponse = await api.get('/auth/me');
-                    console.log("meResponse:", meResponse)
+                    // console.log("meResponse:", meResponse)
                     const username = meResponse.data?.username;
-                    console.log("username:", username);
+                    // console.log("username:", username);
                     // const role = UserRole.CLIENT;
                     const role = meResponse.data?.role ?? getRoleFromToken(token);
                     // console.log("role:", role);
-
+                    const profileResponse = await api.get('/user/me');
+                    const freshAvatar = profileResponse.data?.avatar;
+                    if (freshAvatar) {
+                        localStorage.setItem('user_avatar', freshAvatar);
+                    }
                     if (username)
                         localStorage.setItem('username', username);
                     if (role)
