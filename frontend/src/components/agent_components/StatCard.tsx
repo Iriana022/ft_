@@ -32,7 +32,7 @@ export function StatCard({title, value, icon: Icon, trend, color}: StatCardProps
 						</p>
 					)}
 				</div>
-				<div className={`p-3 rounded-lg colorClasses[color]`}>
+				<div className={`p-3 rounded-lg ${colorClasses[color]}`}>
 					<Icon className="w-6 h-6" />
 				</div>
 			</div>

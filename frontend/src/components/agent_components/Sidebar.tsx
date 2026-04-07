@@ -1,6 +1,7 @@
 import {LayoutDashboard, Ticket, Users, Settings, LogOut, Bell} from 'lucide-react';
 import {useLocation, useNavigate} from 'react-router-dom';
 import {UserRole} from '../../types';
+import TikeoLogo from '../client_components/TikeoLogo';
 
 interface SidebarProps {
 	currentRole: UserRole;
@@ -29,26 +30,16 @@ export function Sidebar({currentRole}: SidebarProps) {
 	const filteredItems = menuItems.filter(item => item.roles.includes(currentRole));
 
 	return (
-		<aside className="w-64 border-r h-screen flex flex-colbg-white border-gray-200">
-			{/* Logo */}
-			< div className="p-6 border-b border-gray-200">
-				<div className="flex items-center gap-3">
-					< div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center" >
-						<Ticket className="w-6 h-6 text-white" />
-					</div >
-					<div>
-						<h1 className="font-bold text-lg text-gray-900">Support Desk</h1>
-						<p className="text-xs text-gray-500">ft_transcendance</p>
-					</div>
-				</div >
-			</div >
-
+		<aside className="w-64 border-r h-screen flex flex-col bg-white border-gray-200">
+			<div className="p-4">
+				<TikeoLogo href="/client" color="text-navy" size="text-4xl" />
+			</div>
 			{/* Navigation */}
-			< nav className="flex-1 p-4 space-y-1" >
+			<nav className="flex-1 p-4 space-y-1">
 				{
 					filteredItems.map((item) => {
 						const Icon = item.icon;
-						const targetPath = `/ agent / ${item.id} `;
+						const targetPath = `/agent/${item.id}`;
 						const isActive = location.pathname === targetPath;
 
 						return (

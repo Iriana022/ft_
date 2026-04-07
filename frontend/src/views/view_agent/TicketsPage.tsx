@@ -75,9 +75,6 @@ export function TicketsPage() {
 							Gérez et suivez tous vos tickets de support
 						</p>
 					</div>
-					<div className="flex items-center gap-3">
-						<ThemeToggle />
-					</div>
 				</div>
 
 				{/* Filters */}
