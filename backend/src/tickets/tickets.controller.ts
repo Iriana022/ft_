@@ -36,8 +36,9 @@ export class TicketsController {
     async updateStatus(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: UpdateTicketStatusDto,
+        @Req() req: { user: { userId: number } },
     ){
-        return this.ticketsService.updateTicketStatus(id, dto)
+        return this.ticketsService.updateTicketStatus(id, dto, req.user.userId)
     }
 
     @Get(':id/messages')

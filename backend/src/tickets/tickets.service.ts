@@ -38,7 +38,7 @@ export class TicketsService {
 		});
 	}
 
-	async updateTicketStatus(ticketId: number, dto: UpdateTicketStatusDto) {
+	async updateTicketStatus(ticketId: number, dto: UpdateTicketStatusDto, agentId: number) {
 		const ticket = await this.prisma.ticket.findUnique({
 			where: { id: ticketId },
 		});
@@ -55,7 +55,10 @@ export class TicketsService {
 			where: { id: ticketId },
 			data: {
 				status: dto.status as never,
-				...(shouldUnlockChat ? { chatUnlocked: true } : {}),
+				...(shouldUnlockChat ? { 
+					chatUnlocked: true,
+					AssignedToId: agentId
+				} : {}),
 				...(shouldCloseChat ? { chatUnlocked: false } : {}),
 			},
 			include: { author: true, AssignedTo: true }
