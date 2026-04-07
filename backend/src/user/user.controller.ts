@@ -13,7 +13,7 @@ export class UserController {
   constructor(private readonly userService: UserService) { }
 
   @Post()
-  create(@Body() data: { fortyTwoId: number, login: string, email: string }) {
+  create(@Body() data: { login: string, email: string }) {
     return this.userService.create(data)
   }
 
