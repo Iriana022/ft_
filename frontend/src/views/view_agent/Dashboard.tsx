@@ -3,7 +3,7 @@ import {useEffect, useMemo, useState} from 'react';
 import {StatCard} from '../../components/agent_components/StatCard';
 import {TicketList} from './TicketList';
 import {TicketStatus, UserRole, type Ticket as TicketType} from '../../types';
-import {fetchTickets, getTicketStats} from '../../services/tickets';
+import {fetchTickets, getTicketStats, normalizeTicket, sortTicketsForAgent, type RawTicket} from '../../services/tickets';
 import {getSocket} from '../../services/singleton';
 
 export function Dashboard() {
@@ -20,19 +20,7 @@ export function Dashboard() {
 				const clientTickets = data.filter(
 					(ticket) => ticket.author.role === UserRole.CLIENT
 				);
-
-				const sortedTickets = [...clientTickets].sort((a, b) => {
-					const aClosed = a.status === TicketStatus.CLOSED;
-					const bClosed = b.status === TicketStatus.CLOSED;
-
-					if (aClosed !== bClosed) {
-						return aClosed ? 1 : -1;
-					}
-
-					return b.createdAt.getTime() - a.createdAt.getTime();
-				});
-
-				setTickets(sortedTickets);
+				setTickets(sortTicketsForAgent(clientTickets));
 			} catch (error) {
 				console.error('Erreur chargement tickets:', error);
 			}
@@ -44,12 +32,31 @@ export function Dashboard() {
 
 		const handleNewTicket = (ticket: TicketType) => {
 			if (ticket.author.role === UserRole.CLIENT) {
-				setTickets((prev) => [ticket, ...prev]);
+				setTickets((prev) => sortTicketsForAgent([ticket, ...prev]));
 				setNotification(`New ticket incoming : ${ticket.title}`);
 				if (notificationTimer)
 					clearTimeout(notificationTimer);
 				notificationTimer = setTimeout(() => setNotification(null), 5000);
 			}
+		};
+
+		const handleTicketStatusUpdated = (payload: RawTicket) => {
+			const updatedTicket = normalizeTicket(payload);
+			if (updatedTicket.author.role !== UserRole.CLIENT) return;
+
+			setTickets((prev) => {
+				const existingIndex = prev.findIndex((ticket) => ticket.id === updatedTicket.id);
+				if (existingIndex === -1) {
+					return sortTicketsForAgent([updatedTicket, ...prev]);
+				}
+
+				const next = [...prev];
+				next[existingIndex] = {
+					...next[existingIndex],
+					...updatedTicket,
+				};
+				return sortTicketsForAgent(next);
+			});
 		};
 
 		const handleticketUnreadUpdated = (payload: {
@@ -71,9 +78,11 @@ export function Dashboard() {
 		};
 
 		socket.on('newTicket', handleNewTicket);
+		socket.on('ticketStatusUpdated', handleTicketStatusUpdated);
 		socket.on('ticketUnreadUpdated', handleticketUnreadUpdated);
 		return () => {
 			socket.off('newTicket', handleNewTicket);
+			socket.off('ticketStatusUpdated', handleTicketStatusUpdated);
 			socket.off('ticketUnreadUpdated', handleticketUnreadUpdated);
 			if (notificationTimer)
 				clearTimeout(notificationTimer);

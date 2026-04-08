@@ -3,7 +3,7 @@ import {Search, Filter} from 'lucide-react';
 import {TicketStatus, TicketPriority, UserRole} from '../../types';
 import type {Ticket} from '../../types';
 import {TicketList} from './TicketList';
-import {fetchTickets} from '../../services/tickets';
+import {fetchTickets, normalizeTicket, sortTicketsForAgent, type RawTicket} from '../../services/tickets';
 import {getSocket} from '../../services/singleton';
 
 export function TicketsPage() {
@@ -17,7 +17,7 @@ export function TicketsPage() {
 		const loadTickets = async () => {
 			try {
 				const data = await fetchTickets();
-				setTickets(data.filter((ticket) => ticket.author.role === UserRole.CLIENT));
+				setTickets(sortTicketsForAgent(data.filter((ticket) => ticket.author.role === UserRole.CLIENT)));
 			} catch (error) {
 				console.error('Erreur chargement tickets:', error);
 			} finally {
@@ -40,9 +40,24 @@ export function TicketsPage() {
 			);
 		};
 
+		const onTicketStatusUpdated = (payload: RawTicket) => {
+			const updatedTicket = normalizeTicket(payload);
+			if (updatedTicket.author.role !== UserRole.CLIENT) return;
+
+			setTickets((prev) => {
+				const exists = prev.some((ticket) => ticket.id === updatedTicket.id);
+				const next = exists
+					? prev.map((ticket) => ticket.id === updatedTicket.id ? { ...ticket, ...updatedTicket } : ticket)
+					: [updatedTicket, ...prev];
+				return sortTicketsForAgent(next);
+			});
+		};
+
 		loadTickets();
+		socket.on('ticketStatusUpdated', onTicketStatusUpdated);
 		socket.on('ticketUnreadUpdated', onUnread);
 		return () => {
+			socket.off('ticketStatusUpdated', onTicketStatusUpdated);
 			socket.off('ticketUnreadUpdated', onUnread);
 		};
 	}, []);

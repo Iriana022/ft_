@@ -2,11 +2,11 @@ import api from './api';
 import { type ChatMessage, TicketStatus, type Ticket, type User } from '../types';
 import { TicketPriority, type TicketType } from '../types';
 
-type RawUser = Omit<User, 'createdAt'> & {
+export type RawUser = Omit<User, 'createdAt'> & {
   createdAt: string | Date;
 };
 
-type RawTicket = Omit<Ticket, 'createdAt' | 'updatedAt' | 'author' | 'assignedTo' | 'assignedToId'> & {
+export type RawTicket = Omit<Ticket, 'createdAt' | 'updatedAt' | 'author' | 'assignedTo' | 'assignedToId'> & {
   createdAt: string | Date;
   updatedAt: string | Date;
   author: RawUser;
@@ -36,6 +36,17 @@ export const normalizeTicket = (ticket: RawTicket): Ticket => {
     clientUnreadCount: ticket.clientUnreadCount ?? 0,
     agentUnreadCount: ticket.agentUnreadCount ?? 0,
   };
+};
+
+export const sortTicketsForAgent = (tickets: Ticket[]): Ticket[] => {
+  return [...tickets].sort((a, b) => {
+    const aClosed = a.status === TicketStatus.CLOSED;
+    const bClosed = b.status === TicketStatus.CLOSED;
+
+    if (aClosed !== bClosed) return aClosed ? 1 : -1;
+
+    return b.createdAt.getTime() - a.createdAt.getTime();
+  });
 };
 
 export const fetchTickets = async (): Promise<Ticket[]> => {
