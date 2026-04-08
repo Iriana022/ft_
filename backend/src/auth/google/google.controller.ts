@@ -34,7 +34,7 @@ export class GoogleController {
     @Query('code') code: string,
     @Query('state') state: GoogleFlow,
     @Res() res: Response) {
-    const frontendUrl = process.env.FRONTEND_URL || 'https://localhost:8443';
+    const frontendUrl = process.env.FRONTEND_URL || `${window.location.origin}`;
     const flow: GoogleFlow = state === 'register' ? 'register' : 'login';
     if (!code) {
       return res.redirect(`${frontendUrl}/login?error=no_code`);
