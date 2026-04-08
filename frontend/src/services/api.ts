@@ -2,7 +2,7 @@ import axios from 'axios';
 import { clearAuthStorage } from './auth';
 
 const api = axios.create({
-  baseURL: 'https://localhost:8443/api/', 
+  baseURL: `${window.location.origin}/api/`,
   withCredentials: true,
 });
 
