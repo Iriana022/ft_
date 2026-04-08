@@ -1,6 +1,28 @@
 import { Controller, Get, Query, Res, } from '@nestjs/common';
 import { GoogleService } from './google.service';
-import type { Response } from 'express'; // N'oublie pas le 'type' pour éviter l'erreur TS1272
+import type { Response } from 'express'; 
+import * as os from 'os';
+
+function getDynamicFrontendUrl() {
+  const networkInterfaces = os.networkInterfaces();
+  let detectedIp = 'localhost'; // Par défaut si on ne trouve rien
+
+  for (const interfaceName in networkInterfaces) {
+    const interfaces = networkInterfaces[interfaceName];
+    if (interfaces) {
+      for (const iface of interfaces) {
+        // On cherche une adresse IPv4 qui n'est pas interne (127.0.0.1)
+        // À 42, l'IP commence généralement par 10.
+        if (iface.family === 'IPv4' && !iface.internal && iface.address.startsWith('10.')) {
+          detectedIp = iface.address;
+          break;
+        }
+      }
+    }
+  }
+  return `http://${detectedIp}:8443`;
+}
+
 
 type GoogleFlow = 'login' | 'register';
 
@@ -35,13 +57,7 @@ export class GoogleController {
     @Query('state') state: GoogleFlow,
     @Res() res: Response) {
     
-      const os = require('os');
-      const hostname = os.hostname();
-      const schoolUrl = `https://${hostname}.42antananarivo.mg:8443`;
-
-    
-
-    const frontendUrl = process.env.FRONTEND_URL || (hostname.includes('c') ? schoolUrl : 'http://localhost:8443');
+    const frontendUrl = process.env.FRONTEND_URL || getDynamicFrontendUrl();
     //const frontendUrl = process.env.FRONTEND_URL || 'https://localhost:8443';
     const flow: GoogleFlow = state === 'register' ? 'register' : 'login';
     if (!code) {
