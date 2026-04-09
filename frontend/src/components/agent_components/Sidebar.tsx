@@ -1,30 +1,78 @@
-import {LayoutDashboard, Ticket, Users, Settings, LogOut, Bell} from 'lucide-react';
-import {useLocation, useNavigate} from 'react-router-dom';
-import {UserRole} from '../../types';
+import { LayoutDashboard, Ticket, Users, Settings, LogOut, Bell } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { UserRole } from '../../types';
 import TikeoLogo from '../client_components/TikeoLogo';
+import { getMyProfile } from '../../services/profile';
+
+const DEFAULT_AGENT_AVATAR = '/assets/avatars/avatar2.png';
 
 interface SidebarProps {
 	currentRole: UserRole;
 }
 
-export function Sidebar({currentRole}: SidebarProps) {
+export function Sidebar({ currentRole }: SidebarProps) {
 	const navigate = useNavigate();
 	const location = useLocation()
 	const username = localStorage.getItem('username') || 'Utilisateur';
+
+	const [avatar, setAvatar] = useState(
+		localStorage.getItem('user_avatar') || DEFAULT_AGENT_AVATAR
+	);
+
+	useEffect(() => {
+		let mounted = true;
+
+		const loadAvatar = async () => {
+			try {
+				const cachedAvatar = localStorage.getItem('user_avatar');
+				if (cachedAvatar) {
+					setAvatar(cachedAvatar);
+				}
+
+				const me = await getMyProfile();
+				if (!mounted) return;
+
+				const nextAvatar = me?.avatar || DEFAULT_AGENT_AVATAR;
+				setAvatar(nextAvatar);
+				localStorage.setItem('user_avatar', nextAvatar);
+			} catch (error) {
+				console.error('Erreur chargement avatar sidebar:', error);
+			}
+		};
+
+		const handleAvatarUpdated = (event: Event) => {
+			const customEvent = event as CustomEvent<{ avatar?: string }>;
+			const nextAvatar =
+				customEvent.detail?.avatar ||
+				localStorage.getItem('user_avatar') ||
+				DEFAULT_AGENT_AVATAR;
+			setAvatar(nextAvatar);
+		};
+
+		loadAvatar();
+		window.addEventListener('agent-avatar-updated', handleAvatarUpdated);
+
+		return () => {
+			mounted = false;
+			window.removeEventListener('agent-avatar-updated', handleAvatarUpdated);
+		};
+	}, []);
 
 	const handleLogout = () => {
 		localStorage.removeItem('access_token');
 		localStorage.removeItem('username');
 		localStorage.removeItem('user_role');
+		localStorage.removeItem('user_avatar');
 		navigate('/login');
 	};
 
 	const menuItems = [
-		{id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT]},
-		{id: 'tickets', label: 'Tickets', icon: Ticket, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT]},
-		{id: 'users', label: 'Utilisateurs', icon: Users, roles: [UserRole.ADMIN]},
-		{id: 'notifications', label: 'Notifications', icon: Bell, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT]},
-		{id: 'settings', label: 'Paramètres', icon: Settings, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT]}
+		{ id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT] },
+		{ id: 'tickets', label: 'Tickets', icon: Ticket, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT] },
+		{ id: 'users', label: 'Utilisateurs', icon: Users, roles: [UserRole.ADMIN] },
+		{ id: 'notifications', label: 'Notifications', icon: Bell, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT] },
+		{ id: 'settings', label: 'Paramètres', icon: Settings, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT] }
 	];
 
 	const filteredItems = menuItems.filter(item => item.roles.includes(currentRole));
@@ -65,9 +113,12 @@ export function Sidebar({currentRole}: SidebarProps) {
 			< div className="p-4 border-t border-gray-200">
 				<div className="flex items-center gap-3 mb-3">
 					<img
-						src="https://api.dicebear.com/7.x/avataaars/svg?seed=current"
+						src={avatar}
 						alt="User"
 						className="w-10 h-10 rounded-full"
+						onError={(e) => {
+							e.currentTarget.src = DEFAULT_AGENT_AVATAR;
+						}}
 					/>
 					<div className="flex-1">
 						<p className="font-medium text-sm text-gray-900">{username}</p>

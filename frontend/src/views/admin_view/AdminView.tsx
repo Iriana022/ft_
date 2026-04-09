@@ -1,5 +1,4 @@
 import {useState, useMemo, useEffect} from 'react';
-import {useQuery} from '@tanstack/react-query'
 import {
 	ChevronLeftIcon,
 	ChevronRightIcon,
@@ -11,7 +10,6 @@ import {
 import {
 	Squares2X2Icon,
 	TicketIcon,
-	FolderMinusIcon,
 	UsersIcon,
 	ChartBarSquareIcon,
 	ClockIcon,
@@ -31,9 +29,7 @@ import {
 import Separator from '../../components/login_components/Separator';
 import TicketFilter from '../../components/client_components/TicketFilter';
 import {UserRole} from '../../types';
-import api from '../../services/api';
 import {fetchTickets, fetchUsers} from '../../services/tickets';
-import {getSocket} from '../../services/singleton';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
