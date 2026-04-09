@@ -81,7 +81,7 @@ export function LoginCard() {
 	};
 
 	return (
-		<div className="w-full max-w-md p-8 rounded-2xl bg-gray-50 border border-gray-200 shadow-[0_4px_40px_rgba(0,0,0,0.08)]">
+		<div className="relative w-full max-w-md p-8 rounded-2xl bg-gray-50 border border-gray-200 shadow-[0_4px_40px_rgba(0,0,0,0.08)]">
 			<div className="text-center mb-8 flex flex-col gap-5">
 				<TikeoLogo href="/login" color="text-navy" size="text-3xl" />
 				<div>

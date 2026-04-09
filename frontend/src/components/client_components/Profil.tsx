@@ -96,7 +96,7 @@ function Profil() {
 			<div>
 				<ContainerComp>
 					<header className="pt-10 pb-5 flex items-center gap-6">
-						<button onClick={() => navigate("/client")} className="cursor-pointer">
+						<button onClick={() => navigate("/client")} className="cursor-pointer transition hover:bg-gray-300 p-2 rounded-full">
 							<ArrowLeftIcon className="w-5 h-5" />
 						</button>
 						<h3 className="text-navy text-2xl font-semibold">Profile</h3>

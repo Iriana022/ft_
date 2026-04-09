@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import {useState, useRef, useEffect} from "react";
 import {ChevronDownIcon} from "@heroicons/react/24/outline";
 
 const esFlag = '/assets/es.png';
@@ -12,14 +12,15 @@ type Lang = {
 };
 
 const languages: Lang[] = [
-	{code: "en", label: "English", flag: usFlag},
 	{code: "fr", label: "Français", flag: frFlag},
+	{code: "en", label: "English", flag: usFlag},
 	{code: "es", label: "Español", flag: esFlag},
 ];
 
 function LanguageSelector() {
 	const [open, setOpen] = useState(false);
 	const [current, setCurrent] = useState(languages[0]);
+	const ref = useRef<HTMLDivElement | null>(null);
 
 	function toggle() {
 		setOpen(!open);
@@ -30,8 +31,20 @@ function LanguageSelector() {
 		setOpen(false);
 	}
 
+	useEffect(() => {
+		function handleClikcOutside(e: MouseEvent) {
+			if (ref.current && !ref.current.contains(e.target as Node)) {
+				setOpen(false);
+			}
+		}
+		document.addEventListener("mousedown", handleClikcOutside);
+		return () => {
+			document.addEventListener("mousedown", handleClikcOutside);
+		}
+	}, [])
+
 	return (
-		<div className="relative w-35">
+		<div ref={ref} className="relative">
 			<button
 				onClick={toggle}
 				className="w-full flex items-center justify-between gap-2 px-3 py-2 bg-gray-100 border rounded shadow-sm hover:bg-gray-200"
@@ -42,7 +55,7 @@ function LanguageSelector() {
 				</div>
 
 				<ChevronDownIcon className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
-			</button>
+			</button >
 
 			<div
 				className={`
@@ -62,7 +75,7 @@ function LanguageSelector() {
 					</button>
 				))}
 			</div>
-		</div>
+		</div >
 	);
 }
 
