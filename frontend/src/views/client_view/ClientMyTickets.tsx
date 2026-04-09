@@ -1,28 +1,30 @@
-import { useEffect, useState } from 'react';
+import {useEffect, useState} from 'react';
 import ContainerComp from "../../layout/layout_client/Container";
 import Ticket from "../../components/client_components/Ticket";
 import SearchInput from "../../components/client_components/SearchInput";
-import TicketFilter, { type TicketFilterOption } from "../../components/client_components/TicketFilter";
+import TicketFilter, {type TicketFilterOption} from "../../components/client_components/TicketFilter";
 import CreateTicketView from '../../components/client_components/CreateTicketView';
-import { fetchMyTicketsForClientView } from '../../services/tickets';
-import { type TicketType, TicketPriority, TicketStatus } from '../../types';
-import { getSocket } from '../../services/singleton';
+import {fetchMyTicketsForClientView} from '../../services/tickets';
+import {type TicketType, TicketPriority, TicketStatus} from '../../types';
+import {getSocket} from '../../services/singleton';
+
+const noneTickets = '/assets/none_tickets.png';
 
 function ClientMyTickets() {
 	const status = [
-		{ label: "Tous", value: null },
-		{ label: "Ouverts", value: TicketStatus.OPEN },
-		{ label: "En cours", value: TicketStatus.IN_PROGRESS },
-		{ label: "Résolus", value: TicketStatus.RESOLVED },
-		{ label: "Fermés", value: TicketStatus.CLOSED },
+		{label: "Tous", value: null},
+		{label: "Ouverts", value: TicketStatus.OPEN},
+		{label: "En cours", value: TicketStatus.IN_PROGRESS},
+		{label: "Résolus", value: TicketStatus.RESOLVED},
+		{label: "Fermés", value: TicketStatus.CLOSED},
 	];
 
 	const priorities = [
-		{ label: "Tous", value: null },
-		{ label: "Basses", value: TicketPriority.LOW },
-		{ label: "Moyennes", value: TicketPriority.MEDIUM },
-		{ label: "Hautes", value: TicketPriority.HIGH },
-		{ label: "Urgentes", value: TicketPriority.URGENT },
+		{label: "Tous", value: null},
+		{label: "Basses", value: TicketPriority.LOW},
+		{label: "Moyennes", value: TicketPriority.MEDIUM},
+		{label: "Hautes", value: TicketPriority.HIGH},
+		{label: "Urgentes", value: TicketPriority.URGENT},
 	];
 
 	const [currentFilterStatus, setCurrentFilterStatus] = useState(status[0].label);
@@ -59,12 +61,12 @@ function ClientMyTickets() {
 
 		const socket = getSocket();
 
-		const handleticketStatusUpdated = (updatedTicket: { id: number; status: TicketStatus }) => {
+		const handleticketStatusUpdated = (updatedTicket: {id: number; status: TicketStatus}) => {
 			setTickets((prev) =>
-				prev.map((t) => t.id === updatedTicket.id ? { ...t, status: updatedTicket.status } : t)
+				prev.map((t) => t.id === updatedTicket.id ? {...t, status: updatedTicket.status} : t)
 			);
 		};
-		const handleticketUnreadUpdated = (payload: { ticketId: number; clientUnreadCount: number }) => {
+		const handleticketUnreadUpdated = (payload: {ticketId: number; clientUnreadCount: number}) => {
 			setTickets((prev) =>
 				prev.map((t) =>
 					t.id === payload.ticketId
@@ -101,7 +103,7 @@ function ClientMyTickets() {
 						<button
 							type="button"
 							onClick={() => setIsCreateTicketOpen(true)}
-							className="btn btn-info"
+							className="btn bg-navy outline-none border-none text-white shadow-none"
 						>
 							Créer un ticket
 						</button>
@@ -111,17 +113,23 @@ function ClientMyTickets() {
 						<TicketFilter label="Status" list={status} currentFilterElement={currentFilterStatus} handleSelect={handleSelectStatus} />
 						<TicketFilter label="Priorite" list={priorities} currentFilterElement={currentFilterPriority} handleSelect={handleSelectPriority} />
 					</div>
-					<p className="my-4">Tous les tickets</p>
 					{
 						isLoading ? (
 							<p className="text-sm text-gray-500">Chargement des tickets...</p>
 						) : (
 							<div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
-								{
-									tickets.map((t, i) => (
-										<Ticket ticket={t} key={i} />
-									))
-								}
+								{tickets.length === 0 ? (
+									<div className="col-span-full flex flex-col items-center mt-14 justify-center py-10 text-gray-400">
+										<img
+											src={noneTickets}
+											alt="Aucun ticket"
+											className="w-42 h-42 mb-4"
+										/>
+										<p>Aucun ticket disponible</p>
+									</div>
+								) : (
+									tickets.map((t, i) => <Ticket ticket={t} key={i} />)
+								)}
 							</div>
 						)
 					}

@@ -1,11 +1,11 @@
-import { useEffect, useState, useRef } from 'react';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import {useEffect, useState, useRef} from 'react';
+import {ArrowLeftIcon} from '@heroicons/react/24/outline';
 import Separator from './Separator';
 import ContainerComp from '../../layout/layout_client/Container';
-import { useNavigate } from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import Avatar from './Avatar';
 import Footer from '../../layout/Footer';
-import { getMyProfile, updateMyProfile, uploadMyAvatar } from '../../services/profile';
+import {getMyProfile, updateMyProfile, uploadMyAvatar} from '../../services/profile';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -95,7 +95,7 @@ function Profil() {
 			<ContainerComp>
 				<header className="pt-10 pb-5 flex items-center gap-6">
 					{/* Go back */}
-					<button onClick={() => navigate(-1)} className="cursor-pointer">
+					<button onClick={() => navigate("/client")} className="cursor-pointer">
 						<ArrowLeftIcon className="w-5 h-5" />
 					</button>
 					{/* ----- */}
@@ -117,7 +117,7 @@ function Profil() {
 				/>
 				<div className="flex justify-center md:block">
 					<button
-						className="btn btn-info"
+						className="btn bg-navy outline-none border-none text-white"
 						onClick={() =>
 							fileInputRef.current?.click()
 						}
@@ -167,7 +167,7 @@ function Profil() {
 				</div>
 				<div className="mt-10 mb-8 flex justify-end">
 					<button
-						className="btn btn-primary"
+						className="btn bg-navy outline-none border-none text-white"
 						onClick={handleSave}
 						disabled={isLoading}>
 
