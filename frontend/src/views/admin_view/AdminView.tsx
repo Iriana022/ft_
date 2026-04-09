@@ -1,4 +1,4 @@
-import {useState, useMemo} from 'react';
+import {useState, useMemo, useEffect} from 'react';
 import {
 	ChevronLeftIcon,
 	ChevronRightIcon,
@@ -21,14 +21,18 @@ import TikeoLogo from '../../components/client_components/TikeoLogo';
 import Notification from '../../components/client_components/Notification';
 import Avatar from '../../components/client_components/Avatar';
 import {Outlet, Link, NavLink} from 'react-router-dom';
-import {type HeroIconType, TicketStatus, TicketPriority, StatCardType} from '../../types';
+import {type HeroIconType, type Ticket, TicketStatus, TicketPriority, StatCardType} from '../../types';
 import {RechartsDevtools} from '@recharts/devtools';
 import {
 	LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-	BarChart, Bar, ResponsiveContainer
+	ResponsiveContainer
 } from 'recharts';
 import Separator from '../../components/login_components/Separator';
 import TicketFilter from '../../components/client_components/TicketFilter';
+import {UserRole} from '../../types';
+import api from '../../services/api';
+import {fetchTickets} from '../../services/tickets';
+import {getSocket} from '../../services/singleton';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -221,38 +225,6 @@ function TicketsActivities() {
 					</LineChart>
 				</ResponsiveContainer>
 			</div>
-		</div>
-	);
-}
-
-const ticketsPerCategory = [
-	{category: "Bug", count: 45},
-	{category: "Fonctionnalite", count: 30},
-	{category: "Support", count: 20},
-	{category: "Facturation", count: 15},
-	{category: "Autre", count: 10},
-];
-
-function TicketsRepartitionPerCategory() {
-	return (
-		<div className="w-full md:w-[40%] bg-white shadow rounded-md p-5">
-			<h3 className="text-base font-medium text-navy">Par categorie</h3>
-			<p className="text-sm text-gray-600">Repartition des tickets</p>
-			<ResponsiveContainer width="100%" height={300}>
-				<BarChart
-					data={ticketsPerCategory}
-					layout="vertical"
-					margin={{top: 20, right: 20, bottom: 20, left: 40}}
-				>
-					<CartesianGrid stroke="#aaa" strokeDasharray="5 5" horizontal={false} vertical={true} />
-					<XAxis type="number" tick={{fontSize: 12}} />
-					<YAxis dataKey="category" type="category" tick={{fontSize: 12}} />
-					<Tooltip />
-					<Bar dataKey="count" fill="var(--color-navy)" barSize={30}
-						radius={[0, 5, 5, 0]}
-					/>
-				</BarChart>
-			</ResponsiveContainer>
 		</div>
 	);
 }
@@ -531,24 +503,41 @@ function RecentTickets() {
 }
 
 export function AdminDashboard() {
+	const [tickets, setTickets] = useState<Ticket[]>([]);
+	const loadTickets = async () => {
+		try {
+			const data = await fetchTickets();
+			setTickets(data);
+		} catch (error) {
+			console.error('Erreur chargement tickets:', error);
+		}
+	};
+
+	useEffect(() => {
+		loadTickets();
+	}, []);
+
+	const openTickets = tickets.filter((t) => t.status === TicketStatus.OPEN);
+	const closedTickets = tickets.filter((t) => t.status === TicketStatus.CLOSED);
+
 	return (
 		<div className="p-4">
-			<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+			<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 				<StatCard
 					title="Total tickets"
-					count={128}
+					count={tickets.length}
 					icon={TicketIcon}
 					type={StatCardType.TOTAL_TICKET}
 				/>
 				<StatCard
 					title="Tickets ouverts"
-					count={34}
+					count={openTickets.length}
 					icon={ClockIcon}
 					type={StatCardType.OPEN_TICKET}
 				/>
 				<StatCard
 					title="Tickets fermes"
-					count={94}
+					count={closedTickets.length}
 					icon={TicketIcon}
 					type={StatCardType.CLOSED_TICKET}
 				/>
@@ -558,16 +547,9 @@ export function AdminDashboard() {
 					icon={UsersIcon}
 					type={StatCardType.USERS}
 				/>
-				<StatCard
-					title="Categories"
-					count={5}
-					icon={FolderMinusIcon}
-					type={StatCardType.CATEGORIES}
-				/>
 			</div>
 			<div className="flex flex-col md:flex-row items-center mt-6 gap-4">
 				<TicketsActivities />
-				<TicketsRepartitionPerCategory />
 			</div>
 			<RecentTickets />
 		</div>
@@ -775,7 +757,7 @@ export function AdminTickets() {
 					onPrev={() => setCurrentPage((p) => Math.max(p - 1, 1))}
 				/>
 			</div>
-		</div >
+		</div>
 	);
 }
 
@@ -790,10 +772,113 @@ export function AdminCategories() {
 	);
 }
 
+enum UserStatus {
+	ACTIVE = 'ACTIVE',
+	INACTIVE = 'INACTIVE',
+}
+
+// TODO: make this dynamic
+const fakeUsers = [
+	{
+		user: "John Doe",
+		role: UserRole.ADMIN,
+		status: UserStatus.ACTIVE,
+		tickets: 12,
+		inscription_date: "2024-01-15",
+	},
+	{
+		user: "Jane Smith",
+		role: UserRole.CLIENT,
+		status: UserStatus.ACTIVE,
+		tickets: 5,
+		inscription_date: "2024-02-10",
+	},
+	{
+		user: "Michael Brown",
+		role: UserRole.CLIENT,
+		status: UserStatus.INACTIVE,
+		tickets: 2,
+		inscription_date: "2023-11-20",
+	},
+	{
+		user: "Emily Davis",
+		role: UserRole.CLIENT,
+		status: UserStatus.ACTIVE,
+		tickets: 8,
+		inscription_date: "2024-03-05",
+	},
+	{
+		user: "William Johnson",
+		role: UserRole.ADMIN,
+		status: UserStatus.INACTIVE,
+		tickets: 0,
+		inscription_date: "2023-09-12",
+	},
+	{
+		user: "Olivia Wilson",
+		role: UserRole.CLIENT,
+		status: UserStatus.ACTIVE,
+		tickets: 15,
+		inscription_date: "2024-01-28",
+	},
+	{
+		user: "James Martinez",
+		role: UserRole.CLIENT,
+		status: UserStatus.INACTIVE,
+		tickets: 3,
+		inscription_date: "2023-12-01",
+	},
+	{
+		user: "Sophia Anderson",
+		role: UserRole.CLIENT,
+		status: UserStatus.ACTIVE,
+		tickets: 6,
+		inscription_date: "2024-02-18",
+	},
+	{
+		user: "Daniel Thomas",
+		role: UserRole.ADMIN,
+		status: UserStatus.ACTIVE,
+		tickets: 20,
+		inscription_date: "2023-08-30",
+	},
+	{
+		user: "Isabella Taylor",
+		role: UserRole.CLIENT,
+		status: UserStatus.ACTIVE,
+		tickets: 1,
+		inscription_date: "2024-03-12",
+	},
+];
+
 export function AdminUsers() {
 	return (
 		<div>
-			Users
+			<label className="hidden md:flex input text-sm bg-white rounded-lg border border-gray-200 max-w-[280px]">
+				<MagnifyingGlassIcon className="w-4 h-4 text-gray-600" />
+				<input type="search" className="text-sm" required placeholder="Rechercher des utilisateurs" />
+			</label>
+
+			<div className="bg-white rounded-md shadow mt-8 pt-3">
+				<div className="w-full overflow-x-auto">
+					<table className="min-w-[700px] w-full text-sm text-left">
+						<thead className="text-gray-500 border-b">
+							<tr>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">Utilisateurs</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">Role</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">Statut</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">Tickets</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">Inscription</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">Actions</th>
+							</tr>
+						</thead>
+
+						<tbody>
+
+						</tbody>
+					</table>
+				</div>
+			</div>
 		</div>
 	);
 }
