@@ -10,7 +10,7 @@ function TikeoLogo(props: TikeoLogoProps) {
 	return (
 		<Link to={props.href} className={`font-inter ${props.size} ${props.color} font-bold`}>
 			Tikeo
-		</Link >
+		</Link>
 	);
 }
 

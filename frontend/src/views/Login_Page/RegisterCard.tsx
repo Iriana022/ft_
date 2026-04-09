@@ -5,7 +5,7 @@ import Separator from '../../components/login_components/Separator';
 import api from '../../services/api';
 import GoogleButton from '../../components/login_components/GoogleButton';
 import {Link} from 'react-router-dom';
-import {UserIcon, EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon} from '@heroicons/react/24/outline';
+import {UserIcon, EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon, BriefcaseIcon} from '@heroicons/react/24/outline';
 import TikeoLogo from '../../components/client_components/TikeoLogo';
 
 export function RegisterCard() {
@@ -83,16 +83,16 @@ export function RegisterCard() {
 
 			<form onSubmit={handleSubmit}>
 				<div className="mb-4">
-					<label className="block mb-2 text-gray-700">Nom d'utilisateur</label>
+					<label className="text-sm md:text-base block mb-2 text-gray-700">Nom d'utilisateur</label>
 					<div className="relative">
-						<UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+						<UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
 						<input
 							type="text"
 							data-slot="input"
 							value={username}
 							onChange={(e) => setUsername(e.target.value)}
 							className="pl-10 h-11 w-full rounded-lg border border-gray-300
-								bg-cream/50 text-sm text-gray-800 placeholder-gray-500
+								bg-cream/50 text-xs md:text-sm text-gray-800 placeholder-gray-500
 								focus:outline-none focus:ring-2 focus:ring-navy focus:ring-opacity-50
 								focus:border-navy/81
 								hover:border-gray-399
@@ -105,16 +105,16 @@ export function RegisterCard() {
 				</div>
 
 				<div className="mb-4">
-					<label className="block mb-2 text-gray-700">Email</label>
+					<label className="text-sm md:text-base block mb-2 text-gray-700">Email</label>
 					<div className="relative">
-						<EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+						<EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
 						<input
 							type="email"
 							data-slot="input"
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
 							className="pl-10 h-11 w-full rounded-lg border border-gray-300
-								bg-cream/50 text-sm text-gray-800 placeholder-gray-500
+								bg-cream/50 text-xs md:text-sm text-gray-800 placeholder-gray-500
 								focus:outline-none focus:ring-2 focus:ring-navy focus:ring-opacity-50
 								focus:border-navy/81
 								hover:border-gray-399
@@ -127,16 +127,16 @@ export function RegisterCard() {
 				</div>
 
 				<div className="mb-2">
-					<label className="block mb-2 text-gray-700">Password</label>
+					<label className="text-sm md:text-base block mb-2 text-gray-700">Mot de passe</label>
 					<div className="relative">
-						<LockClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+						<LockClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
 						<input
 							type={showPassword ? "text" : "password"}
 							data-slot="input"
 							value={password}
 							onChange={(e) => setPassword(e.target.value)}
 							className="pl-10 h-11 pr-10 w-full rounded-lg border border-gray-300
-								bg-cream/50 text-sm text-gray-800 placeholder-gray-500
+								bg-cream/50 text-xs md:text-sm text-gray-800 placeholder-gray-500
 								focus:outline-none focus:ring-2 focus:ring-navy focus:ring-opacity-50
 								focus:border-navy/81
 								hover:border-gray-399
@@ -150,37 +150,57 @@ export function RegisterCard() {
 							onClick={() => setShowPassword(!showPassword)}
 							className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
 						>
-							{showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+							{showPassword ? <EyeSlashIcon className="w-4 h-4 md:w-5 md:h-5" /> : <EyeIcon className="w-4 h-4 md:w-5 md:h-5" />}
 						</button>
 					</div>
 					<p className="text-xs mt-1 text-gray-500">
-						Min. 8 characters with uppercase and number
+						Minimum 8 caractères avec une majuscule et un chiffre
 					</p>
 				</div>
 
 				<div className="mb-4 mt-3">
-					<label className="block mb-2 text-gray-700">Type de compte</label>
+					<label className="text-sm md:text-base block mb-2 text-gray-700">Type de compte</label>
+
 					<div className="flex w-full gap-3">
-						{['CLIENT', 'AGENT'].map((role) => (
-							<label
-								key={role}
-								className={`flex w-[50%] text-sm items-center justify-center gap-2 cursor-pointer px-4 py-2 rounded-lg border transition-colors
-		${selectedRole === role
-										? 'bg-navy text-white'
-										: 'text-gray-700 hover:bg-gray-50'
-									}`}
-							>
-								<input
-									type="radio"
-									name="role"
-									value={role}
-									checked={selectedRole === role}
-									onChange={() => setSelectedRole(role as 'CLIENT' | 'AGENT')}
-									className="hidden"
-								/>
-								{role === 'CLIENT' ? 'Client' : 'Agent'}
-							</label>
-						))}
+						{['CLIENT', 'AGENT'].map((role) => {
+							const isSelected = selectedRole === role;
+
+							return (
+								<label
+									key={role}
+									className={`
+						flex w-1/2 items-center justify-center gap-2 cursor-pointer
+						px-2 md:px-4 py-2 md:py-3 rounded-lg border text-sm font-medium
+						transition-all duration-200
+						${isSelected
+											? 'border-navy text-navy ring-1 ring-navy/20'
+											: 'border-gray-300 text-gray-600 hover:border-gray-400 hover:bg-gray-50'
+										}
+					`}
+								>
+									<input
+										type="radio"
+										name="role"
+										value={role}
+										checked={isSelected}
+										onChange={() => setSelectedRole(role as 'CLIENT' | 'AGENT')}
+										className="hidden"
+									/>
+
+									{role === 'CLIENT' ? (
+										<>
+											<UserIcon className="w-5 h-5 text-blue-500" />
+											Client
+										</>
+									) : (
+										<>
+											<BriefcaseIcon className="w-5 h-5 text-green-500" />
+											Agent
+										</>
+									)}
+								</label>
+							);
+						})}
 					</div>
 				</div>
 
@@ -197,8 +217,8 @@ export function RegisterCard() {
 			{/* Separator */}
 			< div className="relative mb-6" >
 				<Separator />
-				<span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-3 text-sm bg-white text-gray-500">
-					Or continue with
+				<span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-3 text-xs md:text-sm bg-white text-gray-500">
+					Ou continuer avec
 				</span>
 			</div >
 
@@ -207,7 +227,7 @@ export function RegisterCard() {
 
 			{/* Login */}
 			< div className="text-center text-sm mt-6 text-gray-600" >
-				Already have an account ? {' '}
+				Vous avez déjà un compte ?{' '}
 				<Link to="/login" className="font-semibold text-navy hover:underline" >
 					Se connecter
 				</Link >

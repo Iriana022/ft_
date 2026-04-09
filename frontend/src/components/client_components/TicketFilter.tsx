@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { FunnelIcon } from '@heroicons/react/24/outline';
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
-import { TicketStatus, TicketPriority } from '../../types';
+import React, {useState} from 'react';
+import {FunnelIcon} from '@heroicons/react/24/outline';
+import {ChevronDownIcon} from '@heroicons/react/24/outline';
+import {TicketStatus, TicketPriority} from '../../types';
 
 interface TicketFilterElementProps {
 	name: string,
@@ -40,7 +40,7 @@ function TicketFilter(props: TicketFilterProps) {
 				onClick={() => setOpen(!open)}
 			>
 				<div className="flex items-center gap-2">
-					<FunnelIcon className="w-4 h-4 text-gray-500" />
+					<FunnelIcon className="w-4 h-4 md:w-5 md:h-5 text-gray-500" />
 					<span className="text-xs md:text-sm">
 						{props.currentFilterElement}
 					</span>

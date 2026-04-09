@@ -5,7 +5,6 @@ import Separator from '../../components/login_components/Separator';
 import api from '../../services/api';
 import {getHomeRouteByRole, getRoleFromToken} from '../../services/auth';
 import GoogleButton from '../../components/login_components/GoogleButton';
-import {Link} from 'react-router-dom';
 import {
 	EnvelopeIcon,
 	LockClosedIcon,
@@ -13,6 +12,7 @@ import {
 	EyeSlashIcon,
 } from '@heroicons/react/24/outline';
 import TikeoLogo from '../../components/client_components/TikeoLogo';
+import {Link} from 'react-router-dom';
 
 export function LoginCard() {
 	const [showPassword, setShowPassword] = useState(false);
@@ -108,16 +108,16 @@ export function LoginCard() {
 
 			<form onSubmit={handleSubmit}>
 				<div className="mb-4">
-					<label className="block mb-2 text-gray-700">Email</label>
+					<label className="text-sm md:text-base block mb-2 text-gray-700">Email</label>
 					<div className="relative">
-						<EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+						<EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
 						<input
 							type="email"
 							data-slot="input"
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
 							className="pl-10 h-11 w-full rounded-lg border border-gray-300
-								bg-cream/50 text-sm text-gray-800 placeholder-gray-500
+								bg-cream/50 text-xs md:text-sm text-gray-800 placeholder-gray-500
 								focus:outline-none focus:ring-2 focus:ring-navy focus:ring-opacity-50
 								focus:border-navy/81
 								hover:border-gray-399
@@ -130,16 +130,16 @@ export function LoginCard() {
 				</div>
 
 				<div className="mb-2">
-					<label className="block mb-2 text-gray-700">Mot de passe</label>
+					<label className="text-sm md:text-base block mb-2 text-gray-700">Mot de passe</label>
 					<div className="relative">
-						<LockClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+						<LockClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
 						<input
 							type={showPassword ? "text" : "password"}
 							data-slot="input"
 							value={password}
 							onChange={(e) => setPassword(e.target.value)}
 							className="pl-10 h-11 pr-10 w-full rounded-lg border border-gray-300
-								bg-cream/50 text-sm text-gray-800 placeholder-gray-500
+								bg-cream/50 text-xs md:text-sm text-gray-800 placeholder-gray-500
 								focus:outline-none focus:ring-2 focus:ring-navy focus:ring-opacity-50
 								focus:border-navy/81
 								hover:border-gray-399
@@ -153,23 +153,16 @@ export function LoginCard() {
 							onClick={() => setShowPassword(!showPassword)}
 							className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
 						>
-							{showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+							{showPassword ? <EyeSlashIcon className="w-4 h-4 md:w-5 md:h-5" /> : <EyeIcon className="w-4 h-4 md:w-5 md:h-5" />}
 						</button>
 					</div>
-				</div>
-
-				{/* Forgot */}
-				<div className="mb-6 text-right">
-					<Link to="/login" className="text-sm text-navy hover:underline">
-						Mot de passe oublié ?
-					</Link>
 				</div>
 
 				{/* Submit */}
 				<Button
 					type="submit"
 					disabled={loading}
-					className="w-full h-11 mb-6 font-semibold bg-navy text-white hover:bg-[#2e4f70] transition-colors"
+					className="w-full h-11 my-6 font-semibold bg-navy text-white hover:bg-[#2e4f70] transition-colors"
 				>
 					{loading ? 'Connexion en cours...' : 'Se connecter'}
 				</Button>
@@ -178,7 +171,7 @@ export function LoginCard() {
 			{/* Separator */}
 			<div className="relative mb-6">
 				<Separator />
-				<span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-3 text-sm bg-gray-50 text-gray-500">
+				<span className="text-xs md:text-sm absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-3 text-sm bg-gray-50 text-gray-500">
 					Ou continuer avec
 				</span>
 			</div>
@@ -189,9 +182,9 @@ export function LoginCard() {
 			{/* Register */}
 			<div className="mt-6 text-center text-sm text-gray-600">
 				Pas de compte ?{' '}
-				<a href="/register" className="font-semibold text-navy hover:underline">
+				<Link to="/register" className="font-semibold text-navy hover:underline">
 					Créer un compte
-				</a>
+				</Link>
 			</div>
 		</div>
 	);

@@ -1,19 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import TikeoLogo from '../components/client_components/TikeoLogo';
 import NavItem from '../components/client_components/NavItem';
-import { HomeIcon } from '@heroicons/react/24/outline';
-import { TicketIcon } from '@heroicons/react/24/outline';
-import { Cog8ToothIcon } from '@heroicons/react/24/outline';
+import {HomeIcon} from '@heroicons/react/24/outline';
+import {TicketIcon} from '@heroicons/react/24/outline';
+import {Cog8ToothIcon} from '@heroicons/react/24/outline';
 import HamburgerMenu from '../components/client_components/HamburgerMenu';
 import Notification from '../components/client_components/Notification';
 import Avatar from '../components/client_components/Avatar';
 import ContainerComp from './layout_client/Container';
 import MobileMenu from '../components/client_components/MobileMenu';
-import { Link, useNavigate } from 'react-router-dom';
-import { fetchMyTicketsForClientView } from '../services/tickets';
-import { type ClientNotificationItem } from '../components/client_components/NotificationView';
-import { getMyProfile } from '../services/profile';
-import { getSocket } from '../services/singleton';
+import {Link, useNavigate} from 'react-router-dom';
+import {fetchMyTicketsForClientView} from '../services/tickets';
+import {type ClientNotificationItem} from '../components/client_components/NotificationView';
+import {getMyProfile} from '../services/profile';
+import {getSocket} from '../services/singleton';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -80,7 +80,7 @@ function Header() {
 		loadClientTickets();
 
 		const socket = getSocket();
-		const handleticketUnreadUpdated = (payload: { ticketId: number; clientUnreadCount: number }) => {
+		const handleticketUnreadUpdated = (payload: {ticketId: number; clientUnreadCount: number}) => {
 			if (!clientTicketIdsRef.current.has(payload.ticketId)) return;
 
 			setUnreadByTicket((prev) => {
