@@ -1,5 +1,5 @@
-import {useState, useEffect, useRef} from 'react';
-import {Link, useLocation, useNavigate, useSearchParams} from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import {
 	AlertCircle,
 	ArrowLeft,
@@ -13,10 +13,10 @@ import {
 	Tag,
 	User,
 } from 'lucide-react';
-import {TicketPriority, TicketStatus, type Ticket, type ChatMessage} from '../../types';
-import {markTicketMessagesAsRead, updateTicketStatus, getTicketMessages, sendTicketMessage} from '../../services/tickets';
-import {getSocket} from '../../services/singleton';
-import {getUserIdFromToken} from '../../services/auth';
+import { TicketPriority, TicketStatus, type Ticket, type ChatMessage } from '../../types';
+import { markTicketMessagesAsRead, updateTicketStatus, getTicketMessages, sendTicketMessage, fetchTicketById } from '../../services/tickets';
+import { getSocket } from '../../services/singleton';
+import { getUserIdFromToken } from '../../services/auth';
 
 type InternalNote = {
 	id: number;
@@ -27,6 +27,15 @@ type InternalNote = {
 
 type LocationState = {
 	ticket?: Ticket;
+};
+
+const DEFAULT_CLIENT_AVATAR = '/assets/avatars/avatar1.jpg';
+
+const getResponseAvatar = (response: ChatMessage) => {
+	const fallback = response.isFromSupport ? DEFAULT_AGENT_AVATAR : DEFAULT_CLIENT_AVATAR;
+	return response.author?.avatar && response.author.avatar.length > 0
+		? response.author.avatar
+		: fallback;
 };
 
 const statusConfig = {
@@ -52,16 +61,18 @@ const statusConfig = {
 	},
 };
 
+const DEFAULT_AGENT_AVATAR = '/assets/avatars/avatar2.png';
+
 const priorityConfig = {
-	[TicketPriority.LOW]: {label: 'Basse', color: 'text-green-600', bg: 'bg-green-50'},
-	[TicketPriority.MEDIUM]: {label: 'Moyenne', color: 'text-blue-600', bg: 'bg-blue-50'},
-	[TicketPriority.HIGH]: {label: 'Haute', color: 'text-orange-600', bg: 'bg-orange-50'},
-	[TicketPriority.URGENT]: {label: 'Urgent', color: 'text-red-600', bg: 'bg-red-50'},
+	[TicketPriority.LOW]: { label: 'Basse', color: 'text-green-600', bg: 'bg-green-50' },
+	[TicketPriority.MEDIUM]: { label: 'Moyenne', color: 'text-blue-600', bg: 'bg-blue-50' },
+	[TicketPriority.HIGH]: { label: 'Haute', color: 'text-orange-600', bg: 'bg-orange-50' },
+	[TicketPriority.URGENT]: { label: 'Urgent', color: 'text-red-600', bg: 'bg-red-50' },
 };
 
 function ChatTicketView() {
 	const navigate = useNavigate();
-	const location = useLocation() as {state?: LocationState};
+	const location = useLocation() as { state?: LocationState };
 	const [searchParams] = useSearchParams();
 	const currentUserId = getUserIdFromToken(localStorage.getItem('access_token'));
 	const [activeTab, setActiveTab] = useState<'responses' | 'notes'>('responses');
@@ -107,7 +118,7 @@ function ChatTicketView() {
 	]);
 
 	const scrollToBottom = () => {
-		messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
+		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 	};
 
 	const [chatUnlocked, setChatUnlocked] = useState(
@@ -125,6 +136,32 @@ function ChatTicketView() {
 		chatUnlocked &&
 		ticket.status !== TicketStatus.CLOSED &&
 		!isTicketHandledByAnotherAgent;
+
+	const isClosedTicket = ticket.status === TicketStatus.CLOSED;
+
+	useEffect(() => {
+		if (!fallbackId) return;
+
+		let mounted = true;
+
+		const loadFreshTicket = async () => {
+			try {
+				const freshTicket = await fetchTicketById(fallbackId);
+				if (!mounted) return;
+
+				setTicket(freshTicket);
+				setSelectedStatus(freshTicket.status);
+			} catch (error) {
+				console.error('Erreur chargement ticket:', error);
+			}
+		};
+
+		loadFreshTicket();
+
+		return () => {
+			mounted = false;
+		};
+	}, [fallbackId]);
 
 	useEffect(() => {
 		setChatUnlocked(ticket.status === TicketStatus.IN_PROGRESS);
@@ -167,8 +204,9 @@ function ChatTicketView() {
 		const socket = getSocket();
 
 		const joinRoom = () => {
-			socket.emit('joinTicket', {ticketId: ticket.id});
-		}
+			const token = localStorage.getItem('access_token') ?? undefined;
+			socket.emit('joinTicket', { ticketId: ticket.id, token });
+		};
 
 		const onNewMessage = (message: ChatMessage) => {
 			setResponses((prev) => {
@@ -183,13 +221,19 @@ function ChatTicketView() {
 				];
 			});
 			if (!message.isFromSupport && !isTicketHandledByAnotherAgent) {
-				markTicketMessagesAsRead(ticket.id).catch(() => {});
+				markTicketMessagesAsRead(ticket.id).catch(() => { });
 			}
 		};
 
 		const onTicketStatusUpdated = (updatedTicket: Ticket) => {
-			if (updatedTicket.id !== ticket.id) return;
+			if (updatedTicket.id !== ticket.id)
+				return;
 			setTicket(updatedTicket);
+
+			if (updatedTicket.status === TicketStatus.CLOSED) {
+				setResponses([]);
+				setNewResponse('');
+			}
 		};
 
 		socket.on('connect', joinRoom);
@@ -198,7 +242,7 @@ function ChatTicketView() {
 		if (socket.connected)
 			joinRoom();
 		return () => {
-			socket.emit('leaveTicket', {ticketId: ticket.id});
+			socket.emit('leaveTicket', { ticketId: ticket.id });
 			socket.off('connect', joinRoom);
 			socket.off('newMessage', onNewMessage);
 			socket.off('ticketStatusUpdated', onTicketStatusUpdated);
@@ -409,12 +453,16 @@ function ChatTicketView() {
 													`}
 												>
 													<div className="flex items-start gap-3">
-														<div
-															className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold ${response.isFromSupport ? 'bg-indigo-600/20 text-indigo-500' : 'bg-gray-200 text-gray-700'
-																}`}
-														>
-															{response.author.login?.charAt(0).toUpperCase() ?? '?'}
-														</div>
+														<img
+															src={getResponseAvatar(response)}
+															alt={response.author.login ?? response.author.email ?? 'User avatar'}
+															className="h-10 w-10 rounded-full object-cover border border-gray-200 bg-gray-100"
+															onError={(e) => {
+																e.currentTarget.src = response.isFromSupport
+																	? DEFAULT_AGENT_AVATAR
+																	: DEFAULT_CLIENT_AVATAR;
+															}}
+														/>
 														<div className="flex-1">
 															<div className="mb-1 flex items-center gap-2">
 																<span className="font-semibold text-gray-900">
@@ -499,7 +547,7 @@ function ChatTicketView() {
 								<select
 									value={selectedStatus}
 									onChange={(e) => setSelectedStatus(e.target.value as TicketStatus)}
-									disabled={isTicketHandledByAnotherAgent}
+									disabled={isTicketHandledByAnotherAgent || isClosedTicket}
 									className="w-full rounded-lg border px-3 py-2 text-sm bg-white border-gray-300 text-gray-900"
 								>
 									<option value={TicketStatus.OPEN}>Ouvert</option>
@@ -510,11 +558,16 @@ function ChatTicketView() {
 								<button
 									type="button"
 									onClick={handleUpdateStatus}
-									disabled={isTicketHandledByAnotherAgent || isSavingStatus || selectedStatus === ticket.status}
+									disabled={isTicketHandledByAnotherAgent || isClosedTicket || isSavingStatus || selectedStatus === ticket.status}
 									className="mt-2 w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
 								>
 									{isSavingStatus ? 'Mise a jour...' : 'Appliquer le statut'}
 								</button>
+								{isClosedTicket && (
+									<p className="mt-2 text-xs text-red-600">
+										Ticket fermé définitivement: statut non modifiable.
+									</p>
+								)}
 								{isTicketHandledByAnotherAgent && (
 									<p className="mt-2 text-xs text-red-600">
 										Ticket verrouillé: déjà assigné à un autre agent.
@@ -538,7 +591,12 @@ function ChatTicketView() {
 								</div>
 								{ticket.assignedTo ? (
 									<div className="flex items-center gap-2">
-										<img src={ticket.assignedTo.avatar} alt={ticket.assignedTo.login || ''} className="h-8 w-8 rounded-full" />
+										<img src={ticket.assignedTo.avatar || DEFAULT_AGENT_AVATAR}
+											alt={ticket.assignedTo.login || ''}
+											className="h-8 w-8 rounded-full"
+											onError={(e) => {
+												e.currentTarget.src = DEFAULT_AGENT_AVATAR;
+											}} />
 										<div>
 											<p className="font-medium text-gray-900">{ticket.assignedTo.login}</p>
 											<p className="text-xs text-gray-500">{ticket.assignedTo.email}</p>

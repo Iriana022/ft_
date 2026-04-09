@@ -5,7 +5,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon } from '@heroicons/react/24/solid';
 import type { ChatMessage, TicketType } from '../../types';
 import { TicketStatus } from '../../types';
-import Avatar from '../../components/client_components/Avatar';
 import { getTicketMessages, sendTicketMessage } from '../../services/tickets';
 import { getSocket } from '../../services/singleton';
 import { markTicketMessagesAsRead } from '../../services/tickets';
@@ -14,8 +13,15 @@ interface TicketMessageHeaderProps {
   title: string;
 }
 
-const avatar2 = '/assets/avatars/avatar2.png';
-const avatar1 = '/assets/avatars/avatar1.jpg';
+const DEFAULT_CLIENT_AVATAR = '/assets/avatars/avatar1.jpg';
+const DEFAULT_SUPPORT_AVATAR = '/assets/avatars/avatar2.png';
+
+const getMessageAvatar = (msg: ChatMessage) => {
+  const fallback = msg.isFromSupport ? DEFAULT_SUPPORT_AVATAR : DEFAULT_CLIENT_AVATAR;
+  return msg.author?.avatar && msg.author.avatar.length > 0
+    ? msg.author.avatar
+    : fallback;
+};
 
 function TicketMessageHeader({ title }: TicketMessageHeaderProps) {
   const navigate = useNavigate();
@@ -102,8 +108,9 @@ function ChatTicketViewClient() {
     const socket = getSocket();
 
     const joinRoom = () => {
-      socket.emit('joinTicket', { ticketId });
-    }
+      const token = localStorage.getItem('access_token') ?? undefined;
+      socket.emit('joinTicket', { ticketId, token });
+    };
 
     const onnewMessage = (message: ChatMessage) => {
       setMessages((prev) => {
@@ -117,13 +124,22 @@ function ChatTicketViewClient() {
     };
 
     const onticketStatusUpdated = (updatedTicket: { id: number; status: TicketStatus }) => {
-      if (updatedTicket.id !== ticketId) return;
+      if (updatedTicket.id !== ticketId)
+        return;
       setCurrentStatus(updatedTicket.status);
+
+      if (updatedTicket.status === TicketStatus.CLOSED) {
+        setMessages('');
+        setNewMessage('');
+      }
     };
 
     const onticketClosed = (payload?: { ticketId?: number }) => {
-      if (!payload?.ticketId || payload.ticketId === ticketId)
+      if (!payload?.ticketId || payload.ticketId === ticketId) {
         setCurrentStatus(TicketStatus.CLOSED);
+        setMessages('');
+        setNewMessage('');
+      }
     };
 
     socket.on('connect', joinRoom);
@@ -191,7 +207,16 @@ function ChatTicketViewClient() {
             messages.map((msg) => (
               <div key={msg.id} className={`chat ${msg.isFromSupport ? 'chat-start' : 'chat-end'}`}>
                 <div className="chat-image avatar">
-                  <Avatar src={msg.isFromSupport ? avatar2 : avatar1} size="sm" />
+                  <img
+                    src={getMessageAvatar(msg)}
+                    alt={msg.author.login ?? msg.author.email ?? 'User avatar'}
+                    className="w-8 h-8 rounded-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = msg.isFromSupport
+                        ? DEFAULT_SUPPORT_AVATAR
+                        : DEFAULT_CLIENT_AVATAR;
+                    }}
+                  />
                 </div>
                 <div className={`chat-bubble text-sm md:text-base ${msg.isFromSupport ? '' : 'chat-bubble-info'}`}>
                   {msg.content}
@@ -204,10 +229,10 @@ function ChatTicketViewClient() {
           )}
           <div ref={messagesEndRef} />
         </div>
-      </ContainerComp>
+      </ContainerComp >
 
       {/* Input message */}
-      <div className="sticky bottom-0 left-0 right-0 z-50 bg-base-100 border-t">
+      < div className="sticky bottom-0 left-0 right-0 z-50 bg-base-100 border-t" >
         <ContainerComp>
           <div className="w-full px-4 py-3">
             <div className="flex gap-2 w-full items-center">
@@ -216,7 +241,7 @@ function ChatTicketViewClient() {
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                  placeholder={canSendMessage ? 'Écrire un message...' : 'Envoi désactivé : pas d’agent disponible'}
+                placeholder={canSendMessage ? 'Écrire un message...' : 'Envoi désactivé : pas d’agent disponible'}
                 disabled={!canSendMessage || isClosed}
                 className="input input-bordered w-full min-h-[50px] bg-gray-100 text-sm md:text-base"
               />
@@ -230,7 +255,7 @@ function ChatTicketViewClient() {
             </div>
           </div>
         </ContainerComp>
-      </div>
+      </div >
     </>
   );
 }

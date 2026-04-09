@@ -1,6 +1,6 @@
 import api from './api';
-import {type ChatMessage, TicketStatus, type Ticket, type User} from '../types';
-import {TicketPriority, type TicketType} from '../types';
+import { type ChatMessage, TicketStatus, type Ticket, type User } from '../types';
+import { TicketPriority, type TicketType } from '../types';
 
 export type RawUser = Omit<User, 'createdAt'> & {
 	createdAt: string | Date;
@@ -56,6 +56,16 @@ export const fetchTickets = async (): Promise<Ticket[]> => {
 	return rawTickets.map(normalizeTicket);
 };
 
+export const fetchTicketById = async (ticketId: number): Promise<Ticket> => {
+	const tickets = await fetchTickets();
+	const ticket = tickets.find((t) => t.id === ticketId);
+
+	if (!ticket) {
+		throw new Error('Ticket introuvable');
+	}
+	return ticket;
+};
+
 export const fetchUsers = async (): Promise<User[]> => {
 	const response = await api.get('/user');
 	const rawUsers = (response.data ?? []) as RawUser[];
@@ -64,7 +74,7 @@ export const fetchUsers = async (): Promise<User[]> => {
 };
 
 export const updateTicketStatus = async (ticketId: number, status: TicketStatus): Promise<Ticket> => {
-	const response = await api.patch(`/tickets/${ticketId}/status`, {status});
+	const response = await api.patch(`/tickets/${ticketId}/status`, { status });
 
 	return normalizeTicket(response.data as RawTicket);
 };

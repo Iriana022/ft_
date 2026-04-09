@@ -10,6 +10,31 @@ import { TicketStatus, UserRole } from '@prisma/client';
 export class TicketsService {
 	constructor(private prisma: PrismaService, private ticketsGateway: TicketsGateway) { }
 
+	private assertTicketMessageAccess(
+		ticket: { authorId: number; AssignedToId: number | null },
+		userId: number,
+		role: UserRole,
+	) {
+		if (role === UserRole.ADMIN) return;
+
+		if (role === UserRole.CLIENT) {
+			if (ticket.authorId !== userId) {
+				throw new ForbiddenException('Accès interdit à ce ticket');
+			}
+			return;
+		}
+
+		if (role === UserRole.AGENT) {
+			// Si un agent est assigné, seul cet agent peut voir les messages
+			if (ticket.AssignedToId !== null && ticket.AssignedToId !== userId) {
+				throw new ForbiddenException('Messages réservés à l agent assigné');
+			}
+			return;
+		}
+
+		throw new ForbiddenException('Accès interdit');
+	}
+
 	async createTicket(dto: CreateTicketDto, authorId: number) {
 		const ticket = await this.prisma.ticket.create({
 			data: {
@@ -43,9 +68,11 @@ export class TicketsService {
 			where: { id: ticketId },
 		});
 
-		if (!ticket) {
+		if (!ticket)
 			throw new NotFoundException('Ticket not found')
-		}
+
+		if (ticket.status === TicketStatus.CLOSED)
+			throw new ForbiddenException('This ticket is definitively closed');
 
 		const actor = await this.prisma.user.findUnique({
 			where: { id: agentId },
@@ -70,25 +97,38 @@ export class TicketsService {
 		const shouldCloseChat = status === TicketStatus.CLOSED;
 		const shouldReopenTicket = status === TicketStatus.OPEN;
 
-		const updatedTicket = await this.prisma.ticket.update({
-			where: { id: ticketId },
-			data: {
-				status: dto.status as never,
-				...(shouldUnlockChat ? { 
-					chatUnlocked: true,
-					AssignedToId: agentId
-				} : {}),
-				...(shouldReopenTicket ? {
-					chatUnlocked: false,
-					AssignedToId: null,
-				} : {}),
-				...(shouldCloseChat ? { chatUnlocked: false } : {}),
-			},
-			include: { author: true, AssignedTo: true }
+		const updatedTicket = await this.prisma.$transaction(async (t) => {
+			const updated = await t.ticket.update({
+				where: { id: ticketId },
+				data: {
+					status: dto.status as never,
+					...(shouldUnlockChat ? {
+						chatUnlocked: true,
+						AssignedToId: agentId
+					} : {}),
+					...(shouldReopenTicket ? {
+						chatUnlocked: false,
+						AssignedToId: null,
+					} : {}),
+					...(shouldCloseChat ? {
+						chatUnlocked: false,
+						clientUnreadCount: 0,
+						agentUnreadCount: 0
+					} : {}),
+				},
+				include: { author: true, AssignedTo: true }
+			});
+			if (shouldCloseChat) {
+				await t.chatMessage.deleteMany({
+					where: { ticketId },
+				});
+			}
+			return updated;
 		});
 
 		this.ticketsGateway.emitStatusTicket(updatedTicket);
 		if (status === TicketStatus.CLOSED) {
+			this.ticketsGateway.emitTicketUnreadUpdated(ticketId, 0, 0);
 			this.ticketsGateway.emitTicketClosed(ticketId);
 		}
 		return updatedTicket;
@@ -97,11 +137,16 @@ export class TicketsService {
 	async getMessage(ticketId: number, userId: number, role: UserRole) {
 		const ticket = await this.prisma.ticket.findUnique({
 			where: { id: ticketId },
+			select: {
+				id: true,
+				authorId: true,
+				AssignedToId: true,
+			},
 		});
 		if (!ticket)
 			throw new NotFoundException('TIcket not found');
-		if (role === UserRole.CLIENT && ticket.authorId !== userId)
-			throw new ForbiddenException('Accès interdit à ce ticket');
+		this.assertTicketMessageAccess(ticket, userId, role);
+
 		return this.prisma.chatMessage.findMany({
 			where: { ticketId },
 			include: { author: true },
@@ -179,13 +224,16 @@ export class TicketsService {
 	async markTicketMessagesAsRead(ticketId: number, userId: number, role: UserRole) {
 		const ticket = await this.prisma.ticket.findUnique({
 			where: { id: ticketId },
+			select: {
+				id: true,
+				authorId: true,
+				AssignedToId: true,
+			},
 		});
 
 		if (!ticket) throw new NotFoundException('Ticket not found');
 
-		if (role === UserRole.CLIENT && ticket.authorId !== userId) {
-			throw new ForbiddenException('Accès interdit à ce ticket');
-		}
+		this.assertTicketMessageAccess(ticket, userId, role);
 
 		const data =
 			role === UserRole.CLIENT
