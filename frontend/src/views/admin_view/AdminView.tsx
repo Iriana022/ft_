@@ -1,5 +1,4 @@
 import {useState, useMemo, useEffect} from 'react';
-import {useQuery} from '@tanstack/react-query'
 import {
 	ChevronLeftIcon,
 	ChevronRightIcon,
@@ -11,7 +10,6 @@ import {
 import {
 	Squares2X2Icon,
 	TicketIcon,
-	FolderMinusIcon,
 	UsersIcon,
 	ChartBarSquareIcon,
 	ClockIcon,
@@ -31,9 +29,7 @@ import {
 import Separator from '../../components/login_components/Separator';
 import TicketFilter from '../../components/client_components/TicketFilter';
 import {UserRole} from '../../types';
-import api from '../../services/api';
 import {fetchTickets, fetchUsers} from '../../services/tickets';
-import {getSocket} from '../../services/singleton';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -55,10 +51,6 @@ function AdminHeader() {
 				</span>
 			</div>
 			<div className="flex items-center gap-4">
-				<label className="hidden md:flex input text-sm bg-cream rounded-lg border border-gray-200 max-w-[280px]">
-					<MagnifyingGlassIcon className="w-4 h-4 text-gray-600" />
-					<input type="search" className="text-sm" required placeholder="Rechercher" />
-				</label>
 				<Notification hasNotification={true} />
 				<VerticalSeparator />
 				<div className="flex items-center gap-2">
@@ -230,99 +222,6 @@ function TicketsActivities() {
 	);
 }
 
-const fakeTickets = [
-	{
-		id: 101,
-		title: "Crash de la page de connexion",
-		category: "Bug",
-		status: TicketStatus.OPEN,
-		priority: TicketPriority.URGENT,
-		user: "Alice",
-		createdAt: "2026-04-01T10:15:00Z",
-	},
-	{
-		id: 102,
-		title: "Ajouter le mode sombre",
-		category: "Fonctionnalité",
-		status: TicketStatus.IN_PROGRESS,
-		priority: TicketPriority.MEDIUM,
-		user: "Bob",
-		createdAt: "2026-04-01T14:20:00Z",
-	},
-	{
-		id: 103,
-		title: "Corriger l’alignement de la navbar",
-		category: "UI",
-		status: TicketStatus.RESOLVED,
-		priority: TicketPriority.LOW,
-		user: "Charlie",
-		createdAt: "2026-04-02T08:45:00Z",
-	},
-	{
-		id: 104,
-		title: "Problème de timeout de la base de données",
-		category: "Bug",
-		status: TicketStatus.OPEN,
-		priority: TicketPriority.HIGH,
-		user: "David",
-		createdAt: "2026-04-02T11:30:00Z",
-	},
-	{
-		id: 105,
-		title: "Améliorer les performances du dashboard",
-		category: "Optimisation",
-		status: TicketStatus.IN_PROGRESS,
-		priority: TicketPriority.HIGH,
-		user: "Eve",
-		createdAt: "2026-04-02T16:10:00Z",
-	},
-	{
-		id: 106,
-		title: "Ajouter un système de notifications",
-		category: "Fonctionnalité",
-		status: TicketStatus.OPEN,
-		priority: TicketPriority.MEDIUM,
-		user: "Frank",
-		createdAt: "2026-04-03T09:00:00Z",
-	},
-	{
-		id: 107,
-		title: "Corriger le responsive mobile",
-		category: "UI",
-		status: TicketStatus.IN_PROGRESS,
-		priority: TicketPriority.HIGH,
-		user: "Grace",
-		createdAt: "2026-04-03T12:25:00Z",
-	},
-	{
-		id: 108,
-		title: "Erreur sur la passerelle de paiement",
-		category: "Bug",
-		status: TicketStatus.OPEN,
-		priority: TicketPriority.URGENT,
-		user: "Hank",
-		createdAt: "2026-04-03T15:40:00Z",
-	},
-	{
-		id: 109,
-		title: "Mettre à jour la page de profil utilisateur",
-		category: "Fonctionnalité",
-		status: TicketStatus.RESOLVED,
-		priority: TicketPriority.LOW,
-		user: "Ivy",
-		createdAt: "2026-04-04T08:10:00Z",
-	},
-	{
-		id: 110,
-		title: "Corriger une faille de sécurité",
-		category: "Sécurité",
-		status: TicketStatus.IN_PROGRESS,
-		priority: TicketPriority.URGENT,
-		user: "Jack",
-		createdAt: "2026-04-04T09:50:00Z",
-	},
-];
-
 function RecentTicketsHeader() {
 	return (
 		<div className="flex items-center justify-between px-5 pt-3">
@@ -440,62 +339,114 @@ function getPriorityColor(priority: TicketPriority): [string, string] {
 	}
 	return color;
 }
+
 function RecentTickets() {
+	const [tickets, setTickets] = useState<Ticket[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+
+	useEffect(() => {
+		const loadTickets = async () => {
+			try {
+				setLoading(true);
+				const data = await fetchTickets();
+				setTickets(data);
+				setError(null);
+			} catch (e) {
+				console.error('Erreur chargement tickets admin:', e);
+				setError('Impossible de charger les tickets');
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		loadTickets();
+	}, []);
+
 	return (
 		<div className="bg-white rounded-md shadow mt-8">
 			<RecentTicketsHeader />
 			<Separator />
+
 			<div className="w-full overflow-x-auto">
 				<table className="min-w-[700px] w-full text-sm text-left">
 					<thead className="text-gray-500 border-b">
 						<tr>
-							<th className="px-5 pb-3 font-medium whitespace-nowrap">ID</th>
-							<th className="px-5 pb-3 font-medium whitespace-nowrap">Titre</th>
-							<th className="px-5 pb-3 font-medium whitespace-nowrap">Utilisateur</th>
-							<th className="px-5 pb-3 font-medium whitespace-nowrap">Status</th>
-							<th className="px-5 pb-3 font-medium whitespace-nowrap">Priorite</th>
-							<th className="px-5 pb-3 font-medium whitespace-nowrap">Date</th>
+							<th className="px-5 pb-3 font-medium">ID</th>
+							<th className="px-5 pb-3 font-medium">Titre</th>
+							<th className="px-5 pb-3 font-medium">Utilisateur</th>
+							<th className="px-5 pb-3 font-medium">Status</th>
+							<th className="px-5 pb-3 font-medium">Priorité</th>
+							<th className="px-5 pb-3 font-medium">Date</th>
 						</tr>
 					</thead>
 
 					<tbody>
-						{fakeTickets.slice(0, 5).map((ticket) => (
-							<tr
-								key={ticket.id}
-								className="border-b hover:bg-cream/70 transition"
-							>
-								<td className="px-5 py-3 text-navy whitespace-nowrap">
-									TK-{ticket.id}
-								</td>
-
-								<td className="px-5 py-3 whitespace-nowrap">
-									{ticket.title}
-								</td>
-
-								<td className="px-5 py-3 whitespace-nowrap">
-									{ticket.user}
-								</td>
-
-								<td className="px-5 py-3 whitespace-nowrap">
-									<span
-										className={`px-2 py-1 rounded-full text-xs ${getStatusColor(ticket.status)[0]} ${getStatusColor(ticket.status)[1]}`}>
-										{getStatusText(ticket.status)}
-									</span>
-								</td>
-
-								<td className="px-5 py-3 whitespace-nowrap">
-									<span
-										className={`px-2 py-1 rounded-full text-xs ${getPriorityColor(ticket.priority)[0]} ${getPriorityColor(ticket.priority)[1]}`}>
-										{getPriorityText(ticket.priority)}
-									</span>
-								</td>
-
-								<td className="px-5 py-3 text-gray-500 whitespace-nowrap">
-									{new Date(ticket.createdAt).toLocaleDateString("fr-FR").replace(/\//g, "-")}
+						{loading ? (
+							<tr>
+								<td colSpan={6} className="text-center py-6 text-gray-400">
+									Chargement des tickets...
 								</td>
 							</tr>
-						))
-						}
+						) : error ? (
+							<tr>
+								<td colSpan={6} className="text-center py-6 text-red-400">
+									{error}
+								</td>
+							</tr>
+						) : tickets.length === 0 ? (
+							<tr>
+								<td colSpan={6} className="text-center py-6 text-gray-400">
+									Aucun ticket disponible
+								</td>
+							</tr>
+						) : (
+							[...tickets]
+								.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+								.slice(0, 5)
+								.map((ticket) => (
+									<tr
+										key={ticket.id}
+										className="border-b hover:bg-cream/70 transition"
+									>
+										<td className="px-5 py-3 text-navy">
+											TK-{ticket.id}
+										</td>
+
+										<td className="px-5 py-3">
+											{ticket.title}
+										</td>
+
+										<td className="px-5 py-3">
+											{ticket.author?.login ?? "N/A"}
+										</td>
+
+										<td className="px-5 py-3">
+											<span
+												className={`px-2 py-1 rounded-full text-xs ${getStatusColor(ticket.status)[0]
+													} ${getStatusColor(ticket.status)[1]}`}
+											>
+												{getStatusText(ticket.status)}
+											</span>
+										</td>
+
+										<td className="px-5 py-3">
+											<span
+												className={`px-2 py-1 rounded-full text-xs ${getPriorityColor(ticket.priority)[0]
+													} ${getPriorityColor(ticket.priority)[1]}`}
+											>
+												{getPriorityText(ticket.priority)}
+											</span>
+										</td>
+
+										<td className="px-5 py-3 text-gray-500">
+											{ticket.createdAt
+												.toLocaleDateString("fr-FR")
+												.replace(/\//g, "-")}
+										</td>
+									</tr>
+								))
+						)}
 					</tbody>
 				</table>
 			</div>
@@ -756,11 +707,6 @@ export function AdminTickets() {
 											{ticket.title}
 										</td>
 										<td className="px-5 py-3 whitespace-nowrap">
-											<span className="text-xs px-2 py-1 rounded-full bg-gray-200 text-gray-600">
-												{ticket.category}
-											</span>
-										</td>
-										<td className="px-5 py-3 whitespace-nowrap">
 											<span
 												className={`px-2 py-1 rounded-full text-xs ${getStatusColor(ticket.status)[0]} ${getStatusColor(ticket.status)[1]}`}>
 												{getStatusText(ticket.status)}
@@ -800,86 +746,57 @@ export function AdminTickets() {
 	);
 }
 
-enum UserStatus {
-	ACTIVE = 'ACTIVE',
-	INACTIVE = 'INACTIVE',
+function getRoleString(role: UserRole): string {
+	let roleString: string = "";
+
+	switch (role) {
+		case UserRole.CLIENT: {
+			roleString = "Client";
+		} break;
+		case UserRole.AGENT: {
+			roleString = "Agent";
+		}
+		case UserRole.ADMIN: {
+			roleString = "Admin";
+		}
+	}
+	return (roleString);
 }
 
-// TODO: make this dynamic
-const fakeUsers = [
-	{
-		user: "John Doe",
-		role: UserRole.ADMIN,
-		status: UserStatus.ACTIVE,
-		tickets: 12,
-		inscription_date: "2024-01-15",
-	},
-	{
-		user: "Jane Smith",
-		role: UserRole.CLIENT,
-		status: UserStatus.ACTIVE,
-		tickets: 5,
-		inscription_date: "2024-02-10",
-	},
-	{
-		user: "Michael Brown",
-		role: UserRole.CLIENT,
-		status: UserStatus.INACTIVE,
-		tickets: 2,
-		inscription_date: "2023-11-20",
-	},
-	{
-		user: "Emily Davis",
-		role: UserRole.CLIENT,
-		status: UserStatus.ACTIVE,
-		tickets: 8,
-		inscription_date: "2024-03-05",
-	},
-	{
-		user: "William Johnson",
-		role: UserRole.ADMIN,
-		status: UserStatus.INACTIVE,
-		tickets: 0,
-		inscription_date: "2023-09-12",
-	},
-	{
-		user: "Olivia Wilson",
-		role: UserRole.CLIENT,
-		status: UserStatus.ACTIVE,
-		tickets: 15,
-		inscription_date: "2024-01-28",
-	},
-	{
-		user: "James Martinez",
-		role: UserRole.CLIENT,
-		status: UserStatus.INACTIVE,
-		tickets: 3,
-		inscription_date: "2023-12-01",
-	},
-	{
-		user: "Sophia Anderson",
-		role: UserRole.CLIENT,
-		status: UserStatus.ACTIVE,
-		tickets: 6,
-		inscription_date: "2024-02-18",
-	},
-	{
-		user: "Daniel Thomas",
-		role: UserRole.ADMIN,
-		status: UserStatus.ACTIVE,
-		tickets: 20,
-		inscription_date: "2023-08-30",
-	},
-	{
-		user: "Isabella Taylor",
-		role: UserRole.CLIENT,
-		status: UserStatus.ACTIVE,
-		tickets: 1,
-		inscription_date: "2024-03-12",
-	},
-];
-
 export function AdminUsers() {
+	const [users, setUsers] = useState<User[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+
+	useEffect(() => {
+		const loadUsers = async () => {
+			try {
+				setLoading(true);
+				const data = await fetchUsers();
+				setUsers(data);
+				setError(null);
+			} catch (e) {
+				console.error('Erreur chargement tickets admin:', e);
+				setError('Impossible de charger les tickets');
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		loadUsers();
+	}, []);
+
+	if (loading) {
+		return <div className="p-4">Chargement des tickets...</div>;
+	}
+
+	if (error) {
+		return <div className="p-4 text-red-600">{error}</div>;
+	}
+	// TODO: make this more secure
+	const filteredUsers = users.filter((user) => user.role !== UserRole.ADMIN);
+	console.log(filteredUsers);
+
 	return (
 		<div>
 			<label className="hidden md:flex input text-sm bg-white rounded-lg border border-gray-200 max-w-[280px]">
@@ -902,7 +819,33 @@ export function AdminUsers() {
 						</thead>
 
 						<tbody>
-
+							{
+								filteredUsers.map((user) => (
+									<tr
+										key={user.id}
+										className="border-b hover:bg-cream/70 transition"
+									>
+										<td className="px-5 py-3 text-navy whitespace-nowrap">
+											{user.login}
+										</td>
+										<td className="px-5 py-3 whitespace-nowrap">
+											{getRoleString(user.role)}
+										</td>
+										<td className="px-5 py-3 whitespace-nowrap">
+											Statut
+										</td>
+										<td className="px-5 py-3 whitespace-nowrap">
+											Tickets
+										</td>
+										<td className="px-5 py-3 whitespace-nowrap">
+											{user.createdAt.toLocaleDateString("fr-FR").replace(/\//g, "-")}
+										</td>
+										<td className="px-5 py-3 flex">
+											<ActionIcon icon={TrashIcon} className="w-4 h-4 text-red-500" />
+										</td>
+									</tr>
+								))
+							}
 						</tbody>
 					</table>
 				</div>
@@ -987,7 +930,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 						onClick={handleNavClick}
 					>
 						<UsersIcon className="w-5 h-5" />
-						<span className="is-drawer-close:hidden text-sm">Tickets</span>
+						<span className="is-drawer-close:hidden text-sm">Utilisateurs</span>
 					</NavLink>
 				</li>
 				<li>
