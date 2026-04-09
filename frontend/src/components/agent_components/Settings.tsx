@@ -128,7 +128,18 @@ function Settings() {
 		try {
 			clearMessages();
 			const updated = await uploadMyAvatar(file);
-			setProfile((prev) => ({ ...prev, avatar: updated?.avatar ?? prev.avatar }));
+			const nextAvatar = updated?.avatar ?? '';
+
+			if (nextAvatar) {
+				setProfile((prev) => ({ ...prev, avatar: nextAvatar }));
+				localStorage.setItem('user_avatar', nextAvatar);
+				window.dispatchEvent(
+					new CustomEvent('agent-avatar-updated', {
+						detail: { avatar: nextAvatar },
+					})
+				);
+			}
+
 			setFeedback('Photo de profil mise à jour');
 		} catch (e: any) {
 			setError(getErrorMessage(e, 'Échec upload avatar'));
@@ -154,9 +165,8 @@ function Settings() {
 							<button
 								key={section.id}
 								onClick={() => setActiveSection(section.id)}
-								className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-									isActive ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-100'
-								}`}
+								className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-100'
+									}`}
 							>
 								<Icon className="w-5 h-5" />
 								<span className="font-medium">{section.label}</span>
