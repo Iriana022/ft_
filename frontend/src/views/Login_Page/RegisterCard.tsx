@@ -6,7 +6,6 @@ import api from '../../services/api';
 import GoogleButton from '../../components/login_components/GoogleButton';
 import {Link} from 'react-router-dom';
 import {UserIcon, EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon, BriefcaseIcon} from '@heroicons/react/24/outline';
-import TikeoLogo from '../../components/client_components/TikeoLogo';
 
 export function RegisterCard() {
 	const [showPassword, setShowPassword] = useState(false);
@@ -58,11 +57,10 @@ export function RegisterCard() {
 	};
 
 	return (
-		<div className="w-full max-w-md p-8 rounded-2xl bg-gray-50 border border-gray-200 shadow-[0_4px_40px_rgba(0,0,0,0.08)]">
+		<div className="w-full max-w-md mt-20 p-8 rounded-2xl bg-gray-50 border border-gray-200 shadow-[0_4px_40px_rgba(0,0,0,0.08)]">
 
 			{/* Title */}
 			<div className="text-center mb-8 flex flex-col gap-5">
-				<TikeoLogo href="/login" color="text-navy" size="text-3xl" />
 				<div>
 					<h1 className="text-xl font-semibold font-bold mb-1 text-navy">
 						Creer un compte

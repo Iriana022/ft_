@@ -11,7 +11,6 @@ import {
 	EyeIcon,
 	EyeSlashIcon,
 } from '@heroicons/react/24/outline';
-import TikeoLogo from '../../components/client_components/TikeoLogo';
 import {Link} from 'react-router-dom';
 
 export function LoginCard() {
@@ -83,7 +82,6 @@ export function LoginCard() {
 	return (
 		<div className="relative w-full max-w-md p-8 rounded-2xl bg-gray-50 border border-gray-200 shadow-[0_4px_40px_rgba(0,0,0,0.08)]">
 			<div className="text-center mb-8 flex flex-col gap-5">
-				<TikeoLogo href="/login" color="text-navy" size="text-3xl" />
 				<div>
 					<h1 className="text-xl font-semibold mb-1 text-navy">
 						Se connecter

@@ -4,16 +4,15 @@ import LanguageSelector from "../../components/client_components/LanguageSelecto
 import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {deleteMyAccount} from "../../services/profile";
+import ConfirmModal from "../../components/client_components/ConfirmModal";
 
 function ClientSettings() {
 	const [isDeleting, setIsDeleting] = useState(false);
 	const [error, setError] = useState('');
+	const [openModal, setOpenModal] = useState(false);
 	const navigate = useNavigate();
 
 	const handleDeleteAccount = async () => {
-		const ok = window.confirm('Supprimer définitivement votre compte ? Cette action est irréversible.');
-		if (!ok) return;
-
 		try {
 			setIsDeleting(true);
 			setError('');
@@ -30,6 +29,7 @@ function ClientSettings() {
 			setError('Impossible de supprimer le compte');
 		} finally {
 			setIsDeleting(false);
+			setOpenModal(false);
 		}
 	}
 	return (
@@ -47,7 +47,7 @@ function ClientSettings() {
 				<div className="flex items-center justify-between py-3">
 					<h3 className="text-base">Compte</h3>
 					<button
-						onClick={handleDeleteAccount}
+						onClick={() => setOpenModal(true)}
 						disabled={isDeleting}
 						className="text-sm bg-red-300 p-3 rounded transition hover:bg-red-400 cursor-pointer
 							disabled:opacity-60">
@@ -56,6 +56,12 @@ function ClientSettings() {
 					{error && <p className="text-sm text-red-500 mt-2">{error}</p>}
 				</div>
 			</ContainerComp>
+			<ConfirmModal
+				isOpen={openModal}
+				onClose={() => setOpenModal(false)}
+				onConfirm={handleDeleteAccount}
+				loading={isDeleting}
+			/>
 		</div>
 	);
 }
