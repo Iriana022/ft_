@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
+import {useState, useMemo, useEffect} from 'react';
+import {useQuery} from '@tanstack/react-query'
 import {
 	ChevronLeftIcon,
 	ChevronRightIcon,
@@ -20,19 +21,19 @@ import {
 import TikeoLogo from '../../components/client_components/TikeoLogo';
 import Notification from '../../components/client_components/Notification';
 import Avatar from '../../components/client_components/Avatar';
-import { Outlet, Link, NavLink } from 'react-router-dom';
-import { type HeroIconType, type Ticket, TicketStatus, TicketPriority, StatCardType } from '../../types';
-import { RechartsDevtools } from '@recharts/devtools';
+import {Outlet, Link, NavLink} from 'react-router-dom';
+import {type HeroIconType, type Ticket, type User, TicketStatus, TicketPriority, StatCardType} from '../../types';
+import {RechartsDevtools} from '@recharts/devtools';
 import {
 	LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
 	ResponsiveContainer
 } from 'recharts';
 import Separator from '../../components/login_components/Separator';
 import TicketFilter from '../../components/client_components/TicketFilter';
-import { UserRole } from '../../types';
+import {UserRole} from '../../types';
 import api from '../../services/api';
-import { fetchTickets } from '../../services/tickets';
-import { getSocket } from '../../services/singleton';
+import {fetchTickets, fetchUsers} from '../../services/tickets';
+import {getSocket} from '../../services/singleton';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -163,13 +164,13 @@ function StatCard(props: StatCardProps) {
 }
 
 const dailyData = [
-	{ name: "Lun", created: 42, resolved: 35 },
-	{ name: "Mar", created: 55, resolved: 47 },
-	{ name: "Mer", created: 63, resolved: 58 },
-	{ name: "Jeu", created: 49, resolved: 44 },
-	{ name: "Ven", created: 58, resolved: 52 },
-	{ name: "Sam", created: 36, resolved: 30 },
-	{ name: "Dim", created: 28, resolved: 22 },
+	{name: "Lun", created: 42, resolved: 35},
+	{name: "Mar", created: 55, resolved: 47},
+	{name: "Mer", created: 63, resolved: 58},
+	{name: "Jeu", created: 49, resolved: 44},
+	{name: "Ven", created: 58, resolved: 52},
+	{name: "Sam", created: 36, resolved: 30},
+	{name: "Dim", created: 28, resolved: 22},
 ];
 
 type CreatedOrResolved = "created" | "resolved";
@@ -212,14 +213,14 @@ function TicketsActivities() {
 						<CartesianGrid stroke="#aaa" strokeDasharray="5 5" />
 						<Line type="monotone" dataKey="created" stroke="var(--color-navy)" strokeWidth={2} name="Crees"
 							dot={false}
-							activeDot={{ r: 5 }}
+							activeDot={{r: 5}}
 						/>
 						<Line type="monotone" dataKey="resolved" stroke="var(--color-status-resolved)" strokeWidth={2} name="Resolus"
 							dot={false}
-							activeDot={{ r: 5 }}
+							activeDot={{r: 5}}
 						/>
-						<XAxis dataKey="name" tick={{ fontSize: 12 }} />
-						<YAxis tick={{ fontSize: 12 }} />
+						<XAxis dataKey="name" tick={{fontSize: 12}} />
+						<YAxis tick={{fontSize: 12}} />
 						<Tooltip />
 						<RechartsDevtools />
 					</LineChart>
@@ -504,6 +505,7 @@ function RecentTickets() {
 
 export function AdminDashboard() {
 	const [tickets, setTickets] = useState<Ticket[]>([]);
+	const [users, setUsers] = useState<User[]>([]);
 	const loadTickets = async () => {
 		try {
 			const data = await fetchTickets();
@@ -513,8 +515,18 @@ export function AdminDashboard() {
 		}
 	};
 
+	const loadUsers = async () => {
+		try {
+			const data = await fetchUsers();
+			setUsers(data);
+		} catch (error) {
+			console.error('Erreur chargement tickets:', error);
+		}
+	};
+
 	useEffect(() => {
 		loadTickets();
+		loadUsers();
 	}, []);
 
 	const openTickets = tickets.filter((t) => t.status === TicketStatus.OPEN);
@@ -543,7 +555,7 @@ export function AdminDashboard() {
 				/>
 				<StatCard
 					title="Utilisateurs"
-					count={256}
+					count={users.length}
 					icon={UsersIcon}
 					type={StatCardType.USERS}
 				/>
@@ -621,19 +633,19 @@ function ActionIcon(props: ActionIconProps) {
 export function AdminTickets() {
 	// TODO: refactor this code
 	const statusFilterElements = [
-		{ label: "Tous", value: null },
-		{ label: "Ouverts", value: TicketStatus.OPEN },
-		{ label: "En cours", value: TicketStatus.IN_PROGRESS },
-		{ label: "Résolus", value: TicketStatus.RESOLVED },
-		{ label: "Fermés", value: TicketStatus.CLOSED },
+		{label: "Tous", value: null},
+		{label: "Ouverts", value: TicketStatus.OPEN},
+		{label: "En cours", value: TicketStatus.IN_PROGRESS},
+		{label: "Résolus", value: TicketStatus.RESOLVED},
+		{label: "Fermés", value: TicketStatus.CLOSED},
 	];
 
 	const priorityFilterElements = [
-		{ label: "Tous", value: null },
-		{ label: "Basses", value: TicketPriority.LOW },
-		{ label: "Moyennes", value: TicketPriority.MEDIUM },
-		{ label: "Hautes", value: TicketPriority.HIGH },
-		{ label: "Urgentes", value: TicketPriority.URGENT },
+		{label: "Tous", value: null},
+		{label: "Basses", value: TicketPriority.LOW},
+		{label: "Moyennes", value: TicketPriority.MEDIUM},
+		{label: "Hautes", value: TicketPriority.HIGH},
+		{label: "Urgentes", value: TicketPriority.URGENT},
 	];
 
 	const [currentFilterStatus, setCurrentFilterStatus] = useState<TicketStatus | null>(null);
@@ -694,6 +706,7 @@ export function AdminTickets() {
 		setCurrentFilterPriority(element.value);
 		setCurrentPage(1);
 	}
+	//console.log(tickets[0]?.author?.login);
 
 	if (loading) {
 		return <div className="p-4">Chargement des tickets...</div>;
@@ -722,7 +735,6 @@ export function AdminTickets() {
 							<tr>
 								<th className="px-5 pb-3 font-medium whitespace-nowrap">ID</th>
 								<th className="px-5 pb-3 font-medium whitespace-nowrap">Titre</th>
-								<th className="px-5 pb-3 font-medium whitespace-nowrap">Categories</th>
 								<th className="px-5 pb-3 font-medium whitespace-nowrap">Statut</th>
 								<th className="px-5 pb-3 font-medium whitespace-nowrap">Priorite</th>
 								<th className="px-5 pb-3 font-medium whitespace-nowrap">Utilisateur</th>
@@ -731,46 +743,47 @@ export function AdminTickets() {
 							</tr>
 						</thead>
 						<tbody>
-							{currentTickets.map((ticket) => (
-								<tr
-									key={ticket.id}
-									className="border-b hover:bg-cream/70 transition"
-								>
-									<td className="px-5 py-3 text-navy whitespace-nowrap">
-										TK-{ticket.id}
-									</td>
-									<td className="px-5 py-3 whitespace-nowrap">
-										{ticket.title}
-									</td>
-									<td className="px-5 py-3 whitespace-nowrap">
-										<span className="text-xs px-2 py-1 rounded-full bg-gray-200 text-gray-600">
-											{ticket.category}
-										</span>
-									</td>
-									<td className="px-5 py-3 whitespace-nowrap">
-										<span
-											className={`px-2 py-1 rounded-full text-xs ${getStatusColor(ticket.status)[0]} ${getStatusColor(ticket.status)[1]}`}>
-											{getStatusText(ticket.status)}
-										</span>
-									</td>
-									<td className="px-5 py-3 whitespace-nowrap">
-										<span
-											className={`px-2 py-1 rounded-full text-xs ${getPriorityColor(ticket.priority)[0]} ${getPriorityColor(ticket.priority)[1]}`}>
-											{getPriorityText(ticket.priority)}
-										</span>
-									</td>
-									<td className="px-5 py-3 whitespace-nowrap">
-										{ticket.author.login ?? ticket.author.email}
-									</td>
-									<td className="px-5 py-3 text-gray-500 whitespace-nowrap">
-										{new Date(ticket.createdAt).toLocaleDateString("fr-FR").replace(/\//g, "-")}
-									</td>
-									<td className="px-5 py-3 text-gray-500 whitespace-nowrap flex items-center gap-5">
-										<ActionIcon icon={EyeIcon} className="w-3 h-4" />
-										<ActionIcon icon={TrashIcon} className="w-4 h-4 text-red-500" />
-									</td>
-								</tr>
-							))
+							{
+								currentTickets.map((ticket) => (
+									<tr
+										key={ticket.id}
+										className="border-b hover:bg-cream/70 transition"
+									>
+										<td className="px-5 py-3 text-navy whitespace-nowrap">
+											TK-{ticket.id}
+										</td>
+										<td className="px-5 py-3 whitespace-nowrap">
+											{ticket.title}
+										</td>
+										<td className="px-5 py-3 whitespace-nowrap">
+											<span className="text-xs px-2 py-1 rounded-full bg-gray-200 text-gray-600">
+												{ticket.category}
+											</span>
+										</td>
+										<td className="px-5 py-3 whitespace-nowrap">
+											<span
+												className={`px-2 py-1 rounded-full text-xs ${getStatusColor(ticket.status)[0]} ${getStatusColor(ticket.status)[1]}`}>
+												{getStatusText(ticket.status)}
+											</span>
+										</td>
+										<td className="px-5 py-3 whitespace-nowrap">
+											<span
+												className={`px-2 py-1 rounded-full text-xs ${getPriorityColor(ticket.priority)[0]} ${getPriorityColor(ticket.priority)[1]}`}>
+												{getPriorityText(ticket.priority)}
+											</span>
+										</td>
+										<td className="px-5 py-3 whitespace-nowrap">
+											{ticket.author.login ?? ticket.author.email}
+										</td>
+										<td className="px-5 py-3 text-gray-500 whitespace-nowrap">
+											{new Date(ticket.createdAt).toLocaleDateString("fr-FR").replace(/\//g, "-")}
+										</td>
+										<td className="px-5 py-3 text-gray-500 whitespace-nowrap flex items-center gap-5">
+											<ActionIcon icon={EyeIcon} className="w-3 h-4" />
+											<ActionIcon icon={TrashIcon} className="w-4 h-4 text-red-500" />
+										</td>
+									</tr>
+								))
 							}
 						</tbody>
 					</table>
@@ -783,17 +796,6 @@ export function AdminTickets() {
 					onPrev={() => setCurrentPage((p) => Math.max(p - 1, 1))}
 				/>
 			</div>
-		</div>
-	);
-}
-
-export function AdminCategories() {
-	return (
-		<div>
-			<label className="input text-sm bg-white rounded-lg border border-gray-200 max-w-[280px]">
-				<MagnifyingGlassIcon className="w-4 h-4 text-gray-600" />
-				<input type="search" className="text-sm" required placeholder="Rechercher des categories" />
-			</label>
 		</div>
 	);
 }
@@ -943,7 +945,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 					<NavLink
 						to="/admin"
 						end
-						className={({ isActive }) =>
+						className={({isActive}) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 							 ${isActive ? "bg-sky/25" : ""}
 							 focus:bg-sky/50
@@ -959,7 +961,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 				<li>
 					<NavLink
 						to="tickets"
-						className={({ isActive }) =>
+						className={({isActive}) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 								${isActive ? "bg-sky/25" : ""}
 								focus:bg-sky/25
@@ -974,40 +976,24 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 				</li>
 				<li>
 					<NavLink
-						to="categories"
-						className={({ isActive }) =>
-							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
-							${isActive ? "bg-sky/25" : ""}
-							focus:bg-sky/25
-							`
-						}
-						data-tip="Categories"
-						onClick={handleNavClick}
-					>
-						<FolderMinusIcon className="w-5 h-5" />
-						<span className="is-drawer-close:hidden text-sm">Categories</span>
-					</NavLink>
-				</li>
-				<li>
-					<NavLink
 						to="users"
-						className={({ isActive }) =>
+						className={({isActive}) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
-							${isActive ? "bg-sky/25" : ""}
-							focus:bg-sky/25
+								${isActive ? "bg-sky/25" : ""}
+								focus:bg-sky/25
 							`
 						}
-						data-tip="Utilisateurs"
+						data-tip="Users"
 						onClick={handleNavClick}
 					>
 						<UsersIcon className="w-5 h-5" />
-						<span className="is-drawer-close:hidden text-sm">Utilisateurs</span>
+						<span className="is-drawer-close:hidden text-sm">Tickets</span>
 					</NavLink>
 				</li>
 				<li>
 					<NavLink
 						to="stats"
-						className={({ isActive }) =>
+						className={({isActive}) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 							${isActive ? "bg-sky/25" : ""}
 							focus:bg-sky/25

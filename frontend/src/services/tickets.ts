@@ -56,6 +56,13 @@ export const fetchTickets = async (): Promise<Ticket[]> => {
 	return rawTickets.map(normalizeTicket);
 };
 
+export const fetchUsers = async (): Promise<User[]> => {
+	const response = await api.get('/user');
+	const rawUsers = (response.data ?? []) as RawUser[];
+
+	return rawUsers.map(normalizeUser);
+};
+
 export const updateTicketStatus = async (ticketId: number, status: TicketStatus): Promise<Ticket> => {
 	const response = await api.patch(`/tickets/${ticketId}/status`, {status});
 

@@ -1,12 +1,12 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import {createBrowserRouter, Navigate} from "react-router-dom";
 import Login from '../views/Login_Page/Login';
 import {Dashboard} from "../views/view_agent/Dashboard";
 import {TicketsPage} from "../views/view_agent/TicketsPage";
 import ProtectedRoute from '../components/ProtectedRoute'
 import PublicRoute from '../components/PublicRoute'
-import { DashboardLayout } from '../layout/layout_agent/DashboardLayout';
+import {DashboardLayout} from '../layout/layout_agent/DashboardLayout';
 import Settings from '../components/agent_components/Settings';
-import { UserRole } from '../types';
+import {UserRole} from '../types';
 import Register from '../views/Login_Page/Register';
 import ClientLayout from "../layout/layout_client/ClientLayout";
 import ClientHome from "../views/client_view/ClientHome";
@@ -16,7 +16,7 @@ import Profil from "../components/client_components/Profil";
 import ChatTicketView from '../views/chat_ticket/ChatTicketView';
 import ChatTicketViewClient from '../views/chat_ticket/ChatTicketViewClient';
 import SelectRole from "../views/Login_Page/SelectRole";
-import {AdminView, AdminDashboard, AdminTickets, AdminUsers, AdminCategories, AdminStats} from "../views/admin_view/AdminView";
+import {AdminView, AdminDashboard, AdminTickets, AdminUsers, AdminStats} from "../views/admin_view/AdminView";
 import {GoogleCallback} from '../views/Login_Page/GoogleCallback';
 
 export const router = createBrowserRouter([
@@ -35,10 +35,6 @@ export const router = createBrowserRouter([
 			{
 				path: 'tickets',
 				element: <AdminTickets />,
-			},
-			{
-				path: 'categories',
-				element: <AdminCategories />,
 			},
 			{
 				path: 'users',
@@ -105,7 +101,7 @@ export const router = createBrowserRouter([
 		element: (
 			// TODO: put ClientLayout inside the ProtectedRoute component
 			<ProtectedRoute allowedRoles={[UserRole.CLIENT]}>
-			<ClientLayout />
+				<ClientLayout />
 			</ProtectedRoute >
 		),
 		children: [
