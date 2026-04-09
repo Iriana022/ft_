@@ -45,7 +45,7 @@ export const sortTicketsForAgent = (tickets: Ticket[]): Ticket[] => {
 
 		if (aClosed !== bClosed) return aClosed ? 1 : -1;
 
-		return b.createdAt.getTime() - a.createdAt.getTime();
+		return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
 	});
 };
 

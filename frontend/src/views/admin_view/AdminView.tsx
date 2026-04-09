@@ -1,4 +1,4 @@
-import {useState, useMemo, useEffect} from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
 	ChevronLeftIcon,
 	ChevronRightIcon,
@@ -20,19 +20,19 @@ import {
 import TikeoLogo from '../../components/client_components/TikeoLogo';
 import Notification from '../../components/client_components/Notification';
 import Avatar from '../../components/client_components/Avatar';
-import {Outlet, Link, NavLink} from 'react-router-dom';
-import {type HeroIconType, type Ticket, TicketStatus, TicketPriority, StatCardType} from '../../types';
-import {RechartsDevtools} from '@recharts/devtools';
+import { Outlet, Link, NavLink } from 'react-router-dom';
+import { type HeroIconType, type Ticket, TicketStatus, TicketPriority, StatCardType } from '../../types';
+import { RechartsDevtools } from '@recharts/devtools';
 import {
 	LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
 	ResponsiveContainer
 } from 'recharts';
 import Separator from '../../components/login_components/Separator';
 import TicketFilter from '../../components/client_components/TicketFilter';
-import {UserRole} from '../../types';
+import { UserRole } from '../../types';
 import api from '../../services/api';
-import {fetchTickets} from '../../services/tickets';
-import {getSocket} from '../../services/singleton';
+import { fetchTickets } from '../../services/tickets';
+import { getSocket } from '../../services/singleton';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -163,13 +163,13 @@ function StatCard(props: StatCardProps) {
 }
 
 const dailyData = [
-	{name: "Lun", created: 42, resolved: 35},
-	{name: "Mar", created: 55, resolved: 47},
-	{name: "Mer", created: 63, resolved: 58},
-	{name: "Jeu", created: 49, resolved: 44},
-	{name: "Ven", created: 58, resolved: 52},
-	{name: "Sam", created: 36, resolved: 30},
-	{name: "Dim", created: 28, resolved: 22},
+	{ name: "Lun", created: 42, resolved: 35 },
+	{ name: "Mar", created: 55, resolved: 47 },
+	{ name: "Mer", created: 63, resolved: 58 },
+	{ name: "Jeu", created: 49, resolved: 44 },
+	{ name: "Ven", created: 58, resolved: 52 },
+	{ name: "Sam", created: 36, resolved: 30 },
+	{ name: "Dim", created: 28, resolved: 22 },
 ];
 
 type CreatedOrResolved = "created" | "resolved";
@@ -212,14 +212,14 @@ function TicketsActivities() {
 						<CartesianGrid stroke="#aaa" strokeDasharray="5 5" />
 						<Line type="monotone" dataKey="created" stroke="var(--color-navy)" strokeWidth={2} name="Crees"
 							dot={false}
-							activeDot={{r: 5}}
+							activeDot={{ r: 5 }}
 						/>
 						<Line type="monotone" dataKey="resolved" stroke="var(--color-status-resolved)" strokeWidth={2} name="Resolus"
 							dot={false}
-							activeDot={{r: 5}}
+							activeDot={{ r: 5 }}
 						/>
-						<XAxis dataKey="name" tick={{fontSize: 12}} />
-						<YAxis tick={{fontSize: 12}} />
+						<XAxis dataKey="name" tick={{ fontSize: 12 }} />
+						<YAxis tick={{ fontSize: 12 }} />
 						<Tooltip />
 						<RechartsDevtools />
 					</LineChart>
@@ -621,41 +621,60 @@ function ActionIcon(props: ActionIconProps) {
 export function AdminTickets() {
 	// TODO: refactor this code
 	const statusFilterElements = [
-		{label: "Tous", value: null},
-		{label: "Ouverts", value: TicketStatus.OPEN},
-		{label: "En cours", value: TicketStatus.IN_PROGRESS},
-		{label: "Résolus", value: TicketStatus.RESOLVED},
-		{label: "Fermés", value: TicketStatus.CLOSED},
+		{ label: "Tous", value: null },
+		{ label: "Ouverts", value: TicketStatus.OPEN },
+		{ label: "En cours", value: TicketStatus.IN_PROGRESS },
+		{ label: "Résolus", value: TicketStatus.RESOLVED },
+		{ label: "Fermés", value: TicketStatus.CLOSED },
 	];
 
 	const priorityFilterElements = [
-		{label: "Tous", value: null},
-		{label: "Basses", value: TicketPriority.LOW},
-		{label: "Moyennes", value: TicketPriority.MEDIUM},
-		{label: "Hautes", value: TicketPriority.HIGH},
-		{label: "Urgentes", value: TicketPriority.URGENT},
+		{ label: "Tous", value: null },
+		{ label: "Basses", value: TicketPriority.LOW },
+		{ label: "Moyennes", value: TicketPriority.MEDIUM },
+		{ label: "Hautes", value: TicketPriority.HIGH },
+		{ label: "Urgentes", value: TicketPriority.URGENT },
 	];
 
 	const [currentFilterStatus, setCurrentFilterStatus] = useState<TicketStatus | null>(null);
 	const [currentFilterPriority, setCurrentFilterPriority] = useState<TicketPriority | null>(null);
 
+
+	const [tickets, setTickets] = useState<Ticket[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+
+	useEffect(() => {
+		const loadTickets = async () => {
+			try {
+				setLoading(true);
+				const data = await fetchTickets();
+				setTickets(data);
+				setError(null);
+			} catch (e) {
+				console.error('Erreur chargement tickets admin:', e);
+				setError('Impossible de charger les tickets');
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		loadTickets();
+	}, []);
 	const currentFilterElementStatus = statusFilterElements.find(e => e.value === currentFilterStatus);
 	const currentFilterElementPriority = priorityFilterElements.find(e => e.value === currentFilterPriority);
 
 	const filteredTickets = useMemo(() => {
-		return fakeTickets.filter((ticket) => {
+		return tickets.filter((ticket) => {
 			const matchStatus =
-				currentFilterStatus === null ||
-				ticket.status === currentFilterStatus;
+				currentFilterStatus === null || ticket.status === currentFilterStatus;
 
 			const matchPriority =
-				currentFilterPriority === null ||
-				ticket.priority === currentFilterPriority;
+				currentFilterPriority === null || ticket.priority === currentFilterPriority;
 
 			return matchStatus && matchPriority;
 		});
-	}, [currentFilterStatus, currentFilterPriority]);
-
+	}, [tickets, currentFilterStatus, currentFilterPriority]);
 	const [currentPage, setCurrentPage] = useState(1);
 
 	const totalItems = filteredTickets.length;
@@ -676,6 +695,13 @@ export function AdminTickets() {
 		setCurrentPage(1);
 	}
 
+	if (loading) {
+		return <div className="p-4">Chargement des tickets...</div>;
+	}
+
+	if (error) {
+		return <div className="p-4 text-red-600">{error}</div>;
+	}
 	// TODO: fix the error here
 	return (
 		<div>
@@ -734,7 +760,7 @@ export function AdminTickets() {
 										</span>
 									</td>
 									<td className="px-5 py-3 whitespace-nowrap">
-										{ticket.user}
+										{ticket.author.login ?? ticket.author.email}
 									</td>
 									<td className="px-5 py-3 text-gray-500 whitespace-nowrap">
 										{new Date(ticket.createdAt).toLocaleDateString("fr-FR").replace(/\//g, "-")}
@@ -917,7 +943,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 					<NavLink
 						to="/admin"
 						end
-						className={({isActive}) =>
+						className={({ isActive }) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 							 ${isActive ? "bg-sky/25" : ""}
 							 focus:bg-sky/50
@@ -933,7 +959,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 				<li>
 					<NavLink
 						to="tickets"
-						className={({isActive}) =>
+						className={({ isActive }) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 								${isActive ? "bg-sky/25" : ""}
 								focus:bg-sky/25
@@ -949,7 +975,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 				<li>
 					<NavLink
 						to="categories"
-						className={({isActive}) =>
+						className={({ isActive }) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 							${isActive ? "bg-sky/25" : ""}
 							focus:bg-sky/25
@@ -965,7 +991,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 				<li>
 					<NavLink
 						to="users"
-						className={({isActive}) =>
+						className={({ isActive }) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 							${isActive ? "bg-sky/25" : ""}
 							focus:bg-sky/25
@@ -981,7 +1007,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 				<li>
 					<NavLink
 						to="stats"
-						className={({isActive}) =>
+						className={({ isActive }) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 							${isActive ? "bg-sky/25" : ""}
 							focus:bg-sky/25

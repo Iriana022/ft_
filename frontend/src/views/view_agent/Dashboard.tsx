@@ -1,10 +1,10 @@
-import {Ticket, AlertCircle, Clock, CheckCircle2} from 'lucide-react';
-import {useEffect, useMemo, useState} from 'react';
-import {StatCard} from '../../components/agent_components/StatCard';
-import {TicketList} from './TicketList';
-import {TicketStatus, UserRole, type Ticket as TicketType} from '../../types';
-import {fetchTickets, getTicketStats, normalizeTicket, sortTicketsForAgent, type RawTicket} from '../../services/tickets';
-import {getSocket} from '../../services/singleton';
+import { Ticket, AlertCircle, Clock, CheckCircle2 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { StatCard } from '../../components/agent_components/StatCard';
+import { TicketList } from './TicketList';
+import { TicketStatus, UserRole, type Ticket as TicketType } from '../../types';
+import { fetchTickets, getTicketStats, normalizeTicket, sortTicketsForAgent, type RawTicket } from '../../services/tickets';
+import { getSocket } from '../../services/singleton';
 
 export function Dashboard() {
 	const [tickets, setTickets] = useState<TicketType[]>([]);
@@ -30,12 +30,12 @@ export function Dashboard() {
 
 		const socket = getSocket();
 
-		const handleNewTicket = (ticket: TicketType) => {
+		const handleNewTicket = (payload: RawTicket) => {
+			const ticket = normalizeTicket(payload);
 			if (ticket.author.role === UserRole.CLIENT) {
 				setTickets((prev) => sortTicketsForAgent([ticket, ...prev]));
-				setNotification(`New ticket incoming : ${ticket.title}`);
-				if (notificationTimer)
-					clearTimeout(notificationTimer);
+				setNotification("New ticket incoming : " + ticket.title);
+				if (notificationTimer) clearTimeout(notificationTimer);
 				notificationTimer = setTimeout(() => setNotification(null), 5000);
 			}
 		};

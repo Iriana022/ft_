@@ -1,10 +1,10 @@
-import {useEffect, useState} from 'react';
-import {Search, Filter} from 'lucide-react';
-import {TicketStatus, TicketPriority, UserRole} from '../../types';
-import type {Ticket} from '../../types';
-import {TicketList} from './TicketList';
-import {fetchTickets, normalizeTicket, sortTicketsForAgent, type RawTicket} from '../../services/tickets';
-import {getSocket} from '../../services/singleton';
+import { useEffect, useState } from 'react';
+import { Search, Filter } from 'lucide-react';
+import { TicketStatus, TicketPriority, UserRole } from '../../types';
+import type { Ticket } from '../../types';
+import { TicketList } from './TicketList';
+import { fetchTickets, normalizeTicket, sortTicketsForAgent, type RawTicket } from '../../services/tickets';
+import { getSocket } from '../../services/singleton';
 
 export function TicketsPage() {
 	const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -26,7 +26,7 @@ export function TicketsPage() {
 		};
 
 		const socket = getSocket();
-		const onUnread = (payload: {ticketId: number; agentUnreadCount: number; clientUnreadCount: number}) => {
+		const onUnread = (payload: { ticketId: number; agentUnreadCount: number; clientUnreadCount: number }) => {
 			setTickets((prev) =>
 				prev.map((t) =>
 					t.id === payload.ticketId
@@ -76,7 +76,7 @@ export function TicketsPage() {
 			if (aClosed !== bClosed)
 				return aClosed ? 1 : -1;
 
-			return b.createdAt.getTime() - a.createdAt.getTime();
+			return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
 		});
 
 	return (
