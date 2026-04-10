@@ -6,6 +6,7 @@ import api from '../../services/api';
 import GoogleButton from '../../components/login_components/GoogleButton';
 import {Link} from 'react-router-dom';
 import {UserIcon, EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon, BriefcaseIcon} from '@heroicons/react/24/outline';
+import {useTranslation} from 'react-i18next';
 
 export function RegisterCard() {
 	const [showPassword, setShowPassword] = useState(false);
@@ -15,6 +16,8 @@ export function RegisterCard() {
 	const [selectedRole, setSelectedRole] = useState<'CLIENT' | 'AGENT'>('CLIENT');
 	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
+
+	const {t} = useTranslation("auth");
 
 	const navigate = useNavigate();
 
@@ -63,10 +66,10 @@ export function RegisterCard() {
 			<div className="text-center mb-8 flex flex-col gap-5">
 				<div>
 					<h1 className="text-xl font-semibold font-bold mb-1 text-navy">
-						Creer un compte
+						{t("register")}
 					</h1>
 					<p className="text-sm text-gray-600">
-						Creer un compte pour commencer
+						{t("registerDescription")}
 					</p>
 				</div>
 			</div>
@@ -81,7 +84,7 @@ export function RegisterCard() {
 
 			<form onSubmit={handleSubmit}>
 				<div className="mb-4">
-					<label className="text-sm md:text-base block mb-2 text-gray-700">Nom d'utilisateur</label>
+					<label className="text-sm md:text-base block mb-2 text-gray-700">{t("username")}</label>
 					<div className="relative">
 						<UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
 						<input
@@ -96,14 +99,14 @@ export function RegisterCard() {
 								hover:border-gray-399
 								disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed
 								transition-colors duration-200 ease-in-out"
-							placeholder="Entrer votre nom d'utilisateur"
+							placeholder={t("usernamePlaceholder")}
 							required
 						/>
 					</div>
 				</div>
 
 				<div className="mb-4">
-					<label className="text-sm md:text-base block mb-2 text-gray-700">Email</label>
+					<label className="text-sm md:text-base block mb-2 text-gray-700">{t("email")}</label>
 					<div className="relative">
 						<EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
 						<input
@@ -118,14 +121,14 @@ export function RegisterCard() {
 								hover:border-gray-399
 								disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed
 								transition-colors duration-200 ease-in-out"
-							placeholder="Entrer votre email"
+							placeholder={t("emailPlaceholder")}
 							required
 						/>
 					</div>
 				</div>
 
 				<div className="mb-2">
-					<label className="text-sm md:text-base block mb-2 text-gray-700">Mot de passe</label>
+					<label className="text-sm md:text-base block mb-2 text-gray-700">{t("password")}</label>
 					<div className="relative">
 						<LockClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
 						<input
@@ -140,7 +143,7 @@ export function RegisterCard() {
 								hover:border-gray-399
 								disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed
 								transition-colors duration-200 ease-in-out"
-							placeholder="Entrer votre mot de passe"
+							placeholder={t("passwordPlaceholder")}
 							required
 						/>
 						<button
@@ -152,12 +155,12 @@ export function RegisterCard() {
 						</button>
 					</div>
 					<p className="text-xs mt-1 text-gray-500">
-						Minimum 8 caractères avec une majuscule et un chiffre
+						{t("passwordRule")}
 					</p>
 				</div>
 
 				<div className="mb-4 mt-3">
-					<label className="text-sm md:text-base block mb-2 text-gray-700">Type de compte</label>
+					<label className="text-sm md:text-base block mb-2 text-gray-700">{t("accountType")}</label>
 
 					<div className="flex w-full gap-3">
 						{['CLIENT', 'AGENT'].map((role) => {
@@ -188,12 +191,12 @@ export function RegisterCard() {
 									{role === 'CLIENT' ? (
 										<>
 											<UserIcon className="w-5 h-5 text-blue-500" />
-											Client
+											{t("client")}
 										</>
 									) : (
 										<>
 											<BriefcaseIcon className="w-5 h-5 text-green-500" />
-											Agent
+											{t("agent")}
 										</>
 									)}
 								</label>
@@ -208,15 +211,15 @@ export function RegisterCard() {
 					disabled={loading}
 					className="w-full h-11 mt-4 mb-6 font-semibold bg-navy hover:bg-[#2e4f70] transition-colors text-white disabled:opacity-50"
 				>
-					{loading ? 'Création du compte...' : "S'inscrire"}
+					{loading ? t("accountCreation") + '...' : t("register")}
 				</Button>
 			</form >
 
 			{/* Separator */}
 			< div className="relative mb-6" >
 				<Separator />
-				<span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-3 text-xs md:text-sm bg-white text-gray-500">
-					Ou continuer avec
+				<span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-3 text-xs md:text-sm bg-gray-50 text-gray-500">
+					{t("orContinueWith")}
 				</span>
 			</div >
 
@@ -225,9 +228,9 @@ export function RegisterCard() {
 
 			{/* Login */}
 			< div className="text-center text-sm mt-6 text-gray-600" >
-				Vous avez déjà un compte ?{' '}
+				{t("alreadyHaveAccount")} ?{' '}
 				<Link to="/login" className="font-semibold text-navy hover:underline" >
-					Se connecter
+					{t("login")}
 				</Link >
 			</div >
 		</div >

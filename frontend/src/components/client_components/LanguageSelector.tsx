@@ -20,8 +20,15 @@ const languages: Lang[] = [
 
 function LanguageSelector() {
 	const [open, setOpen] = useState(false);
-	const [current, setCurrent] = useState(languages[0]);
+	const [current, setCurrent] = useState<Lang>(() => {
+		const savedLang = localStorage.getItem("lang");
+		return languages.find(l => l.code === savedLang) || languages[0];
+	});
 	const ref = useRef<HTMLDivElement | null>(null);
+
+	useEffect(() => {
+		i18n.changeLanguage(current.code);
+	}, []);
 
 	function toggle() {
 		setOpen(!open);

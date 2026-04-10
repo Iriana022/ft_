@@ -1,5 +1,5 @@
 import React from 'react';
-import { TicketStatus, type TicketType } from '../../types';
+import {TicketStatus, type TicketType} from '../../types';
 
 interface StatItemProps {
 	title: string,
@@ -42,14 +42,14 @@ interface TicketsStatProps {
 }
 
 function TicketsStat(props: TicketsStatProps) {
-	const { tickets } = props;
+	const {tickets} = props;
 	const openTicketsCount = tickets.filter(t => t.status === TicketStatus.OPEN).length;
 	const inProgressTicketsCount = tickets.filter(t => t.status === TicketStatus.IN_PROGRESS).length;
 	const resolvedTicketsCount = tickets.filter(t => t.status === TicketStatus.RESOLVED).length;
 	const closedTicketsCount = tickets.filter(t => t.status === TicketStatus.CLOSED).length;
 
 	return (
-		<div className="w-full shadow rounded-md p-5">
+		<div className="bg-white/40 w-full shadow rounded-md p-5">
 			<h3 className="font-semibold text-center text-navy text-xl mb-5">
 				{tickets.length} Tickets
 			</h3>

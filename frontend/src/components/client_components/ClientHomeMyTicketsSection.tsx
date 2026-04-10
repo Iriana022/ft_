@@ -3,6 +3,7 @@ import TicketsStat from './TicketsStat';
 import {Link} from 'react-router-dom';
 import {ArrowRightIcon} from '@heroicons/react/24/outline';
 import type {TicketType} from '../../types';
+import {useTranslation} from 'react-i18next';
 
 const noneTicket = 'assets/none_tickets.png';
 
@@ -13,10 +14,13 @@ interface ClientHomeMyTicketsSectionProps {
 
 function ClientHomeMyTicketsSection(props: ClientHomeMyTicketsSectionProps) {
 	const {tickets, isLoading = false} = props;
+
+	const {t} = useTranslation("client_home");
+
 	return (
 		<section className="pb-8">
 			<h1 className="text-center md:text-start text-navy text-2xl font-semibold py-5">
-				Mes tickets recents
+				{t("recentTickets")}
 			</h1>
 			<div className="flex flex-col gap-10 md:gap-0 md:flex-row items-center">
 				<div className="md:w-[60%] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5">

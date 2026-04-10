@@ -14,6 +14,7 @@ import {fetchMyTicketsForClientView} from '../services/tickets';
 import {type ClientNotificationItem} from '../components/client_components/NotificationView';
 import {getMyProfile} from '../services/profile';
 import {getSocket} from '../services/singleton';
+import {useTranslation} from 'react-i18next';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -28,6 +29,8 @@ function Header() {
 		() => Object.values(unreadByTicket).some((count) => count > 0),
 		[unreadByTicket],
 	);
+
+	const {t} = useTranslation("nav");
 
 	const handleLogout = () => {
 		localStorage.removeItem('access_token');
@@ -130,9 +133,9 @@ function Header() {
 							<TikeoLogo href="/client" color="text-navy" size="text-4xl" />
 						</div>
 						<nav className="hidden md:flex gap-5">
-							<NavItem icon={HomeIcon} href="/client" text="Acceuil" color="text-gray-500" />
-							<NavItem icon={TicketIcon} href="/client/my_tickets" text="Mes Tickets" color="text-gray-600" />
-							<NavItem icon={Cog8ToothIcon} href="/client/settings" text="Parametres" color="text-gray-600" />
+							<NavItem icon={HomeIcon} href="/client" text={t("home")} color="text-gray-500" />
+							<NavItem icon={TicketIcon} href="/client/my_tickets" text={t("myTickets")} color="text-gray-600" />
+							<NavItem icon={Cog8ToothIcon} href="/client/settings" text={t("settings")} color="text-gray-600" />
 						</nav>
 					</div>
 					<div className="flex items-center gap-8">

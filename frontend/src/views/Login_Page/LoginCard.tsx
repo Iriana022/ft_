@@ -90,7 +90,7 @@ export function LoginCard() {
 						{t("login")}
 					</h1>
 					<p className="text-sm text-gray-600">
-						Connectez-vous à votre compte pour continuer
+						{t("description")}
 					</p>
 				</div>
 			</div>
@@ -109,7 +109,7 @@ export function LoginCard() {
 
 			<form onSubmit={handleSubmit}>
 				<div className="mb-4">
-					<label className="text-sm md:text-base block mb-2 text-gray-700">Email</label>
+					<label className="text-sm md:text-base block mb-2 text-gray-700">{t("email")}</label>
 					<div className="relative">
 						<EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
 						<input
@@ -124,14 +124,14 @@ export function LoginCard() {
 								hover:border-gray-399
 								disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed
 								transition-colors duration-200 ease-in-out"
-							placeholder="Entrer votre email"
+							placeholder={t("emailPlaceholder")}
 							required
 						/>
 					</div>
 				</div>
 
 				<div className="mb-2">
-					<label className="text-sm md:text-base block mb-2 text-gray-700">Mot de passe</label>
+					<label className="text-sm md:text-base block mb-2 text-gray-700">{t("password")}</label>
 					<div className="relative">
 						<LockClosedIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
 						<input
@@ -146,7 +146,7 @@ export function LoginCard() {
 								hover:border-gray-399
 								disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed
 								transition-colors duration-200 ease-in-out"
-							placeholder="Entrer votre mot de passe"
+							placeholder={t("passwordPlaceholder")}
 							required
 						/>
 						<button
@@ -165,7 +165,7 @@ export function LoginCard() {
 					disabled={loading}
 					className="w-full h-11 my-6 font-semibold bg-navy text-white hover:bg-[#2e4f70] transition-colors"
 				>
-					{loading ? 'Connexion en cours...' : 'Se connecter'}
+					{loading ? t("loggingIn") + '...' : t("login")}
 				</Button>
 			</form>
 
@@ -173,7 +173,7 @@ export function LoginCard() {
 			<div className="relative mb-6">
 				<Separator />
 				<span className="text-xs md:text-sm absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-3 text-sm bg-gray-50 text-gray-500">
-					Ou continuer avec
+					{t("orContinueWith")}
 				</span>
 			</div>
 
@@ -182,9 +182,9 @@ export function LoginCard() {
 
 			{/* Register */}
 			<div className="mt-6 text-center text-sm text-gray-600">
-				Pas de compte ?{' '}
+				{t("noAccount")} ?{' '}
 				<Link to="/register" className="font-semibold text-navy hover:underline">
-					Créer un compte
+					{t("register")}
 				</Link>
 			</div>
 		</div>
