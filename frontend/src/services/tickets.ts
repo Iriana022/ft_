@@ -4,6 +4,7 @@ import { TicketPriority, type TicketType } from '../types';
 
 export type RawUser = Omit<User, 'createdAt'> & {
 	createdAt: string | Date;
+	ticketsCreated?: RawTicket[];
 };
 
 export type RawTicket = Omit<Ticket, 'createdAt' | 'updatedAt' | 'author' | 'assignedTo' | 'assignedToId'> & {
@@ -18,10 +19,28 @@ export type RawTicket = Omit<Ticket, 'createdAt' | 'updatedAt' | 'author' | 'ass
 	agentUnreadCount?: number;
 };
 
-const normalizeUser = (user: RawUser): User => ({
-	...user,
-	createdAt: new Date(user.createdAt),
-});
+const normalizeUser = (user: RawUser): User => {
+  // 1. Sécurité de base
+  if (!user) return user;
+
+  return {
+    ...user,
+    createdAt: new Date(user.createdAt),
+    // 2. On vérifie que c'est bien un tableau avant de mapper
+    ticketsCreated: Array.isArray(user.ticketsCreated)
+      ? user.ticketsCreated.map((ticket) => {
+          // 3. On normalise le ticket mais on gère l'absence d'author
+          // pour éviter la boucle infinie ou le crash
+          return {
+            ...normalizeTicket(ticket),
+            // On peut forcer l'author à être l'utilisateur actuel 
+            // ou rester indéfini pour stopper la récursion
+            author: user as unknown as User, 
+          };
+        })
+      : [],
+  };
+};
 
 export const normalizeTicket = (ticket: RawTicket): Ticket => {
 	const assignedTo = ticket.assignedTo ?? ticket.AssignedTo;

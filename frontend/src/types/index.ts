@@ -35,6 +35,7 @@ export interface User {
 	avatar?: string;
 	role: UserRole;
 	createdAt: Date;
+	ticketsCreated?: Ticket[];
 }
 
 export interface Ticket {

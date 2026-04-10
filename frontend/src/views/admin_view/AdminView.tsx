@@ -30,6 +30,8 @@ import Separator from '../../components/login_components/Separator';
 import TicketFilter from '../../components/client_components/TicketFilter';
 import {UserRole} from '../../types';
 import {fetchTickets, fetchUsers} from '../../services/tickets';
+import { format, subDays, isSameDay } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -182,7 +184,68 @@ function CreatedAndResolvedIndicator(props: CreatedAndResolvedIndicatorProps) {
 	);
 }
 
+const generateDailyTickets = (tickets: Ticket[]) => {
+  // 1. Générer les 7 derniers jours (ex: [Ven, Jeu, Mer, Mar, Lun, Dim, Sam])
+  const last7Days = [...Array(7)].map((_, i) => subDays(new Date(), i)).reverse();
+
+  return last7Days.map((date) => {
+    // 2. Formater le nom du jour (Lun, Mar...)
+    const name = format(date, 'eee', { locale: fr }); // 'eee' donne 'lun.', 'mar.'...
+
+    // 3. Compter les tickets créés ce jour-là
+    const created = tickets.filter((t) => 
+      isSameDay(new Date(t.createdAt), date)
+    ).length;
+
+    // 4. Compter les tickets résolus ce jour-là 
+    // (en supposant que vous avez un champ updatedAt et un status RESOLVED)
+    const resolved = tickets.filter((t) => 
+      t.status ===  TicketStatus.RESOLVED && 
+      t.updatedAt && isSameDay(new Date(t.updatedAt), date)
+    ).length;
+
+    return { 
+      name: name.charAt(0).toUpperCase() + name.slice(1).replace('.', ''), 
+      created, 
+      resolved 
+    };
+  });
+};
+
 function TicketsActivities() {
+	const [tickets, setTickets] = useState<Ticket[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+
+	useEffect(() => {
+		const loadTickets = async () => {
+			try {
+				setLoading(true);
+				const data = await fetchTickets();
+				setTickets(data);
+				setError(null);
+			} catch (e) {
+				console.error('Erreur chargement tickets admin:', e);
+				setError('Impossible de charger les tickets');
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		loadTickets();
+	}, []);
+
+	if (loading) {
+		return <div className="p-4">Chargement des tickets...</div>;
+	}
+
+	if (error) {
+		return <div className="p-4 text-red-600">{error}</div>;
+	}
+
+	const dailyTickets = generateDailyTickets(tickets);
+	console.log(dailyTickets);
+
 	return (
 		<div className="w-full md:w-[60%] bg-white shadow rounded-md p-5">
 			<div className="flex items-center justify-between">
@@ -201,7 +264,7 @@ function TicketsActivities() {
 			</div>
 			<div className="mt-8 w-full aspect-[5/3] md:aspect-[3/1]">
 				<ResponsiveContainer>
-					<LineChart responsive data={dailyData}>
+					<LineChart responsive data={dailyTickets}>
 						<CartesianGrid stroke="#aaa" strokeDasharray="5 5" />
 						<Line type="monotone" dataKey="created" stroke="var(--color-navy)" strokeWidth={2} name="Crees"
 							dot={false}
@@ -755,7 +818,7 @@ function getRoleString(role: UserRole): string {
 		} break;
 		case UserRole.AGENT: {
 			roleString = "Agent";
-		}
+		} break;
 		case UserRole.ADMIN: {
 			roleString = "Admin";
 		}
@@ -793,10 +856,8 @@ export function AdminUsers() {
 	if (error) {
 		return <div className="p-4 text-red-600">{error}</div>;
 	}
-	// TODO: make this more secure
-	const filteredUsers = users.filter((user) => user.role !== UserRole.ADMIN);
-	console.log(filteredUsers);
-
+	console.log(users);
+	
 	return (
 		<div>
 			<label className="hidden md:flex input text-sm bg-white rounded-lg border border-gray-200 max-w-[280px]">
@@ -811,7 +872,6 @@ export function AdminUsers() {
 							<tr>
 								<th className="px-5 pb-3 font-medium whitespace-nowrap">Utilisateurs</th>
 								<th className="px-5 pb-3 font-medium whitespace-nowrap">Role</th>
-								<th className="px-5 pb-3 font-medium whitespace-nowrap">Statut</th>
 								<th className="px-5 pb-3 font-medium whitespace-nowrap">Tickets</th>
 								<th className="px-5 pb-3 font-medium whitespace-nowrap">Inscription</th>
 								<th className="px-5 pb-3 font-medium whitespace-nowrap">Actions</th>
@@ -820,22 +880,27 @@ export function AdminUsers() {
 
 						<tbody>
 							{
-								filteredUsers.map((user) => (
+								users.map((user) => (
 									<tr
 										key={user.id}
 										className="border-b hover:bg-cream/70 transition"
 									>
-										<td className="px-5 py-3 text-navy whitespace-nowrap">
-											{user.login}
+										<td className="px-5 py-3 text-navy whitespace-nowrap flex items-center gap-2">
+											<div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+												<span className="text-base font-medium uppercase">{user.login.slice(0, 2)}</span>
+											</div>
+											<div className="flex flex-col">
+												<span className="text-sm font-semibold">{user.login}</span>
+												<span className="text-xs">{user.email}</span>
+											</div>
 										</td>
 										<td className="px-5 py-3 whitespace-nowrap">
-											{getRoleString(user.role)}
+											<span className="badge bg-gray-200 text-xs p-2 rounded-full">
+												{getRoleString(user.role)}
+											</span>
 										</td>
 										<td className="px-5 py-3 whitespace-nowrap">
-											Statut
-										</td>
-										<td className="px-5 py-3 whitespace-nowrap">
-											Tickets
+											{user.role == UserRole.CLIENT ? user.ticketsCreated.length : '-'}
 										</td>
 										<td className="px-5 py-3 whitespace-nowrap">
 											{user.createdAt.toLocaleDateString("fr-FR").replace(/\//g, "-")}

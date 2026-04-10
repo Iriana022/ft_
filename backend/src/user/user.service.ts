@@ -21,7 +21,11 @@ export class UserService {
     }
 
     async findAll() {
-        return this.prisma.user.findMany();
+        return this.prisma.user.findMany({
+            include: {
+              ticketsCreated: true, // Demande à Prisma de joindre les tickets liés
+            },
+      });
     }
 
     async findMe(userId: number) {
