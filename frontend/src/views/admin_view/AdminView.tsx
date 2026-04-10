@@ -1,4 +1,5 @@
 import {useState, useMemo, useEffect} from 'react';
+import {useNavigate} from 'react-router-dom';
 import {
 	ChevronLeftIcon,
 	ChevronRightIcon,
@@ -42,6 +43,16 @@ function VerticalSeparator() {
 }
 
 function AdminHeader() {
+	const navigate = useNavigate();
+
+	const handleLogout = () => {
+		localStorage.removeItem('access_token');
+		localStorage.removeItem('username');
+		localStorage.removeItem('user_role');
+		localStorage.removeItem('user_avatar');
+		navigate('/login');
+	}
+
 	return (
 		<div className="px-4 w-full flex items-center justify-between">
 			<div>
@@ -60,6 +71,12 @@ function AdminHeader() {
 					<span className="text-sm hidden md:inline">Administrateur</span>
 					<ChevronDownIcon className="w-4 h-4 text-gray-600 hidden md:inline" />
 				</div>
+				<button
+					onClick={handleLogout}
+					className="btn btn-primary"
+				>
+					Deconnexion
+				</button>
 			</div>
 		</div>
 	);
