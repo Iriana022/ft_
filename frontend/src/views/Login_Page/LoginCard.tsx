@@ -12,6 +12,7 @@ import {
 	EyeSlashIcon,
 } from '@heroicons/react/24/outline';
 import {Link} from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
 
 export function LoginCard() {
 	const [showPassword, setShowPassword] = useState(false);
@@ -19,6 +20,8 @@ export function LoginCard() {
 	const [password, setPassword] = useState('');
 	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
+
+	const {t} = useTranslation("auth");
 
 	const navigate = useNavigate();
 	const location = useLocation();
@@ -84,7 +87,7 @@ export function LoginCard() {
 			<div className="text-center mb-8 flex flex-col gap-5">
 				<div>
 					<h1 className="text-xl font-semibold mb-1 text-navy">
-						Se connecter
+						{t("login")}
 					</h1>
 					<p className="text-sm text-gray-600">
 						Connectez-vous à votre compte pour continuer

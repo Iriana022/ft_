@@ -31,8 +31,8 @@ import Separator from '../../components/login_components/Separator';
 import TicketFilter from '../../components/client_components/TicketFilter';
 import {UserRole} from '../../types';
 import {fetchTickets, fetchUsers} from '../../services/tickets';
-import { format, subDays, isSameDay } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import {format, subDays, isSameDay} from 'date-fns';
+import {fr} from 'date-fns/locale';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -202,31 +202,31 @@ function CreatedAndResolvedIndicator(props: CreatedAndResolvedIndicatorProps) {
 }
 
 const generateDailyTickets = (tickets: Ticket[]) => {
-  // 1. Générer les 7 derniers jours (ex: [Ven, Jeu, Mer, Mar, Lun, Dim, Sam])
-  const last7Days = [...Array(7)].map((_, i) => subDays(new Date(), i)).reverse();
+	// 1. Générer les 7 derniers jours (ex: [Ven, Jeu, Mer, Mar, Lun, Dim, Sam])
+	const last7Days = [...Array(7)].map((_, i) => subDays(new Date(), i)).reverse();
 
-  return last7Days.map((date) => {
-    // 2. Formater le nom du jour (Lun, Mar...)
-    const name = format(date, 'eee', { locale: fr }); // 'eee' donne 'lun.', 'mar.'...
+	return last7Days.map((date) => {
+		// 2. Formater le nom du jour (Lun, Mar...)
+		const name = format(date, 'eee', {locale: fr}); // 'eee' donne 'lun.', 'mar.'...
 
-    // 3. Compter les tickets créés ce jour-là
-    const created = tickets.filter((t) => 
-      isSameDay(new Date(t.createdAt), date)
-    ).length;
+		// 3. Compter les tickets créés ce jour-là
+		const created = tickets.filter((t) =>
+			isSameDay(new Date(t.createdAt), date)
+		).length;
 
-    // 4. Compter les tickets résolus ce jour-là 
-    // (en supposant que vous avez un champ updatedAt et un status RESOLVED)
-    const resolved = tickets.filter((t) => 
-      t.status ===  TicketStatus.RESOLVED && 
-      t.updatedAt && isSameDay(new Date(t.updatedAt), date)
-    ).length;
+		// 4. Compter les tickets résolus ce jour-là 
+		// (en supposant que vous avez un champ updatedAt et un status RESOLVED)
+		const resolved = tickets.filter((t) =>
+			t.status === TicketStatus.RESOLVED &&
+			t.updatedAt && isSameDay(new Date(t.updatedAt), date)
+		).length;
 
-    return { 
-      name: name.charAt(0).toUpperCase() + name.slice(1).replace('.', ''), 
-      created, 
-      resolved 
-    };
-  });
+		return {
+			name: name.charAt(0).toUpperCase() + name.slice(1).replace('.', ''),
+			created,
+			resolved
+		};
+	});
 };
 
 function TicketsActivities() {
@@ -874,7 +874,7 @@ export function AdminUsers() {
 		return <div className="p-4 text-red-600">{error}</div>;
 	}
 	console.log(users);
-	
+
 	return (
 		<div>
 			<label className="hidden md:flex input text-sm bg-white rounded-lg border border-gray-200 max-w-[280px]">
@@ -902,7 +902,7 @@ export function AdminUsers() {
 										key={user.id}
 										className="border-b hover:bg-cream/70 transition"
 									>
-										<td className="px-5 py-3 text-navy whitespace-nowrap flex items-center gap-2">
+										<td className="px-5 py-4 text-navy whitespace-nowrap flex items-center gap-2">
 											<div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
 												<span className="text-base font-medium uppercase">{user.login.slice(0, 2)}</span>
 											</div>
@@ -965,6 +965,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 					<XMarkIcon className="w-6 h-6 text-white" onClick={() => props.setIsOpen(false)} />
 				}
 			</div>
+			<Separator color="bg-white/25" />
 			<ul className="menu w-full grow gap-1 mt-10">
 				<li>
 					<NavLink
@@ -1032,6 +1033,16 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 					</NavLink>
 				</li>
 			</ul>
+			<Separator color="bg-white/25" />
+			<div className="flex items-center gap-3 pb-10">
+				<div className="p-2 bg-sky rounded-full">
+					<span>AD</span>
+				</div>
+				<div className="flex flex-col">
+					<span className="text-sm">Administrateur</span>
+					<span className="text-xs">tikeoadmin@tikeo.com</span>
+				</div>
+			</div>
 		</div>
 	);
 }

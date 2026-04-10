@@ -1,9 +1,9 @@
-import {useState} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import Separator from './Separator';
 import CloseButtonX from './CloseButtonX';
 import PriorityChoice from './PriorityChoice';
 import {TicketPriority} from '../../types';
-import { createClientTicket } from '../../services/tickets';
+import {createClientTicket} from '../../services/tickets';
 
 interface CreateTicketViewProps {
 	isOpen: boolean,
@@ -18,6 +18,21 @@ function CreateTicketView(props: CreateTicketViewProps) {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [errorMessage, setErrorMessage] = useState('');
 	const [successMessage, setSuccessMessage] = useState('');
+	const modalRef = useRef<HTMLDivElement | null>(null);
+
+	useEffect(() => {
+		const handleClickOutside = (e: MouseEvent) => {
+			if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+				handleClose();
+			}
+		}
+		if (props.isOpen) {
+			document.addEventListener('mousedown', handleClickOutside);
+		}
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside);
+		}
+	}, [props.isOpen])
 
 	const handlePriorityChoice = (priority: TicketPriority) => {
 		setActivePriority(priority);
@@ -79,6 +94,7 @@ function CreateTicketView(props: CreateTicketViewProps) {
 			bg-black/20 backdrop-blur-sm`}
 		>
 			<div
+				ref={modalRef}
 				className={`shadow bg-cream w-full max-w-xl p-5 rounded-md
 				transition-all duration-200
 				${props.isOpen ? "scale-100 opacity-100" : "scale-75 opacity-0"}`}

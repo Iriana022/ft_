@@ -1,5 +1,6 @@
 import {useState, useRef, useEffect} from "react";
 import {ChevronDownIcon} from "@heroicons/react/24/outline";
+import i18n from "../../i18n";
 
 const esFlag = '/assets/es.png';
 const frFlag = '/assets/fr.png';
@@ -28,6 +29,8 @@ function LanguageSelector() {
 
 	function selectLang(lang: Lang) {
 		setCurrent(lang);
+		i18n.changeLanguage(lang.code);
+		localStorage.setItem("lang", lang.code);
 		setOpen(false);
 	}
 
