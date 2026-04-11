@@ -59,6 +59,7 @@ model User {
   isTwoFactorEnabled Boolean  @default(false)
   messages ChatMessage[]
   internalNotes  TicketInternalNote[]
+  ticketStatusChanges TicketStatusHistory[] @relation("TicketStatusChangedBy")
 }
 
 model Ticket {
@@ -80,6 +81,7 @@ model Ticket {
 	AssignedToId	Int?
 	messages ChatMessage[]
   internalNotes  TicketInternalNote[]
+  statusHistory TicketStatusHistory[]
 }
 
 model TicketInternalNote {
@@ -94,4 +96,20 @@ model TicketInternalNote {
   author    User     @relation(fields: [authorId], references: [id])
 
   @@index([ticketId, createdAt])
+}
+
+model TicketStatusHistory {
+  id         Int          @id @default(autoincrement())
+  fromStatus TicketStatus
+  toStatus   TicketStatus
+  changedAt  DateTime     @default(now())
+
+  ticketId   Int
+  ticket     Ticket       @relation(fields: [ticketId], references: [id])
+
+  changedById Int
+  changedBy   User        @relation("TicketStatusChangedBy", fields: [changedById], references: [id])
+
+  @@index([ticketId, changedAt])
+  @@index([toStatus, changedAt])
 }

@@ -30,11 +30,10 @@ import {
 import Separator from '../../components/login_components/Separator';
 import TicketFilter from '../../components/client_components/TicketFilter';
 import { UserRole } from '../../types';
-import { fetchTickets, fetchUsers } from '../../services/tickets';
+import { fetchTickets, fetchUsers, normalizeTicket, type RawTicket, fetchTicketResolutionHistory, type TicketResolutionHistoryItem } from '../../services/tickets';
 import { format, subDays, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { getSocket } from '../../services/singleton';
-import { normalizeTicket, type RawTicket } from '../../services/tickets';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -176,16 +175,6 @@ function StatCard(props: StatCardProps) {
 	);
 }
 
-const dailyData = [
-	{ name: "Lun", created: 42, resolved: 35 },
-	{ name: "Mar", created: 55, resolved: 47 },
-	{ name: "Mer", created: 63, resolved: 58 },
-	{ name: "Jeu", created: 49, resolved: 44 },
-	{ name: "Ven", created: 58, resolved: 52 },
-	{ name: "Sam", created: 36, resolved: 30 },
-	{ name: "Dim", created: 28, resolved: 22 },
-];
-
 type CreatedOrResolved = "created" | "resolved";
 
 interface CreatedAndResolvedIndicatorProps {
@@ -203,24 +192,22 @@ function CreatedAndResolvedIndicator(props: CreatedAndResolvedIndicatorProps) {
 	);
 }
 
-const generateDailyTickets = (tickets: Ticket[]) => {
-	// 1. Générer les 7 derniers jours (ex: [Ven, Jeu, Mer, Mar, Lun, Dim, Sam])
+const generateDailyTickets = (
+	tickets: Ticket[],
+	resolutionHistory: TicketResolutionHistoryItem[],
+) => {
 	const last7Days = [...Array(7)].map((_, i) => subDays(new Date(), i)).reverse();
 
 	return last7Days.map((date) => {
-		// 2. Formater le nom du jour (Lun, Mar...)
-		const name = format(date, 'eee', { locale: fr }); // 'eee' donne 'lun.', 'mar.'...
+		const name = format(date, 'eee', { locale: fr });
 
-		// 3. Compter les tickets créés ce jour-là
 		const created = tickets.filter((t) =>
 			isSameDay(new Date(t.createdAt), date)
 		).length;
 
-		// 4. Compter les tickets résolus ce jour-là 
-		// (en supposant que vous avez un champ updatedAt et un status RESOLVED)
-		const resolved = tickets.filter((t) =>
-			t.status === TicketStatus.RESOLVED &&
-			t.updatedAt && isSameDay(new Date(t.updatedAt), date)
+		const resolved = resolutionHistory.filter((h) =>
+			h.toStatus === TicketStatus.RESOLVED &&
+			isSameDay(new Date(h.changedAt), date)
 		).length;
 
 		return {
@@ -232,76 +219,94 @@ const generateDailyTickets = (tickets: Ticket[]) => {
 };
 
 function TicketsActivities() {
-	const [tickets, setTickets] = useState<Ticket[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+    const [tickets, setTickets] = useState<Ticket[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [resolutionHistory, setResolutionHistory] = useState<TicketResolutionHistoryItem[]>([]);
 
-	useEffect(() => {
-		const loadTickets = async () => {
-			try {
-				setLoading(true);
-				const data = await fetchTickets();
-				setTickets(data);
-				setError(null);
-			} catch (e) {
-				console.error('Erreur chargement tickets admin:', e);
-				setError('Impossible de charger les tickets');
-			} finally {
-				setLoading(false);
-			}
-		};
+    useEffect(() => {
+        const loadTickets = async () => {
+            try {
+                setLoading(true);
+                const [ticketsData, historyData] = await Promise.all([
+                    fetchTickets(),
+                    fetchTicketResolutionHistory(7),
+                ]);
+                setTickets(ticketsData);
+                setResolutionHistory(historyData);
+                setError(null);
+            } catch (e) {
+                console.error('Erreur chargement tickets admin:', e);
+                setError('Impossible de charger les tickets');
+            } finally {
+                setLoading(false);
+            }
+        };
 
-		loadTickets();
-	}, []);
+        loadTickets();
+        const socket = getSocket();
 
-	if (loading) {
-		return <div className="p-4">Chargement des tickets...</div>;
-	}
+        const onNewTicket = (payload: RawTicket) => {
+            setTickets((prev) => upsertTicketFromSocket(prev, payload));
+        };
 
-	if (error) {
-		return <div className="p-4 text-red-600">{error}</div>;
-	}
+        const onTicketStatusUpdated = (payload: RawTicket) => {
+            setTickets((prev) => upsertTicketFromSocket(prev, payload));
+            void fetchTicketResolutionHistory(7)
+                .then(setResolutionHistory)
+                .catch((err) => console.error('Erreur chargement historique résolution:', err));
+        };
 
-	const dailyTickets = generateDailyTickets(tickets);
-	console.log(dailyTickets);
+        socket.on('newTicket', onNewTicket);
+        socket.on('ticketStatusUpdated', onTicketStatusUpdated);
 
-	return (
-		<div className="w-full md:w-[60%] bg-white shadow rounded-md p-5">
-			<div className="flex items-center justify-between">
-				<div>
-					<h3 className="text-base font-medium text-navy">Activite des tickets</h3>
-					<p className="text-xs md:text-sm text-gray-600">Apercu des 7 derniers jours</p>
-				</div>
-				<div className="flex items-center gap-3 md:gap-4">
-					<div className="flex items-center gap-1 md:gap-2">
-						<CreatedAndResolvedIndicator type="created" />
-					</div>
-					<div className="flex items-center gap-1 md:gap-2">
-						<CreatedAndResolvedIndicator type="resolved" />
-					</div>
-				</div>
-			</div>
-			<div className="mt-8 w-full aspect-[5/3] md:aspect-[3/1]">
-				<ResponsiveContainer>
-					<LineChart responsive data={dailyTickets}>
-						<CartesianGrid stroke="#aaa" strokeDasharray="5 5" />
-						<Line type="monotone" dataKey="created" stroke="var(--color-navy)" strokeWidth={2} name="Crees"
-							dot={false}
-							activeDot={{ r: 5 }}
-						/>
-						<Line type="monotone" dataKey="resolved" stroke="var(--color-status-resolved)" strokeWidth={2} name="Resolus"
-							dot={false}
-							activeDot={{ r: 5 }}
-						/>
-						<XAxis dataKey="name" tick={{ fontSize: 12 }} />
-						<YAxis tick={{ fontSize: 12 }} />
-						<Tooltip />
-						<RechartsDevtools />
-					</LineChart>
-				</ResponsiveContainer>
-			</div>
-		</div>
-	);
+        return () => {
+            socket.off('newTicket', onNewTicket);
+            socket.off('ticketStatusUpdated', onTicketStatusUpdated);
+        };
+    }, []);
+
+    if (loading) {
+        return <div className="p-4">Chargement des tickets...</div>;
+    }
+
+    if (error) {
+        return <div className="p-4 text-red-600">{error}</div>;
+    }
+
+    const dailyTickets = generateDailyTickets(tickets, resolutionHistory);
+
+    return (
+        <div className="w-full md:w-[60%] bg-white shadow rounded-md p-5">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h3 className="text-base font-medium text-navy">Activite des tickets</h3>
+                    <p className="text-xs md:text-sm text-gray-600">Apercu des 7 derniers jours</p>
+                </div>
+                <div className="flex items-center gap-3 md:gap-4">
+                    <div className="flex items-center gap-1 md:gap-2">
+                        <CreatedAndResolvedIndicator type="created" />
+                    </div>
+                    <div className="flex items-center gap-1 md:gap-2">
+                        <CreatedAndResolvedIndicator type="resolved" />
+                    </div>
+                </div>
+            </div>
+            <div className="mt-8 w-full aspect-[5/3] md:aspect-[3/1]">
+                <ResponsiveContainer>
+                    <LineChart responsive data={dailyTickets}>
+                        <CartesianGrid stroke="#aaa" strokeDasharray="5 5" />
+                        <Line type="monotone" dataKey="created" stroke="var(--color-navy)" strokeWidth={2} name="Crees" dot={false} activeDot={{ r: 5 }} />
+                        <Line type="monotone" dataKey="resolved" stroke="var(--color-status-resolved)" strokeWidth={2} name="Resolus" dot={false} activeDot={{ r: 5 }} />
+                        <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                        <YAxis tick={{ fontSize: 12 }} />
+                        <Tooltip />
+                        <RechartsDevtools />
+                    </LineChart>
+                </ResponsiveContainer>
+            </div>
+        </div>
+    );
 }
 
 function RecentTicketsHeader() {
@@ -433,135 +438,105 @@ function upsertTicketFromSocket(prev: Ticket[], payload: RawTicket): Ticket[] {
 }
 
 function RecentTickets() {
-	const [tickets, setTickets] = useState<Ticket[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+    const [tickets, setTickets] = useState<Ticket[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-	useEffect(() => {
-		const loadTickets = async () => {
-			try {
-				setLoading(true);
-				const data = await fetchTickets();
-				setTickets(data);
-				setError(null);
-			} catch (e) {
-				console.error('Erreur chargement tickets admin:', e);
-				setError('Impossible de charger les tickets');
-			} finally {
-				setLoading(false);
-			}
-		};
+    useEffect(() => {
+        const loadTickets = async () => {
+            try {
+                setLoading(true);
+                const data = await fetchTickets();
+                setTickets(data);
+                setError(null);
+            } catch (e) {
+                console.error('Erreur chargement tickets admin:', e);
+                setError('Impossible de charger les tickets');
+            } finally {
+                setLoading(false);
+            }
+        };
 
-		loadTickets();
+        loadTickets();
 
-		const socket = getSocket();
+        const socket = getSocket();
 
-		const onNewTicket = (payload: RawTicket) => {
-			setTickets((prev) => upsertTicketFromSocket(prev, payload));
-		};
+        const onNewTicket = (payload: RawTicket) => {
+            setTickets((prev) => upsertTicketFromSocket(prev, payload));
+        };
 
-		const onTicketStatusUpdated = (payload: RawTicket) => {
-			setTickets((prev) => upsertTicketFromSocket(prev, payload));
-		};
+        const onTicketStatusUpdated = (payload: RawTicket) => {
+            setTickets((prev) => upsertTicketFromSocket(prev, payload));
+        };
 
-		socket.on('newTicket', onNewTicket);
-		socket.on('ticketStatusUpdated', onTicketStatusUpdated);
+        socket.on('newTicket', onNewTicket);
+        socket.on('ticketStatusUpdated', onTicketStatusUpdated);
 
-		return () => {
-			socket.off('newTicket', onNewTicket);
-			socket.off('ticketStatusUpdated', onTicketStatusUpdated);
-		};
-	}, []);
+        return () => {
+            socket.off('newTicket', onNewTicket);
+            socket.off('ticketStatusUpdated', onTicketStatusUpdated);
+        };
+    }, []);
 
-	return (
-		<div className="bg-white rounded-md shadow mt-8">
-			<RecentTicketsHeader />
-			<Separator />
-
-			<div className="w-full overflow-x-auto">
-				<table className="min-w-[700px] w-full text-sm text-left">
-					<thead className="text-gray-500 border-b">
-						<tr>
-							<th className="px-5 pb-3 font-medium">ID</th>
-							<th className="px-5 pb-3 font-medium">Titre</th>
-							<th className="px-5 pb-3 font-medium">Utilisateur</th>
-							<th className="px-5 pb-3 font-medium">Status</th>
-							<th className="px-5 pb-3 font-medium">Priorité</th>
-							<th className="px-5 pb-3 font-medium">Date</th>
-						</tr>
-					</thead>
-
-					<tbody>
-						{loading ? (
-							<tr>
-								<td colSpan={6} className="text-center py-6 text-gray-400">
-									Chargement des tickets...
-								</td>
-							</tr>
-						) : error ? (
-							<tr>
-								<td colSpan={6} className="text-center py-6 text-red-400">
-									{error}
-								</td>
-							</tr>
-						) : tickets.length === 0 ? (
-							<tr>
-								<td colSpan={6} className="text-center py-6 text-gray-400">
-									Aucun ticket disponible
-								</td>
-							</tr>
-						) : (
-							[...tickets]
-								.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-								.slice(0, 5)
-								.map((ticket) => (
-									<tr
-										key={ticket.id}
-										className="border-b hover:bg-cream/70 transition"
-									>
-										<td className="px-5 py-3 text-navy">
-											TK-{ticket.id}
-										</td>
-
-										<td className="px-5 py-3">
-											{ticket.title}
-										</td>
-
-										<td className="px-5 py-3">
-											{ticket.author?.login ?? "N/A"}
-										</td>
-
-										<td className="px-5 py-3">
-											<span
-												className={`px-2 py-1 rounded-full text-xs ${getStatusColor(ticket.status)[0]
-													} ${getStatusColor(ticket.status)[1]}`}
-											>
-												{getStatusText(ticket.status)}
-											</span>
-										</td>
-
-										<td className="px-5 py-3">
-											<span
-												className={`px-2 py-1 rounded-full text-xs ${getPriorityColor(ticket.priority)[0]
-													} ${getPriorityColor(ticket.priority)[1]}`}
-											>
-												{getPriorityText(ticket.priority)}
-											</span>
-										</td>
-
-										<td className="px-5 py-3 text-gray-500">
-											{ticket.createdAt
-												.toLocaleDateString("fr-FR")
-												.replace(/\//g, "-")}
-										</td>
-									</tr>
-								))
-						)}
-					</tbody>
-				</table>
-			</div>
-		</div>
-	);
+    return (
+        <div className="bg-white rounded-md shadow mt-8">
+            <RecentTicketsHeader />
+            <Separator />
+            <div className="w-full overflow-x-auto">
+                <table className="min-w-[700px] w-full text-sm text-left">
+                    <thead className="text-gray-500 border-b">
+                        <tr>
+                            <th className="px-5 pb-3 font-medium">ID</th>
+                            <th className="px-5 pb-3 font-medium">Titre</th>
+                            <th className="px-5 pb-3 font-medium">Utilisateur</th>
+                            <th className="px-5 pb-3 font-medium">Status</th>
+                            <th className="px-5 pb-3 font-medium">Priorité</th>
+                            <th className="px-5 pb-3 font-medium">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {loading ? (
+                            <tr>
+                                <td colSpan={6} className="text-center py-6 text-gray-400">Chargement des tickets...</td>
+                            </tr>
+                        ) : error ? (
+                            <tr>
+                                <td colSpan={6} className="text-center py-6 text-red-400">{error}</td>
+                            </tr>
+                        ) : tickets.length === 0 ? (
+                            <tr>
+                                <td colSpan={6} className="text-center py-6 text-gray-400">Aucun ticket disponible</td>
+                            </tr>
+                        ) : (
+                            [...tickets]
+                                .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+                                .slice(0, 5)
+                                .map((ticket) => (
+                                    <tr key={ticket.id} className="border-b hover:bg-cream/70 transition">
+                                        <td className="px-5 py-3 text-navy">TK-{ticket.id}</td>
+                                        <td className="px-5 py-3">{ticket.title}</td>
+                                        <td className="px-5 py-3">{ticket.author?.login ?? "N/A"}</td>
+                                        <td className="px-5 py-3">
+                                            <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(ticket.status)[0]} ${getStatusColor(ticket.status)[1]}`}>
+                                                {getStatusText(ticket.status)}
+                                            </span>
+                                        </td>
+                                        <td className="px-5 py-3">
+                                            <span className={`px-2 py-1 rounded-full text-xs ${getPriorityColor(ticket.priority)[0]} ${getPriorityColor(ticket.priority)[1]}`}>
+                                                {getPriorityText(ticket.priority)}
+                                            </span>
+                                        </td>
+                                        <td className="px-5 py-3 text-gray-500">
+                                            {ticket.createdAt.toLocaleDateString("fr-FR").replace(/\//g, "-")}
+                                        </td>
+                                    </tr>
+                                ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
 }
 
 export function AdminDashboard() {

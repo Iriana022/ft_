@@ -133,6 +133,30 @@ export class TicketsService {
 		});
 	}
 
+	async getTicketResolutionHistory(days: number, role: UserRole) {
+		if (role !== UserRole.ADMIN) {
+			throw new ForbiddenException('Accès réservé aux administrateurs');
+		}
+
+		const safeDays = Number.isFinite(days) ? Math.max(1, Math.min(days, 365)) : 7;
+		const since = new Date();
+		since.setHours(0, 0, 0, 0);
+		since.setDate(since.getDate() - (safeDays - 1));
+
+		return this.prisma.ticketStatusHistory.findMany({
+			where: {
+				toStatus: TicketStatus.RESOLVED,
+				changedAt: { gte: since },
+			},
+			select: {
+				ticketId: true,
+				toStatus: true,
+				changedAt: true,
+			},
+			orderBy: { changedAt: 'asc' },
+		});
+	}
+
 	async updateTicketStatus(ticketId: number, dto: UpdateTicketStatusDto, agentId: number) {
 		const ticket = await this.prisma.ticket.findUnique({
 			where: { id: ticketId },
@@ -188,6 +212,16 @@ export class TicketsService {
 				},
 				include: { author: true, AssignedTo: true }
 			});
+			if (ticket.status !== status) {
+				await t.ticketStatusHistory.create({
+					data: {
+						ticketId,
+						fromStatus: ticket.status,
+						toStatus: status,
+						changedById: agentId,
+					},
+				});
+			}
 			if (shouldCloseChat) {
 				await t.chatMessage.deleteMany({
 					where: { ticketId },

@@ -25,19 +25,19 @@ const uploadsApiPrefix = '/api/uploads/';
 const isAbsoluteHttpUrl = (value: string) => /^https?:\/\//i.test(value);
 
 const normalizeAvatarUrl = (avatar?: string | null) => {
-    if (!avatar) return undefined;
+	if (!avatar) return undefined;
 
-    const value = avatar.trim();
-    if (!value) return undefined;
+	const value = avatar.trim();
+	if (!value) return undefined;
 
-    if (isAbsoluteHttpUrl(value)) return value;
-    if (value.startsWith('/assets/')) return value;
-    if (value.startsWith(uploadsApiPrefix)) return value;
-    if (value.startsWith('/uploads/')) return '/api' + value;
-    if (value.startsWith('/')) return value;
+	if (isAbsoluteHttpUrl(value)) return value;
+	if (value.startsWith('/assets/')) return value;
+	if (value.startsWith(uploadsApiPrefix)) return value;
+	if (value.startsWith('/uploads/')) return '/api' + value;
+	if (value.startsWith('/')) return value;
 
-    // cas ancien: juste "avatar-xxx.png"
-    return uploadsApiPrefix + value;
+	// cas ancien: juste "avatar-xxx.png"
+	return uploadsApiPrefix + value;
 };
 
 const normalizeUser = (user: RawUser): User => {
@@ -67,6 +67,31 @@ const normalizeUser = (user: RawUser): User => {
 export type RawTicketInternalNote = Omit<TicketInternalNote, 'createdAt' | 'author'> & {
 	createdAt: string | Date;
 	author: RawUser;
+};
+
+export type RawTicketResolutionHistoryItem = {
+	ticketId: number;
+	toStatus: TicketStatus;
+	changedAt: string | Date;
+};
+
+export type TicketResolutionHistoryItem = {
+	ticketId: number;
+	toStatus: TicketStatus;
+	changedAt: Date;
+};
+
+export const fetchTicketResolutionHistory = async (
+	days = 7
+): Promise<TicketResolutionHistoryItem[]> => {
+	const response = await api.get('/tickets/stats/resolution-history', {
+		params: { days },
+	});
+
+	return (response.data ?? []).map((item: RawTicketResolutionHistoryItem) => ({
+		...item,
+		changedAt: new Date(item.changedAt),
+	}));
 };
 
 const normalizeInternalNote = (note: RawTicketInternalNote): TicketInternalNote => ({
