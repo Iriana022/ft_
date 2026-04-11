@@ -2,6 +2,7 @@ import type { Ticket } from '../../types';
 import { TicketStatus, TicketPriority } from '../../types';
 import { Clock, User, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
 
 interface TicketListProps {
 	tickets: Ticket[];
@@ -15,23 +16,25 @@ const getAssignedAgentAvatar = (ticket: Ticket) => {
 	return avatar && avatar.length > 0 ? avatar : DEFAULT_AGENT_AVATAR;
 };
 
-const statusConfig = {
-	[TicketStatus.OPEN]: { label: 'Ouvert', color: 'bg-red-100 text-red-700' },
-	[TicketStatus.IN_PROGRESS]: { label: 'En cours', color: 'bg-orange-100 text-orange-700' },
-	[TicketStatus.RESOLVED]: { label: 'Résolu', color: 'bg-green-100 text-green-700' },
-	[TicketStatus.CLOSED]: { label: 'Fermé', color: 'bg-gray-100 text-gray-700' }
-};
-
-const priorityConfig = {
-	[TicketPriority.LOW]: { label: 'Basse', color: 'text-green-600' },
-	[TicketPriority.MEDIUM]: { label: 'Moyenne', color: 'text-blue-600' },
-	[TicketPriority.HIGH]: { label: 'Haute', color: 'text-orange-600' },
-	[TicketPriority.URGENT]: { label: 'Urgent', color: 'text-red-600' }
-};
-
 export function TicketList({ tickets, maxItems }: TicketListProps) {
+	const {t} = useTranslation('agent');
+	const {t: tt} = useTranslation('tickets');
 	const navigate = useNavigate();
 	const displayTickets = maxItems ? tickets.slice(0, maxItems) : tickets;
+
+	const statusConfig = {
+		[TicketStatus.OPEN]: { label: tt('statusOpen'), color: 'bg-red-100 text-red-700' },
+		[TicketStatus.IN_PROGRESS]: { label: tt('statusInProgress'), color: 'bg-orange-100 text-orange-700' },
+		[TicketStatus.RESOLVED]: { label: tt('statusResolved'), color: 'bg-green-100 text-green-700' },
+		[TicketStatus.CLOSED]: { label: tt('statusClosed'), color: 'bg-gray-100 text-gray-700' },
+	};
+
+	const priorityConfig = {
+		[TicketPriority.LOW]: { label: tt('priorityLow'), color: 'text-green-600' },
+		[TicketPriority.MEDIUM]: { label: tt('priorityMedium'), color: 'text-blue-600' },
+		[TicketPriority.HIGH]: { label: tt('priorityHigh'), color: 'text-orange-600' },
+		[TicketPriority.URGENT]: { label: tt('priorityUrgent'), color: 'text-red-600' },
+	};
 
 	const formatDate = (date: Date) => {
 		const now = new Date();
@@ -39,15 +42,15 @@ export function TicketList({ tickets, maxItems }: TicketListProps) {
 		const hours = Math.floor(diff / (1000 * 60 * 60));
 		const days = Math.floor(hours / 24);
 
-		if (days > 0) return `Il y a ${days}j`;
-		if (hours > 0) return `Il y a ${hours}h`;
-		return 'À l\'instant';
+		if (days > 0) return tt('daysAgo', {count: days});
+		if (hours > 0) return tt('hoursAgo', {count: hours});
+		return tt('justNow');
 	};
 
 	return (
 		<div className="rounded-xl border overflow-hidden bg-white border-gray-200">
 			<div className="p-6 border-b border-gray-200">
-				<h3 className="text-lg font-bold text-gray-900">Tickets récents</h3>
+				<h3 className="text-lg font-bold text-gray-900">{t('recentTickets')}</h3>
 			</div>
 
 			<div className="divide-y divide-gray-100">
@@ -73,7 +76,7 @@ export function TicketList({ tickets, maxItems }: TicketListProps) {
 									{ticket.agentUnreadCount > 0 && (
 										<span
 											className="inline-block w-2.5 h-2.5 rounded-full bg-red-500"
-											title={ticket.agentUnreadCount + ' message(s) non lu(s)'}
+											title={tt('unreadMessagesTitle', {count: ticket.agentUnreadCount})}
 										/>
 									)}
 								</div>
@@ -89,7 +92,7 @@ export function TicketList({ tickets, maxItems }: TicketListProps) {
 								<div className="flex items-center gap-4 text-sm text-gray-500">
 									<div className="flex items-center gap-1">
 										<User className="w-4 h-4" />
-										<span>Créé par {ticket.author.login || ticket.author.email}</span>
+										<span>{t('createdBy')} {ticket.author.login || ticket.author.email}</span>
 									</div>
 
 									<div className="flex items-center gap-1">
@@ -101,13 +104,13 @@ export function TicketList({ tickets, maxItems }: TicketListProps) {
 										<div className="flex items-center gap-1">
 											<img
 												src={getAssignedAgentAvatar(ticket)}
-												alt={ticket.assignedTo.login || ticket.assignedTo.email || 'Agent avatar'}
+												alt={ticket.assignedTo.login || ticket.assignedTo.email || tt('unknownAgent')}
 												className="w-5 h-5 rounded-full"
 												onError={(e) => {
 													e.currentTarget.src = DEFAULT_AGENT_AVATAR;
 												}}
 											/>
-											<span>Assigné à {ticket.assignedTo.login || ticket.assignedTo.email || 'Agent'}</span>
+											<span>{t('assignedTo')} {ticket.assignedTo.login || ticket.assignedTo.email || tt('unknownAgent')}</span>
 										</div>
 									)}
 								</div>
@@ -127,7 +130,7 @@ export function TicketList({ tickets, maxItems }: TicketListProps) {
 			{maxItems && tickets.length > maxItems && (
 				<div className="p-4 text-center bg-gray-50">
 					<button className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
-						Voir tous les tickets ({tickets.length})
+						{t('viewAllTickets', {count: tickets.length})}
 					</button>
 				</div>
 			)}
