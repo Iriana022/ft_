@@ -58,6 +58,7 @@ model User {
   twoFactorSecret   String?
   isTwoFactorEnabled Boolean  @default(false)
   messages ChatMessage[]
+  internalNotes  TicketInternalNote[]
 }
 
 model Ticket {
@@ -78,4 +79,19 @@ model Ticket {
 	AssignedTo		User?			@relation("AssignedTo", fields: [AssignedToId], references: [id])
 	AssignedToId	Int?
 	messages ChatMessage[]
+  internalNotes  TicketInternalNote[]
+}
+
+model TicketInternalNote {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+
+  ticketId  Int
+  ticket    Ticket   @relation(fields: [ticketId], references: [id])
+
+  authorId  Int
+  author    User     @relation(fields: [authorId], references: [id])
+
+  @@index([ticketId, createdAt])
 }

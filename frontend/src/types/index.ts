@@ -1,4 +1,4 @@
-export type HeroIconType = React.ForwardRefExoticComponent<React.PropsWithoutRef<React.SVGProps<SVGSVGElement>> & {title?: string, titleId?: string} & React.RefAttributes<SVGSVGElement>>;
+export type HeroIconType = React.ForwardRefExoticComponent<React.PropsWithoutRef<React.SVGProps<SVGSVGElement>> & { title?: string, titleId?: string } & React.RefAttributes<SVGSVGElement>>;
 
 export enum StatCardType {
 	TOTAL_TICKET = 'TOTAL_TICKET',
@@ -19,6 +19,15 @@ export enum UserRole {
 	CLIENT = 'CLIENT',
 	AGENT = 'AGENT',
 	ADMIN = 'ADMIN'
+}
+
+export interface TicketInternalNote {
+	id: number;
+	content: string;
+	createdAt: Date;
+	ticketId: number;
+	authorId: number;
+	author: User;
 }
 
 export enum TicketPriority {
@@ -70,12 +79,12 @@ export interface Message {
 }
 
 export interface ChatMessage {
-    id: number;
-    content: string;
-    createdAt: Date;
-    isFromSupport: boolean;
-    ticketId: number;
-    authorId: number;
-    author: User;
+	id: number;
+	content: string;
+	createdAt: Date;
+	isFromSupport: boolean;
+	ticketId: number;
+	authorId: number;
+	author: User;
 }
 

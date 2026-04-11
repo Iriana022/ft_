@@ -95,9 +95,60 @@ export class TicketsGateway implements OnGatewayConnection, OnGatewayDisconnect 
 
         const room = `ticket-${data.ticketId}`;
         client.join(room);
+        if (
+            (user.role === UserRole.AGENT || user.role === UserRole.ADMIN)
+            && ticket.AssignedToId !== null
+            && ticket.AssignedToId === user.userId
+        ) {
+            client.join('ticket-internal-' + data.ticketId);
+        }
         console.log(`Client ${client.id} joined room ${room}`);
     }
 
+    @SubscribeMessage('joinInternalNotes')
+    async handleJoinInternalNotes(
+        @MessageBody() data: { ticketId: number; token?: string },
+        @ConnectedSocket() client: Socket,
+    ) {
+        const user = await this.resolveUserFromToken(data.token);
+
+        if (user.role !== UserRole.AGENT && user.role !== UserRole.ADMIN) {
+            throw new WsException('Access denied');
+        }
+
+        const ticket = await this.prisma.ticket.findUnique({
+            where: { id: data.ticketId },
+            select: { id: true, AssignedToId: true, status: true },
+        });
+
+        if (!ticket) {
+            throw new WsException('Ticket not found');
+        }
+
+        const lockedForOtherAgents =
+            user.role === UserRole.AGENT &&
+            ticket.status === 'IN_PROGRESS' &&
+            ticket.AssignedToId !== null &&
+            ticket.AssignedToId !== user.userId;
+
+        if (lockedForOtherAgents) {
+            throw new WsException('Access denied');
+        }
+
+        client.join('ticket-internal-' + data.ticketId);
+    }
+
+    @SubscribeMessage('leaveInternalNotes')
+    handleLeaveInternalNotes(
+        @MessageBody() data: { ticketId: number },
+        @ConnectedSocket() client: Socket,
+    ) {
+        client.leave('ticket-internal-' + data.ticketId);
+    }
+
+    emitInternalNoteCreated(ticketId: number, note: any) {
+        this.server.to('ticket-internal-' + ticketId).emit('ticketInternalNoteCreated', note);
+    }
     @SubscribeMessage('leaveTicket')
     handleLeaveTicket(
         @MessageBody() data: { ticketId: number },

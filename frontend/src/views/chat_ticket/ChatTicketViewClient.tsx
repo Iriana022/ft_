@@ -129,7 +129,7 @@ function ChatTicketViewClient() {
       setCurrentStatus(updatedTicket.status);
 
       if (updatedTicket.status === TicketStatus.CLOSED) {
-        setMessages('');
+        setMessages([]);
         setNewMessage('');
       }
     };
@@ -137,7 +137,7 @@ function ChatTicketViewClient() {
     const onticketClosed = (payload?: { ticketId?: number }) => {
       if (!payload?.ticketId || payload.ticketId === ticketId) {
         setCurrentStatus(TicketStatus.CLOSED);
-        setMessages('');
+        setMessages([]);
         setNewMessage('');
       }
     };

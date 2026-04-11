@@ -1,28 +1,35 @@
-import type {Ticket} from '../../types';
-import {TicketStatus, TicketPriority} from '../../types';
-import {Clock, User, AlertCircle} from 'lucide-react';
-import {useNavigate} from 'react-router-dom';
+import type { Ticket } from '../../types';
+import { TicketStatus, TicketPriority } from '../../types';
+import { Clock, User, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface TicketListProps {
 	tickets: Ticket[];
 	maxItems?: number;
 }
 
+const DEFAULT_AGENT_AVATAR = '/assets/avatars/avatar2.png';
+
+const getAssignedAgentAvatar = (ticket: Ticket) => {
+	const avatar = ticket.assignedTo?.avatar;
+	return avatar && avatar.length > 0 ? avatar : DEFAULT_AGENT_AVATAR;
+};
+
 const statusConfig = {
-	[TicketStatus.OPEN]: {label: 'Ouvert', color: 'bg-red-100 text-red-700'},
-	[TicketStatus.IN_PROGRESS]: {label: 'En cours', color: 'bg-orange-100 text-orange-700'},
-	[TicketStatus.RESOLVED]: {label: 'Résolu', color: 'bg-green-100 text-green-700'},
-	[TicketStatus.CLOSED]: {label: 'Fermé', color: 'bg-gray-100 text-gray-700'}
+	[TicketStatus.OPEN]: { label: 'Ouvert', color: 'bg-red-100 text-red-700' },
+	[TicketStatus.IN_PROGRESS]: { label: 'En cours', color: 'bg-orange-100 text-orange-700' },
+	[TicketStatus.RESOLVED]: { label: 'Résolu', color: 'bg-green-100 text-green-700' },
+	[TicketStatus.CLOSED]: { label: 'Fermé', color: 'bg-gray-100 text-gray-700' }
 };
 
 const priorityConfig = {
-	[TicketPriority.LOW]: {label: 'Basse', color: 'text-green-600'},
-	[TicketPriority.MEDIUM]: {label: 'Moyenne', color: 'text-blue-600'},
-	[TicketPriority.HIGH]: {label: 'Haute', color: 'text-orange-600'},
-	[TicketPriority.URGENT]: {label: 'Urgent', color: 'text-red-600'}
+	[TicketPriority.LOW]: { label: 'Basse', color: 'text-green-600' },
+	[TicketPriority.MEDIUM]: { label: 'Moyenne', color: 'text-blue-600' },
+	[TicketPriority.HIGH]: { label: 'Haute', color: 'text-orange-600' },
+	[TicketPriority.URGENT]: { label: 'Urgent', color: 'text-red-600' }
 };
 
-export function TicketList({tickets, maxItems}: TicketListProps) {
+export function TicketList({ tickets, maxItems }: TicketListProps) {
 	const navigate = useNavigate();
 	const displayTickets = maxItems ? tickets.slice(0, maxItems) : tickets;
 
@@ -93,11 +100,14 @@ export function TicketList({tickets, maxItems}: TicketListProps) {
 									{ticket.assignedTo && (
 										<div className="flex items-center gap-1">
 											<img
-												src={ticket.assignedTo.avatar}
-												alt={ticket.assignedTo.login || ''}
+												src={getAssignedAgentAvatar(ticket)}
+												alt={ticket.assignedTo.login || ticket.assignedTo.email || 'Agent avatar'}
 												className="w-5 h-5 rounded-full"
+												onError={(e) => {
+													e.currentTarget.src = DEFAULT_AGENT_AVATAR;
+												}}
 											/>
-											<span>Assigné à {ticket.assignedTo.login}</span>
+											<span>Assigné à {ticket.assignedTo.login || ticket.assignedTo.email || 'Agent'}</span>
 										</div>
 									)}
 								</div>

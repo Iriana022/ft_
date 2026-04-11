@@ -4,22 +4,23 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketStatusDto } from './dto/update-ticket-status.dto';
 import { CreateChatMessageDto } from './dto/create-chat-message.dto';
+import { CreateInternalNoteDto } from './dto/create-internal-note.dto';
 
 @Controller('tickets')
 export class TicketsController {
-    constructor(private readonly ticketsService: TicketsService){}
+    constructor(private readonly ticketsService: TicketsService) { }
 
     @Post()
     @UseGuards(JwtAuthGuard)
     async create(
         @Body() dto: CreateTicketDto,
         @Req() req: { user: { userId: number } },
-    ){
+    ) {
         return this.ticketsService.createTicket(dto, req.user.userId)
     }
 
     @Get()
-    async findAll(){
+    async findAll() {
         return this.ticketsService.getAllTickets()
     }
 
@@ -27,7 +28,7 @@ export class TicketsController {
     @UseGuards(JwtAuthGuard)
     async findMine(
         @Req() req: { user: { userId: number } },
-    ){
+    ) {
         return this.ticketsService.getMyTickets(req.user.userId)
     }
 
@@ -37,7 +38,7 @@ export class TicketsController {
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: UpdateTicketStatusDto,
         @Req() req: { user: { userId: number } },
-    ){
+    ) {
         return this.ticketsService.updateTicketStatus(id, dto, req.user.userId)
     }
 
@@ -64,13 +65,39 @@ export class TicketsController {
     @UseGuards(JwtAuthGuard)
     async markAsRead(
         @Param('id', ParseIntPipe) id: number,
-        @Req() req: { user: {
-            userId: number;
-            role: 'CLIENT' | 'AGENT' | 'ADMIN'
-        }},
+        @Req() req: {
+            user: {
+                userId: number;
+                role: 'CLIENT' | 'AGENT' | 'ADMIN'
+            }
+        },
     ) {
         return this.ticketsService.markTicketMessagesAsRead(
             id,
+            req.user.userId,
+            req.user.role as any,
+        );
+    }
+
+    @Get(':id/internal-notes')
+    @UseGuards(JwtAuthGuard)
+    async getInternalNotes(
+        @Param('id', ParseIntPipe) id: number,
+        @Req() req: { user: { userId: number; role: 'CLIENT' | 'AGENT' | 'ADMIN' } },
+    ) {
+        return this.ticketsService.getInternalNotes(id, req.user.userId, req.user.role as any);
+    }
+
+    @Post(':id/internal-notes')
+    @UseGuards(JwtAuthGuard)
+    async createInternalNote(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: CreateInternalNoteDto,
+        @Req() req: { user: { userId: number; role: 'CLIENT' | 'AGENT' | 'ADMIN' } },
+    ) {
+        return this.ticketsService.createInternalNote(
+            id,
+            dto,
             req.user.userId,
             req.user.role as any,
         );

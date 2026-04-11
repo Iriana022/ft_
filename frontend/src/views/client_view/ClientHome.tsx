@@ -5,6 +5,7 @@ import ClientHomeHeroSection from '../../components/client_components/ClientHome
 import ClientHomeMyTicketsSection from '../../components/client_components/ClientHomeMyTicketsSection';
 import { fetchMyTicketsForClientView } from '../../services/tickets';
 import type { TicketType } from '../../types';
+import { TicketStatus } from '../../types';
 import { getSocket } from '../../services/singleton';
 
 function ClientHome() {
@@ -26,9 +27,13 @@ function ClientHome() {
 		loadTickets();
 		const socket = getSocket();
 
-		const handleticketStatusUpdated = (updatedTicket: TicketType) => {
+		const handleticketStatusUpdated = (updatedTicket: { id: number; status: TicketStatus }) => {
 			setTickets((prev) =>
-				prev.map((t) => (t.id === updatedTicket.id ? updatedTicket : t)),
+				prev.map((t) =>
+					t.id === updatedTicket.id
+						? { ...t, status: updatedTicket.status }
+						: t
+				),
 			);
 		};
 		const handleticketUnreadUpdated = (payload: { ticketId: number; clientUnreadCount: number }) => {

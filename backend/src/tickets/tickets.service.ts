@@ -5,6 +5,7 @@ import { UpdateTicketStatusDto } from './dto/update-ticket-status.dto';
 import { TicketsGateway } from './tickets.gateway';
 import { CreateChatMessageDto } from './dto/create-chat-message.dto';
 import { TicketStatus, UserRole } from '@prisma/client';
+import { CreateInternalNoteDto } from './dto/create-internal-note.dto';
 
 @Injectable()
 export class TicketsService {
@@ -33,6 +34,75 @@ export class TicketsService {
 		}
 
 		throw new ForbiddenException('Accès interdit');
+	}
+
+	private assertInternalNoteAccess(
+		ticket: { AssignedToId: number | null; status: TicketStatus },
+		userId: number,
+		role: UserRole,
+	) {
+		if (role === UserRole.ADMIN) return;
+
+		if (role !== UserRole.AGENT) {
+			throw new ForbiddenException('Notes internes reservees aux agents');
+		}
+
+		const lockedForOtherAgents =
+			ticket.status === TicketStatus.IN_PROGRESS &&
+			ticket.AssignedToId !== null &&
+			ticket.AssignedToId !== userId;
+
+		if (lockedForOtherAgents) {
+			throw new ForbiddenException(
+				'Notes internes indisponibles pendant la prise en charge par l agent assigne',
+			);
+		}
+	}
+
+	async getInternalNotes(ticketId: number, userId: number, role: UserRole) {
+		const ticket = await this.prisma.ticket.findUnique({
+			where: { id: ticketId },
+			select: { id: true, AssignedToId: true, status: true },
+		});
+
+		if (!ticket) throw new NotFoundException('Ticket not found');
+
+		this.assertInternalNoteAccess(ticket, userId, role);
+
+		return this.prisma.ticketInternalNote.findMany({
+			where: { ticketId },
+			include: { author: true },
+			orderBy: { createdAt: 'asc' },
+		});
+	}
+
+	async createInternalNote(
+		ticketId: number,
+		dto: CreateInternalNoteDto,
+		userId: number,
+		role: UserRole,
+	) {
+		const ticket = await this.prisma.ticket.findUnique({
+			where: { id: ticketId },
+			select: { id: true, AssignedToId: true, status: true },
+		});
+
+		if (!ticket) throw new NotFoundException('Ticket not found');
+
+		this.assertInternalNoteAccess(ticket, userId, role);
+
+		const note = await this.prisma.ticketInternalNote.create({
+			data: {
+				content: dto.content,
+				ticketId,
+				authorId: userId,
+			},
+			include: { author: true },
+		});
+
+		this.ticketsGateway.emitInternalNoteCreated(ticketId, note);
+
+		return note;
 	}
 
 	async createTicket(dto: CreateTicketDto, authorId: number) {

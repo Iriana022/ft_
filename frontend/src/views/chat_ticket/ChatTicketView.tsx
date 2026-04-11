@@ -13,17 +13,20 @@ import {
 	Tag,
 	User,
 } from 'lucide-react';
-import { TicketPriority, TicketStatus, type Ticket, type ChatMessage } from '../../types';
-import { markTicketMessagesAsRead, updateTicketStatus, getTicketMessages, sendTicketMessage, fetchTicketById } from '../../services/tickets';
+import { TicketPriority, TicketStatus, type Ticket, type ChatMessage, type TicketInternalNote } from '../../types';
+import {
+	markTicketMessagesAsRead,
+	updateTicketStatus,
+	getTicketMessages,
+	sendTicketMessage,
+	fetchTicketById,
+	normalizeTicket,
+	getTicketInternalNotes,
+	createTicketInternalNote,
+	type RawTicket,
+} from '../../services/tickets';
 import { getSocket } from '../../services/singleton';
 import { getUserIdFromToken } from '../../services/auth';
-
-type InternalNote = {
-	id: number;
-	content: string;
-	author: string;
-	createdAt: Date;
-};
 
 type LocationState = {
 	ticket?: Ticket;
@@ -108,14 +111,8 @@ function ChatTicketView() {
 	const [isLoadingMessages, setIsLoadingMessages] = useState(true);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 
-	const [notes, setNotes] = useState<InternalNote[]>([
-		{
-			id: 1,
-			content: 'Reproduit côté agent. Vérifier la config API.',
-			author: 'Agent',
-			createdAt: new Date(),
-		},
-	]);
+	const [notes, setNotes] = useState<TicketInternalNote[]>([]);
+
 
 	const scrollToBottom = () => {
 		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -125,19 +122,86 @@ function ChatTicketView() {
 		initialTicket.status === TicketStatus.IN_PROGRESS
 	);
 	const isTicketHandledByAnotherAgent =
-		ticket.status === TicketStatus.IN_PROGRESS &&
+		ticket.status !== TicketStatus.CLOSED &&
 		ticket.assignedToId !== undefined &&
 		ticket.assignedToId !== null &&
 		currentUserId !== null &&
 		ticket.assignedToId !== currentUserId;
 	const canViewResponses =
-		ticket.status !== TicketStatus.CLOSED;
+		ticket.status !== TicketStatus.CLOSED && !isTicketHandledByAnotherAgent;
 	const canUseResponses =
 		chatUnlocked &&
 		ticket.status !== TicketStatus.CLOSED &&
 		!isTicketHandledByAnotherAgent;
 
+
+	const isInternalNotesLocked =
+		ticket.status === TicketStatus.IN_PROGRESS &&
+		ticket.assignedToId !== undefined &&
+		ticket.assignedToId !== null &&
+		currentUserId !== null &&
+		ticket.assignedToId !== currentUserId;
+
+	const canViewInternalNotes = !isInternalNotesLocked;
+
 	const isClosedTicket = ticket.status === TicketStatus.CLOSED;
+
+
+	useEffect(() => {
+		if (!ticket.id) return;
+
+		if (!canViewInternalNotes) {
+			setNotes([]);
+			return;
+		}
+
+		const loadNotes = async () => {
+			try {
+				const data = await getTicketInternalNotes(ticket.id);
+				setNotes(data);
+			} catch (error: any) {
+				if (error?.response?.status === 403) {
+					setNotes([]);
+					return;
+				}
+				console.error('Erreur chargement notes internes:', error);
+			}
+		};
+
+		loadNotes();
+	}, [ticket.id, canViewInternalNotes]);
+
+	useEffect(() => {
+		if (!ticket.id) return;
+		if (!canViewInternalNotes) return;
+
+		const socket = getSocket();
+
+		const joinInternal = () => {
+			const token = localStorage.getItem('access_token') ?? undefined;
+			socket.emit('joinInternalNotes', { ticketId: ticket.id, token });
+		};
+
+		const onInternalNoteCreated = (note: TicketInternalNote) => {
+			if (note.ticketId !== ticket.id) return;
+
+			setNotes((prev) => {
+				if (prev.some((n) => n.id === note.id)) return prev;
+				return [...prev, { ...note, createdAt: new Date(note.createdAt) }];
+			});
+		};
+
+		socket.on('connect', joinInternal);
+		socket.on('ticketInternalNoteCreated', onInternalNoteCreated);
+
+		if (socket.connected) joinInternal();
+
+		return () => {
+			socket.emit('leaveInternalNotes', { ticketId: ticket.id });
+			socket.off('connect', joinInternal);
+			socket.off('ticketInternalNoteCreated', onInternalNoteCreated);
+		};
+	}, [ticket.id, canViewInternalNotes]);
 
 	useEffect(() => {
 		if (!fallbackId) return;
@@ -177,23 +241,57 @@ function ChatTicketView() {
 
 	useEffect(() => {
 		if (!ticket.id) return;
-		if (isTicketHandledByAnotherAgent) return;
-		markTicketMessagesAsRead(ticket.id).catch((error) => {
-			console.error('Erreur reset unread agent:', error);
+
+		const socket = getSocket();
+
+		const onTicketStatusUpdated = (payload: RawTicket) => {
+			const updatedTicket = normalizeTicket(payload);
+			if (updatedTicket.id !== ticket.id) return;
+
+			setTicket(updatedTicket);
+
+			if (updatedTicket.status === TicketStatus.CLOSED) {
+				setResponses([]);
+				setNewResponse('');
+			}
+		};
+
+		socket.on('ticketStatusUpdated', onTicketStatusUpdated);
+
+		return () => {
+			socket.off('ticketStatusUpdated', onTicketStatusUpdated);
+		};
+	}, [ticket.id]);
+	useEffect(() => {
+		if (!ticket.id)
+			return;
+		if (!canViewResponses)
+			return;
+		markTicketMessagesAsRead(ticket.id).catch((error: any) => {
+			const status = error?.response?.status;
+			if (status === 403)
+				return;
+			console.log('Erreur reset unread agent:', error);
 		});
-	}, [ticket.id, isTicketHandledByAnotherAgent]);
+	}, [ticket.id, canViewResponses]);
 
 	useEffect(() => {
 		if (!canViewResponses) {
+			setResponses([]);
 			setIsLoadingMessages(false);
 			return;
 		}
-
+		setIsLoadingMessages(true);
 		const loadMessages = async () => {
 			try {
 				const data = await getTicketMessages(ticket.id);
 				setResponses(data);
-			} catch (error) {
+			} catch (error: any) {
+				const status = error?.response?.status;
+				if (status === 403) {
+					setResponses([]);
+					return;
+				}
 				console.error('Erreur chargement messages:', error);
 			} finally {
 				setIsLoadingMessages(false);
@@ -225,27 +323,15 @@ function ChatTicketView() {
 			}
 		};
 
-		const onTicketStatusUpdated = (updatedTicket: Ticket) => {
-			if (updatedTicket.id !== ticket.id)
-				return;
-			setTicket(updatedTicket);
-
-			if (updatedTicket.status === TicketStatus.CLOSED) {
-				setResponses([]);
-				setNewResponse('');
-			}
-		};
 
 		socket.on('connect', joinRoom);
 		socket.on('newMessage', onNewMessage);
-		socket.on('ticketStatusUpdated', onTicketStatusUpdated);
 		if (socket.connected)
 			joinRoom();
 		return () => {
 			socket.emit('leaveTicket', { ticketId: ticket.id });
 			socket.off('connect', joinRoom);
 			socket.off('newMessage', onNewMessage);
-			socket.off('ticketStatusUpdated', onTicketStatusUpdated);
 		};
 	}, [ticket.id, canViewResponses, isTicketHandledByAnotherAgent]);
 
@@ -287,19 +373,21 @@ function ChatTicketView() {
 			console.error('Erreur envoi message:', error?.response?.data ?? error);
 		}
 	};
-
-	const handleSendNote = () => {
+	const handleSendNote = async () => {
 		if (!newNote.trim()) return;
-		setNotes((prev: InternalNote[]) => [
-			...prev,
-			{
-				id: prev.length + 1,
-				content: newNote,
-				author: 'Agent',
-				createdAt: new Date(),
-			},
-		]);
-		setNewNote('');
+		if (!canViewInternalNotes) return;
+
+		try {
+			const created = await createTicketInternalNote(ticket.id, newNote.trim());
+			setNotes((prev) => {
+				if (prev.some((n) => n.id === created.id)) return prev;
+				return [...prev, created];
+			});
+			setNewNote('');
+		} catch (error: any) {
+			if (error?.response?.status === 403) return;
+			console.error('Erreur creation note interne:', error);
+		}
 	};
 
 	const handleUpdateStatus = async () => {
@@ -381,7 +469,7 @@ function ChatTicketView() {
 									}`}
 							>
 								<MessagesSquare className="h-5 w-5" />
-								Réponses ({responses.length})
+								Reponses ({responses.length})
 							</button>
 							<button
 								onClick={() => setActiveTab('notes')}
@@ -397,139 +485,148 @@ function ChatTicketView() {
 
 						<div className="p-6">
 							{activeTab === 'responses' ? (
-								<div className="space-y-6">
-									{isTicketHandledByAnotherAgent && (
-										<div className="rounded-lg p-3 text-center text-sm bg-red-50 text-red-700">
-											🔒 Ce ticket est déjà en cours de traitement par un autre agent.
-										</div>
-									)}
+								isTicketHandledByAnotherAgent ? (
+									<div className="rounded-lg p-3 text-center text-sm bg-red-50 text-red-700">
+										Ce ticket est deja pris en charge par un autre agent.
+									</div>
+								) : (
+									<div className="space-y-6">
+										{ticket.status === TicketStatus.OPEN && (
+											<div className="rounded-lg p-3 text-center text-sm bg-yellow-50 text-yellow-700">
+												Le canal de messagerie s'ouvrira quand le statut sera "En cours".
+											</div>
+										)}
+										{ticket.status === TicketStatus.RESOLVED && (
+											<div className="rounded-lg p-3 text-center text-sm bg-blue-50 text-blue-700">
+												Ticket resolu! veuillez modifier le ticket en ferme si le client a approuve.
+											</div>
+										)}
+										{ticket.status === TicketStatus.CLOSED && (
+											<div className="rounded-lg p-3 text-center text-sm bg-gray-100 text-gray-700">
+												Ticket ferme.
+											</div>
+										)}
 
-									{!chatUnlocked && !isTicketHandledByAnotherAgent && (
-										<div className="rounded-lg p-3 text-center text-sm bg-yellow-50 text-yellow-700">
-											⚠️ Le canal de messagerie s'ouvrira quand le statut sera "En cours".
-										</div>
-									)}
+										{canUseResponses && (
+											<div className="rounded-lg border p-4 bg-gray-50 border-gray-200">
+												<div className="mb-3 flex items-center gap-2">
+													<MessageSquare className="h-5 w-5 text-indigo-600" />
+													<span className="font-semibold text-gray-900">Repondre au client</span>
+												</div>
+												<textarea
+													value={newResponse}
+													onChange={(e) => setNewResponse(e.target.value)}
+													placeholder="Ecrivez votre reponse au client..."
+													rows={3}
+													className="w-full resize-none rounded-lg border px-4 py-3 transition-colors bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+												/>
+												<div className="mt-3 flex justify-end">
+													<button
+														onClick={handleSendResponse}
+														disabled={!newResponse.trim()}
+														className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+													>
+														<Send className="h-4 w-4" />
+														Envoyer la reponse
+													</button>
+												</div>
+											</div>
+										)}
 
-									{canUseResponses && (
-										<div className="rounded-lg border p-4 bg-gray-50 border-gray-200">
+										<div className="space-y-4">
+											{isLoadingMessages ? (
+												<p className="text-center text-sm text-gray-500">Chargement...</p>
+											) : responses.length === 0 ? (
+												<p className="text-center text-sm text-gray-500">Aucun message pour le moment.</p>
+											) : (
+												responses.map((response) => (
+													<div
+														key={response.id}
+														className={`rounded-lg border p-4 ${response.isFromSupport
+															? 'bg-indigo-50/50 border-indigo-200'
+															: 'bg-gray-50 border-gray-200'
+															}`}
+													>
+														<div className="flex items-start gap-3">
+															<img
+																src={getResponseAvatar(response)}
+																alt={response.author.login ?? response.author.email ?? 'User avatar'}
+																className="h-10 w-10 rounded-full object-cover border border-gray-200 bg-gray-100"
+																onError={(e) => {
+																	e.currentTarget.src = response.isFromSupport
+																		? DEFAULT_AGENT_AVATAR
+																		: DEFAULT_CLIENT_AVATAR;
+																}}
+															/>
+															<div className="flex-1">
+																<div className="mb-1 flex items-center gap-2">
+																	<span className="font-semibold text-gray-900">
+																		{response.author.login ?? response.author.email}
+																	</span>
+																	{response.isFromSupport && (
+																		<span className="rounded px-2 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-700">
+																			Support
+																		</span>
+																	)}
+																	<span className="text-sm text-gray-500">
+																		{formatDateShort(response.createdAt)}
+																	</span>
+																</div>
+																<p className="text-gray-700">{response.content}</p>
+															</div>
+														</div>
+													</div>
+												))
+											)}
+											<div ref={messagesEndRef} />
+										</div>
+									</div>
+								)
+							) : (
+								isInternalNotesLocked ? (
+									<div className="rounded-lg p-3 text-center text-sm bg-red-50 text-red-700">
+										Notes internes indisponibles pendant la prise en charge par l agent assigne.
+									</div>
+								) : (
+									<div className="space-y-6">
+										<div className="rounded-lg border p-4 bg-yellow-50/50 border-yellow-200">
 											<div className="mb-3 flex items-center gap-2">
-												<MessageSquare className="h-5 w-5 text-indigo-600" />
-												<span className="font-semibold text-gray-900">Répondre au client</span>
+												<Lock className="h-5 w-5 text-yellow-600" />
+												<span className="font-semibold text-gray-900">Ajouter une note interne</span>
 											</div>
 											<textarea
-												value={newResponse}
-												onChange={(e) => setNewResponse(e.target.value)}
-												placeholder="Écrivez votre réponse au client..."
+												value={newNote}
+												onChange={(e) => setNewNote(e.target.value)}
+												placeholder="Ajoutez une note privee pour l equipe de support..."
 												rows={3}
-												className="w-full resize-none rounded-lg border px-4 py-3 transition-colors bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+												className="w-full resize-none rounded-lg border px-4 py-3 transition-colors bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500/20"
 											/>
 											<div className="mt-3 flex justify-end">
 												<button
-													onClick={handleSendResponse}
-													disabled={!newResponse.trim()}
-													className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+													onClick={handleSendNote}
+													disabled={!newNote.trim()}
+													className="flex items-center gap-2 rounded-lg bg-yellow-600 px-4 py-2 font-medium text-white transition-colors hover:bg-yellow-700 disabled:cursor-not-allowed disabled:opacity-50"
 												>
 													<Send className="h-4 w-4" />
-													Envoyer la réponse
+													Ajouter la note
 												</button>
 											</div>
 										</div>
-									)}
 
-									<div className="space-y-4">
-										{isLoadingMessages ? (
-											<p className="text-center text-sm text-gray-500">Chargement...</p>
-										) : responses.length === 0 ? (
-											<p className="text-center text-sm text-gray-500">
-												Aucun message pour le moment.
-											</p>
-										) : (
-											responses.map((response) => (
-												<div
-													key={response.id}
-													className={`rounded-lg border p-4 ${response.isFromSupport
-														? 'bg-indigo-50/50 border-indigo-200'
-														: 'bg-gray-50 border-gray-200'}
-													`}
-												>
-													<div className="flex items-start gap-3">
-														<img
-															src={getResponseAvatar(response)}
-															alt={response.author.login ?? response.author.email ?? 'User avatar'}
-															className="h-10 w-10 rounded-full object-cover border border-gray-200 bg-gray-100"
-															onError={(e) => {
-																e.currentTarget.src = response.isFromSupport
-																	? DEFAULT_AGENT_AVATAR
-																	: DEFAULT_CLIENT_AVATAR;
-															}}
-														/>
-														<div className="flex-1">
-															<div className="mb-1 flex items-center gap-2">
-																<span className="font-semibold text-gray-900">
-																	{response.author.login ?? response.author.email}
-																</span>
-																{response.isFromSupport && (
-																	<span className="rounded px-2 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-700">
-																		Support
-																	</span>
-																)}
-																<span className="text-sm text-gray-500">
-																	{formatDateShort(response.createdAt)}
-																</span>
-															</div>
-															<p className="text-gray-700">{response.content}</p>
-														</div>
+										<div className="space-y-4">
+											{notes.map((note) => (
+												<div key={note.id} className="rounded-lg border p-4 bg-yellow-50/50 border-yellow-200">
+													<div className="mb-1 flex items-center gap-2">
+														<span className="font-semibold text-gray-900">{note.author.login ?? note.author.email}</span>
+														<Lock className="h-3 w-3 text-yellow-600" />
+														<span className="text-sm text-gray-500">{formatDateShort(note.createdAt)}</span>
 													</div>
+													<p className="text-gray-700">{note.content}</p>
 												</div>
-											))
-										)}
-										<div ref={messagesEndRef} />
-									</div>
-								</div>
-							) : (
-								<div className="space-y-6">
-									<div className="rounded-lg border p-4 bg-yellow-50/50 border-yellow-200">
-										<div className="mb-3 flex items-center gap-2">
-											<Lock className="h-5 w-5 text-yellow-600" />
-											<span className="font-semibold text-gray-900">Ajouter une note interne</span>
-										</div>
-										<textarea
-											value={newNote}
-											onChange={(e) => setNewNote(e.target.value)}
-											placeholder="Ajoutez une note privée pour l'équipe de support..."
-											rows={3}
-											className="w-full resize-none rounded-lg border px-4 py-3 transition-colors
-											bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-yellow-600
-											focus:outline-none focus:ring-2 focus:ring-yellow-500/20"
-										/>
-										<div className="mt-3 flex justify-end">
-											<button
-												onClick={handleSendNote}
-												disabled={!newNote.trim()}
-												className="flex items-center gap-2 rounded-lg bg-yellow-600 px-4 py-2 font-medium text-white transition-colors hover:bg-yellow-700 disabled:cursor-not-allowed disabled:opacity-50"
-											>
-												<Send className="h-4 w-4" />
-												Ajouter la note
-											</button>
+											))}
 										</div>
 									</div>
-
-									<div className="space-y-4">
-										{notes.map((note) => (
-											<div
-												key={note.id}
-												className="rounded-lg border p-4 bg-yellow-50/50 border-yellow-200"
-											>
-												<div className="mb-1 flex items-center gap-2">
-													<span className="font-semibold text-gray-900">{note.author}</span>
-													<Lock className="h-3 w-3 text-yellow-600" />
-													<span className="text-sm text-gray-500">{formatDateShort(note.createdAt)}</span>
-												</div>
-												<p className="text-gray-700">{note.content}</p>
-											</div>
-										))}
-									</div>
-								</div>
+								)
 							)}
 						</div>
 					</div>
@@ -566,11 +663,6 @@ function ChatTicketView() {
 								{isClosedTicket && (
 									<p className="mt-2 text-xs text-red-600">
 										Ticket fermé définitivement: statut non modifiable.
-									</p>
-								)}
-								{isTicketHandledByAnotherAgent && (
-									<p className="mt-2 text-xs text-red-600">
-										Ticket verrouillé: déjà assigné à un autre agent.
 									</p>
 								)}
 							</div>

@@ -1,6 +1,7 @@
 import api from './api';
 import { type ChatMessage, TicketStatus, type Ticket, type User } from '../types';
 import { TicketPriority, type TicketType } from '../types';
+import { type TicketInternalNote } from '../types';
 
 export type RawUser = Omit<User, 'createdAt'> & {
 	createdAt: string | Date;
@@ -19,28 +20,60 @@ export type RawTicket = Omit<Ticket, 'createdAt' | 'updatedAt' | 'author' | 'ass
 	agentUnreadCount?: number;
 };
 
-const normalizeUser = (user: RawUser): User => {
-  // 1. Sécurité de base
-  if (!user) return user;
+const uploadsApiPrefix = '/api/uploads/';
 
-  return {
-    ...user,
-    createdAt: new Date(user.createdAt),
-    // 2. On vérifie que c'est bien un tableau avant de mapper
-    ticketsCreated: Array.isArray(user.ticketsCreated)
-      ? user.ticketsCreated.map((ticket) => {
-          // 3. On normalise le ticket mais on gère l'absence d'author
-          // pour éviter la boucle infinie ou le crash
-          return {
-            ...normalizeTicket(ticket),
-            // On peut forcer l'author à être l'utilisateur actuel 
-            // ou rester indéfini pour stopper la récursion
-            author: user as unknown as User, 
-          };
-        })
-      : [],
-  };
+const isAbsoluteHttpUrl = (value: string) => /^https?:\/\//i.test(value);
+
+const normalizeAvatarUrl = (avatar?: string | null) => {
+    if (!avatar) return undefined;
+
+    const value = avatar.trim();
+    if (!value) return undefined;
+
+    if (isAbsoluteHttpUrl(value)) return value;
+    if (value.startsWith('/assets/')) return value;
+    if (value.startsWith(uploadsApiPrefix)) return value;
+    if (value.startsWith('/uploads/')) return '/api' + value;
+    if (value.startsWith('/')) return value;
+
+    // cas ancien: juste "avatar-xxx.png"
+    return uploadsApiPrefix + value;
 };
+
+const normalizeUser = (user: RawUser): User => {
+	// 1. Sécurité de base
+	if (!user) return user;
+
+	return {
+		...user,
+		avatar: normalizeAvatarUrl(user.avatar),
+		createdAt: new Date(user.createdAt),
+		// 2. On vérifie que c'est bien un tableau avant de mapper
+		ticketsCreated: Array.isArray(user.ticketsCreated)
+			? user.ticketsCreated.map((ticket) => {
+				// 3. On normalise le ticket mais on gère l'absence d'author
+				// pour éviter la boucle infinie ou le crash
+				return {
+					...normalizeTicket(ticket),
+					// On peut forcer l'author à être l'utilisateur actuel 
+					// ou rester indéfini pour stopper la récursion
+					author: user as unknown as User,
+				};
+			})
+			: [],
+	};
+};
+
+export type RawTicketInternalNote = Omit<TicketInternalNote, 'createdAt' | 'author'> & {
+	createdAt: string | Date;
+	author: RawUser;
+};
+
+const normalizeInternalNote = (note: RawTicketInternalNote): TicketInternalNote => ({
+	...note,
+	createdAt: new Date(note.createdAt),
+	author: normalizeUser(note.author),
+});
 
 export const normalizeTicket = (ticket: RawTicket): Ticket => {
 	const assignedTo = ticket.assignedTo ?? ticket.AssignedTo;
@@ -90,6 +123,20 @@ export const fetchUsers = async (): Promise<User[]> => {
 	const rawUsers = (response.data ?? []) as RawUser[];
 
 	return rawUsers.map(normalizeUser);
+};
+
+
+export const getTicketInternalNotes = async (ticketId: number): Promise<TicketInternalNote[]> => {
+	const response = await api.get('/tickets/' + ticketId + '/internal-notes');
+	return (response.data ?? []).map((note: RawTicketInternalNote) => normalizeInternalNote(note));
+};
+
+export const createTicketInternalNote = async (
+	ticketId: number,
+	content: string,
+): Promise<TicketInternalNote> => {
+	const response = await api.post('/tickets/' + ticketId + '/internal-notes', { content });
+	return normalizeInternalNote(response.data as RawTicketInternalNote);
 };
 
 export const updateTicketStatus = async (ticketId: number, status: TicketStatus): Promise<Ticket> => {
