@@ -3,5 +3,16 @@
 	"tikeoDescriptionHero": "Your issues deserve a clear and fast solution. Create your tickets in just a few clicks, track their status in real time, and easily communicate with agents. A modern, smooth support system with no loss of information",
 	"tikeoDescriptionFooter": "Your issues deserve a clear and fast response. Create your tickets in just a few clicks, track their progress in real time, and easily communicate with the team",
 	"createTicket": "Create a ticket",
-	"recentTickets": "My recent tickets"
+	"recentTickets": "My recent tickets",
+	"tickets": "Tickets",
+	"openS": "Open",
+	"inProgress": "In progress",
+	"resolvedS": "Resolved",
+	"closedS": "Closed",
+	"viewAllTickets": "View all tickets",
+	"quickLinks": "Quick Links",
+	"copyright": "Copyright",
+	"privacyPolicy": "Privacy Policy",
+	"termsOfUse": "Terms of Use",
+	"noTickets": "No tickets available"
 }

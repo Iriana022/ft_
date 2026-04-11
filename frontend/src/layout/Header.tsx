@@ -31,6 +31,7 @@ function Header() {
 	);
 
 	const {t} = useTranslation("nav");
+	const {t: tc} = useTranslation("common");
 
 	const handleLogout = () => {
 		localStorage.removeItem('access_token');
@@ -147,7 +148,7 @@ function Header() {
 							onClick={handleLogout}
 							className="hidden md:block text-sm font-medium text-gray-600 hover:text-navy"
 						>
-							Déconnexion
+							{tc("logout")}
 						</button>
 						<Link to='profil' className="hidden md:block">
 							<Avatar src={avatar || avatar1} size="md" />

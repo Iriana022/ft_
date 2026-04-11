@@ -1,5 +1,5 @@
-import React from 'react';
 import {TicketStatus} from '../../types';
+import {useTranslation} from 'react-i18next';
 
 interface TicketStatusIndicatorProps {
 	status: TicketStatus,
@@ -9,18 +9,24 @@ function TicketStatusIndicator(props: TicketStatusIndicatorProps) {
 	let color: string | undefined = undefined;
 	let text: string | undefined = undefined;
 
+	const {t: tc} = useTranslation();
+
 	switch (props.status) {
 		case TicketStatus.OPEN: {
 			color = 'bg-status-open';
-			text = 'Ouvert';
+			text = tc("open");
 		} break;
 		case TicketStatus.IN_PROGRESS: {
 			color = 'bg-status-in-progress';
-			text = 'En cours';
+			text = tc("inProgress");
 		} break;
 		case TicketStatus.RESOLVED: {
 			color = 'bg-status-resolved';
-			text = 'Resolu';
+			text = tc("resolved");
+		} break;
+		case TicketStatus.CLOSED: {
+			color = 'bg-status-closed';
+			text = tc("closed");
 		} break;
 		default:
 			new Error("Unreachable");
@@ -33,7 +39,7 @@ function TicketStatusIndicator(props: TicketStatusIndicatorProps) {
 			<span className="text-sm">
 				{text}
 			</span>
-		</div >
+		</div>
 	);
 }
 

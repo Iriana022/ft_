@@ -3,5 +3,16 @@
 	"tikeoDescriptionHero": "Vos problèmes méritent une solution claire et rapide. Créez vos tickets en quelques clics, suivez leur statut en direct, échangez facilement avec les agents. Une gestion de support moderne, fluide et sans perte d’information",
 	"tikeoDescriptionFooter": "Vos problèmes méritent une réponse claire et rapide. Créez vos tickets en quelques clics, suivez leur avancement en temps réel et échangez facilement avec l’équipe",
 	"createTicket": "Créer un ticket",
-	"recentTickets": "Mes tickets récents"
+	"recentTickets": "Mes tickets récents",
+	"tickets": "Tickets",
+	"openS": "Ouverts",
+	"inProgress": "En cours",
+	"resolvedS": "Résolus",
+	"closedS": "Fermés",
+	"viewAllTickets": "Voir tous les tickets",
+	"quickLinks": "Liens rapides",
+	"copyright": "Copyright",
+	"privacyPolicy": "Politique de confidentialité",
+	"termsOfUse": "Conditions générales d’utilisation",
+	"noTickets": "Aucun ticket disponible"
 }

@@ -1,5 +1,5 @@
-import React from 'react';
 import {TicketStatus, type TicketType} from '../../types';
+import {useTranslation} from 'react-i18next';
 
 interface StatItemProps {
 	title: string,
@@ -48,16 +48,18 @@ function TicketsStat(props: TicketsStatProps) {
 	const resolvedTicketsCount = tickets.filter(t => t.status === TicketStatus.RESOLVED).length;
 	const closedTicketsCount = tickets.filter(t => t.status === TicketStatus.CLOSED).length;
 
+	const {t} = useTranslation("client_home");
+
 	return (
 		<div className="bg-white/40 w-full shadow rounded-md p-5">
 			<h3 className="font-semibold text-center text-navy text-xl mb-5">
-				{tickets.length} Tickets
+				{tickets.length} {t("tickets")}
 			</h3>
 			<div className="grid grid-cols-2 gap-5">
-				<StatItem title="Ouverts" count={openTicketsCount} color="status-open" />
-				<StatItem title="En cours" count={inProgressTicketsCount} color="status-in-progress" />
-				<StatItem title="Resolus" count={resolvedTicketsCount} color="status-resolved" />
-				<StatItem title="Fermes" count={closedTicketsCount} color="status-closed" />
+				<StatItem title={t("openS")} count={openTicketsCount} color="status-open" />
+				<StatItem title={t("inProgress")} count={inProgressTicketsCount} color="status-in-progress" />
+				<StatItem title={t("resolvedS")} count={resolvedTicketsCount} color="status-resolved" />
+				<StatItem title={t("closedS")} count={closedTicketsCount} color="status-closed" />
 			</div>
 		</div>
 	);
