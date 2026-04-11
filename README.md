@@ -128,13 +128,12 @@ The following modules have been successfully implemented:
   - Real-time updates across clients.
   - Handle connection/disconnection gracefully.
   - Efficient message broadcasting.
-* **Major:** A public API to teract with the database with a secured API key, rate
+* **Major:** A public API to interact with the database with a secured API key, rate
 limiting, documentation, and at least 5 endpoints: -> **2 points**
   - GET /api/{something}
   - POST /api/{something}
   - PUT /api/{something} (sahaza)
   - DELETE /api/{something}
-  - PATCH /api/{something}
 * **Major:** Use an ORM for the database. -> **2 points**
 * **Minor:** A complete notification system for all creation, update, and deletion actions. -> **1 point** (sahaza)
 * **Minor:** Implement advanced search functionality with filters, sorting, and pagination. -> **1 point** (mihangy)
