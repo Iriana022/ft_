@@ -1,4 +1,4 @@
-import { Controller, Body, Post, Get, UseGuards, Req, Patch, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Body, Post, Get, UseGuards, Req, Patch, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { TicketsService } from './tickets.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateTicketDto } from './dto/create-ticket.dto';
@@ -102,4 +102,15 @@ export class TicketsController {
             req.user.role as any,
         );
     }
+
+    @Get('stats/resolution-history')
+    @UseGuards(JwtAuthGuard)
+    async getResolutionHistory(
+        @Query('days') days: string | undefined,
+        @Req() req: { user: { role: 'CLIENT' | 'AGENT' | 'ADMIN' } },
+    ) {
+        const parsedDays = days ? Number(days) : 7;
+        return this.ticketsService.getTicketResolutionHistory(parsedDays, req.user.role as any);
+    }
+    
 }
