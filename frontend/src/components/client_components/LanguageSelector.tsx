@@ -49,7 +49,7 @@ function LanguageSelector() {
 		}
 		document.addEventListener("mousedown", handleClikcOutside);
 		return () => {
-			document.addEventListener("mousedown", handleClikcOutside);
+			document.removeEventListener("mousedown", handleClikcOutside);
 		}
 	}, [])
 

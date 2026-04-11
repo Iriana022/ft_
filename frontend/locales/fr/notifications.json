@@ -1,0 +1,9 @@
+{
+  "title": "Notifications",
+  "empty": "Aucune notification",
+  "justNow": "À l'instant",
+  "minutesAgo": "Il y a {{count}} min",
+  "hoursAgo": "Il y a {{count}} h",
+  "daysAgo": "Il y a {{count}} j",
+  "newMessageOnTicket": "Nouveau message sur le ticket #{{ticketId}}"
+}

@@ -5,8 +5,10 @@ import { TicketList } from './TicketList';
 import { TicketStatus, UserRole, type Ticket as TicketType } from '../../types';
 import { fetchTickets, getTicketStats, normalizeTicket, sortTicketsForAgent, type RawTicket } from '../../services/tickets';
 import { getSocket } from '../../services/singleton';
+import {useTranslation} from 'react-i18next';
 
 export function Dashboard() {
+	const {t} = useTranslation('agent');
 	const [tickets, setTickets] = useState<TicketType[]>([]);
 	const [notification, setNotification] = useState<string | null>(null);
 
@@ -34,7 +36,7 @@ export function Dashboard() {
 			const ticket = normalizeTicket(payload);
 			if (ticket.author.role === UserRole.CLIENT) {
 				setTickets((prev) => sortTicketsForAgent([ticket, ...prev]));
-				setNotification("New ticket incoming : " + ticket.title);
+				setNotification(t('newTicketIncoming', {title: ticket.title}));
 				if (notificationTimer) clearTimeout(notificationTimer);
 				notificationTimer = setTimeout(() => setNotification(null), 5000);
 			}
@@ -111,8 +113,8 @@ export function Dashboard() {
 			<div className="border-b px-8 py-6 bg-white border-gray-200">
 				<div className="flex items-center justify-between">
 					<div>
-						<h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-						<p className="text-gray-600 mt-1">Vue d'ensemble de vos tickets de support</p>
+						<h1 className="text-2xl font-bold text-gray-900">{t('dashboardTitle')}</h1>
+						<p className="text-gray-600 mt-1">{t('dashboardSubtitle')}</p>
 					</div>
 					<div className="flex items-center gap-3">
 						{/* ThemeToggle removed since dark mode not used */}
@@ -125,25 +127,25 @@ export function Dashboard() {
 				{/* Stats Cards */}
 				<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
 					<StatCard
-						title="Total des tickets"
+						title={t('totalTickets')}
 						value={stats.total}
 						icon={Ticket}
 						color="blue"
 					/>
 					<StatCard
-						title="Tickets ouverts"
+						title={t('openTickets')}
 						value={stats.open}
 						icon={AlertCircle}
 						color="red"
 					/>
 					<StatCard
-						title="Tickets En cours"
+						title={t('inProgressTickets')}
 						value={stats.inProgress}
 						icon={Clock}
 						color="orange"
 					/>
 					<StatCard
-						title="Tickets Resolus"
+						title={t('resolvedTickets')}
 						value={stats.resolved}
 						icon={CheckCircle2}
 						color="green"

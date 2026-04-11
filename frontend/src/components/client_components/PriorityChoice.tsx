@@ -1,4 +1,5 @@
 import {TicketPriority} from '../../types';
+import {useTranslation} from 'react-i18next';
 
 interface PriorityChoiceProps {
 	priority: TicketPriority,
@@ -7,6 +8,8 @@ interface PriorityChoiceProps {
 }
 
 function PriorityChoice(props: PriorityChoiceProps) {
+	const {t} = useTranslation('tickets');
+
 	let text: string | undefined = undefined;
 	let textColor: string | undefined = undefined;
 	let bgColor: string | undefined = undefined;
@@ -14,28 +17,28 @@ function PriorityChoice(props: PriorityChoiceProps) {
 
 	switch (props.priority) {
 		case TicketPriority.LOW: {
-			text = "Basse";
+			text = t('priorityLow');
 			bgColor = "bg-[#E6F4EA]";
 			textColor = "text-[#1B5E20]";
 			borderColor = "border-[#A5D6A7]";
 		} break;
 
 		case TicketPriority.MEDIUM: {
-			text = "Moyenne";
+			text = t('priorityMedium');
 			bgColor = "bg-[#FFF4E5]";
 			textColor = "text-[#8A4B00]";
 			borderColor = "border-[#FFCC80]";
 		} break;
 
 		case TicketPriority.HIGH: {
-			text = "Haute";
+			text = t('priorityHigh');
 			bgColor = "bg-[#FDECEA]";
 			textColor = "text-[#B71C1C]";
 			borderColor = "border-[#EF9A9A]";
 		} break;
 
 		case TicketPriority.URGENT: {
-			text = "Urgent";
+			text = t('priorityUrgent');
 			bgColor = "bg-[#D32F2F]/80";
 			textColor = "text-[#FFFFFF]";
 			borderColor = "border-[#B71C1C]";

@@ -24,6 +24,7 @@ export type TicketFilterOption = {
 }
 
 interface TicketFilterProps {
+	label: string,
 	list: TicketFilterOption[];
 	currentFilterElement: string,
 	handleSelect: (e: React.MouseEvent, element: StatusFilter | PriorityFilter) => void;

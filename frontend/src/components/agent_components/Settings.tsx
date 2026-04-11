@@ -1,6 +1,7 @@
 import { Camera, Eye, EyeOff, Globe, Lock, Mail, Save, Shield, User } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { getMyProfile, updateMyProfile, uploadMyAvatar } from '../../services/profile';
+import {useTranslation} from 'react-i18next';
 
 type SectionId = 'profile' | 'account' | 'security' | 'language';
 
@@ -22,14 +23,8 @@ const profileDefaults: ProfileForm = {
 	role: '',
 };
 
-const sections: Array<{ id: SectionId; label: string; icon: typeof User }> = [
-	{ id: 'profile', label: 'Profil', icon: User },
-	{ id: 'account', label: 'Compte', icon: Mail },
-	{ id: 'security', label: 'Sécurité', icon: Shield },
-	{ id: 'language', label: 'Langue', icon: Globe },
-];
-
 function Settings() {
+	const {t, i18n} = useTranslation('profile');
 	const [activeSection, setActiveSection] = useState<SectionId>('profile');
 	const [profile, setProfile] = useState<ProfileForm>(profileDefaults);
 	const [loadingProfile, setLoadingProfile] = useState(true);
@@ -40,7 +35,14 @@ function Settings() {
 	const [showNewPassword, setShowNewPassword] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
-	const [language, setLanguage] = useState('fr');
+	const [language, setLanguage] = useState(localStorage.getItem('lang') || i18n.language || 'fr');
+	const sections: Array<{ id: SectionId; label: string; icon: typeof User }> = [
+		{id: 'profile', label: t('sectionProfile'), icon: User},
+		{id: 'account', label: t('sectionAccount'), icon: Mail},
+		{id: 'security', label: t('sectionSecurity'), icon: Shield},
+		{id: 'language', label: t('sectionLanguage'), icon: Globe},
+	];
+
 
 	const [securityForm, setSecurityForm] = useState({
 		currentPassword: '',
@@ -68,7 +70,7 @@ function Settings() {
 					role: me?.role ?? '',
 				});
 			} catch (e: any) {
-				setError(e?.response?.data?.message ?? 'Impossible de charger le profil');
+				setError(e?.response?.data?.message ?? t('loadFailed'));
 			} finally {
 				setLoadingProfile(false);
 			}
@@ -104,9 +106,9 @@ function Settings() {
 				login: profile.login,
 				email: profile.email,
 			});
-			setFeedback('Profil mis à jour avec succès');
+			setFeedback(t('updatedSuccess'));
 		} catch (e: any) {
-			setError(getErrorMessage(e, 'Échec de la mise à jour'));
+			setError(getErrorMessage(e, t('updateFailed')));
 		} finally {
 			setSavingProfile(false);
 		}
@@ -114,7 +116,7 @@ function Settings() {
 
 	const handleSaveLocalSection = (section: string) => {
 		clearMessages();
-		setFeedback(`Préférences ${section} enregistrées localement`);
+		setFeedback(t('preferencesSaved', {section}));
 	};
 
 	const handleAvatarClick = () => {
@@ -140,9 +142,9 @@ function Settings() {
 				);
 			}
 
-			setFeedback('Photo de profil mise à jour');
+			setFeedback(t('avatarUpdated'));
 		} catch (e: any) {
-			setError(getErrorMessage(e, 'Échec upload avatar'));
+			setError(getErrorMessage(e, t('avatarUploadFailed')));
 		} finally {
 			event.target.value = '';
 		}
@@ -151,8 +153,8 @@ function Settings() {
 	return (
 		<div className="flex-1 overflow-auto bg-gray-50">
 			<div className="border-b px-8 py-6 bg-white border-gray-200">
-				<h1 className="text-2xl font-bold text-gray-900">Paramètres</h1>
-				<p className="text-gray-600 mt-1">Gérez les paramètres de votre dashboard</p>
+				<h1 className="text-2xl font-bold text-gray-900">{t('settingsTitle')}</h1>
+				<p className="text-gray-600 mt-1">{t('settingsSubtitle')}</p>
 			</div>
 
 			<div className="flex gap-6 p-8">
@@ -184,10 +186,10 @@ function Settings() {
 
 					{activeSection === 'profile' && (
 						<div className="rounded-xl border p-6 bg-white border-gray-200">
-							<h2 className="text-xl font-bold mb-6 text-gray-900">Informations du profil</h2>
+							<h2 className="text-xl font-bold mb-6 text-gray-900">{t('profileInfoTitle')}</h2>
 
 							{loadingProfile ? (
-								<p className="text-gray-500">Chargement du profil...</p>
+								<p className="text-gray-500">{t('loadingProfile')}</p>
 							) : (
 								<>
 									<div className="mb-6 flex items-center gap-4">
@@ -198,7 +200,7 @@ function Settings() {
 											className="px-4 py-2 rounded-lg border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
 										>
 											<Camera className="w-4 h-4 inline-block mr-2" />
-											Changer la photo
+											{t('changePhoto')}
 										</button>
 										<input
 											ref={fileInputRef}
@@ -211,7 +213,7 @@ function Settings() {
 
 									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 										<div>
-											<label className="block text-sm font-medium mb-2 text-gray-700">Prénom</label>
+											<label className="block text-sm font-medium mb-2 text-gray-700">{t('firstName')}</label>
 											<input
 												type="text"
 												value={profile.firstName}
@@ -220,7 +222,7 @@ function Settings() {
 											/>
 										</div>
 										<div>
-											<label className="block text-sm font-medium mb-2 text-gray-700">Nom</label>
+											<label className="block text-sm font-medium mb-2 text-gray-700">{t('lastName')}</label>
 											<input
 												type="text"
 												value={profile.lastName}
@@ -229,7 +231,7 @@ function Settings() {
 											/>
 										</div>
 										<div>
-											<label className="block text-sm font-medium mb-2 text-gray-700">Nom d'utilisateur</label>
+											<label className="block text-sm font-medium mb-2 text-gray-700">{t('username')}</label>
 											<input
 												type="text"
 												value={profile.login}
@@ -238,7 +240,7 @@ function Settings() {
 											/>
 										</div>
 										<div>
-											<label className="block text-sm font-medium mb-2 text-gray-700">Email</label>
+											<label className="block text-sm font-medium mb-2 text-gray-700">{t('email')}</label>
 											<input
 												type="email"
 												value={profile.email}
@@ -256,7 +258,7 @@ function Settings() {
 											className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium flex items-center gap-2 disabled:opacity-60"
 										>
 											<Save className="w-4 h-4" />
-											{savingProfile ? 'Enregistrement...' : 'Enregistrer'}
+											{savingProfile ? t('saving') : t('save')}
 										</button>
 									</div>
 								</>
@@ -266,22 +268,22 @@ function Settings() {
 
 					{activeSection === 'account' && (
 						<div className="rounded-xl border p-6 bg-white border-gray-200 space-y-6">
-							<h2 className="text-xl font-bold text-gray-900">Paramètres du compte</h2>
+							<h2 className="text-xl font-bold text-gray-900">{t('accountSettingsTitle')}</h2>
 							<div>
-								<label className="block text-sm font-medium mb-2 text-gray-700">Adresse email</label>
+								<label className="block text-sm font-medium mb-2 text-gray-700">{t('emailAddress')}</label>
 								<input
 									type="email"
 									value={profile.email}
 									onChange={(e) => handleProfileChange('email', e.target.value)}
 									className="w-full px-4 py-2 rounded-lg border bg-white border-gray-300 text-gray-900 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
 								/>
-								<p className="text-sm mt-2 text-gray-600">Utilisée pour la connexion et les notifications.</p>
+								<p className="text-sm mt-2 text-gray-600">{t('emailUsageHint')}</p>
 							</div>
 
 							<div className="rounded-lg border border-gray-200 bg-gray-50 p-4 flex items-start justify-between">
 								<div>
-									<h3 className="font-semibold text-gray-900 mb-1">Rôle du compte</h3>
-									<p className="text-sm text-gray-600">Vous êtes actuellement connecté comme utilisateur support.</p>
+									<h3 className="font-semibold text-gray-900 mb-1">{t('accountRoleTitle')}</h3>
+									<p className="text-sm text-gray-600">{t('accountRoleHint')}</p>
 								</div>
 								<span className="px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-700">
 									{profile.role || 'AGENT'}
@@ -296,7 +298,7 @@ function Settings() {
 									className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium flex items-center gap-2 disabled:opacity-60"
 								>
 									<Save className="w-4 h-4" />
-									{savingProfile ? 'Enregistrement...' : 'Enregistrer les modifications'}
+									{savingProfile ? t('saving') : t('saveChanges')}
 								</button>
 							</div>
 						</div>
@@ -304,10 +306,10 @@ function Settings() {
 
 					{activeSection === 'security' && (
 						<div className="rounded-xl border p-6 bg-white border-gray-200 space-y-6">
-							<h2 className="text-xl font-bold text-gray-900">Sécurité</h2>
+							<h2 className="text-xl font-bold text-gray-900">{t('securityTitle')}</h2>
 
 							<div>
-								<label className="block text-sm font-medium mb-2 text-gray-700">Mot de passe actuel</label>
+								<label className="block text-sm font-medium mb-2 text-gray-700">{t('currentPassword')}</label>
 								<div className="relative">
 									<input
 										type={showCurrentPassword ? 'text' : 'password'}
@@ -326,7 +328,7 @@ function Settings() {
 							</div>
 
 							<div>
-								<label className="block text-sm font-medium mb-2 text-gray-700">Nouveau mot de passe</label>
+								<label className="block text-sm font-medium mb-2 text-gray-700">{t('newPassword')}</label>
 								<div className="relative">
 									<input
 										type={showNewPassword ? 'text' : 'password'}
@@ -345,7 +347,7 @@ function Settings() {
 							</div>
 
 							<div>
-								<label className="block text-sm font-medium mb-2 text-gray-700">Confirmer le nouveau mot de passe</label>
+								<label className="block text-sm font-medium mb-2 text-gray-700">{t('confirmNewPassword')}</label>
 								<input
 									type="password"
 									value={securityForm.confirmPassword}
@@ -358,17 +360,17 @@ function Settings() {
 								<div className="flex items-start gap-3">
 									<Shield className="w-5 h-5 mt-0.5 text-blue-600" />
 									<div className="flex-1">
-										<h4 className="font-semibold text-gray-900 mb-1">Authentification à deux facteurs</h4>
-										<p className="text-sm text-gray-600 mb-3">Ajoutez une couche de sécurité supplémentaire.</p>
+										<h4 className="font-semibold text-gray-900 mb-1">{t('twoFactorTitle')}</h4>
+										<p className="text-sm text-gray-600 mb-3">{t('twoFactorHint')}</p>
 										<button
 											type="button"
 											onClick={() => {
 												setSecurityForm((prev) => ({ ...prev, twoFactorEnabled: !prev.twoFactorEnabled }));
-												handleSaveLocalSection('sécurité');
+												handleSaveLocalSection(t('sectionSecurity'));
 											}}
 											className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm"
 										>
-											{securityForm.twoFactorEnabled ? 'Désactiver 2FA' : 'Activer 2FA'}
+											{securityForm.twoFactorEnabled ? t('disable2fa') : t('enable2fa')}
 										</button>
 									</div>
 								</div>
@@ -377,11 +379,11 @@ function Settings() {
 							<div className="flex justify-end">
 								<button
 									type="button"
-									onClick={() => handleSaveLocalSection('sécurité')}
+									onClick={() => handleSaveLocalSection(t('sectionSecurity'))}
 									className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium flex items-center gap-2"
 								>
 									<Lock className="w-4 h-4" />
-									Mettre à jour le mot de passe
+									{t('updatePassword')}
 								</button>
 							</div>
 						</div>
@@ -389,28 +391,32 @@ function Settings() {
 
 					{activeSection === 'language' && (
 						<div className="rounded-xl border p-6 bg-white border-gray-200 space-y-4">
-							<h2 className="text-xl font-bold text-gray-900">Langue</h2>
+							<h2 className="text-xl font-bold text-gray-900">{t('languageTitle')}</h2>
 							<div>
-								<label className="block text-sm font-medium mb-2 text-gray-700">Langue</label>
+								<label className="block text-sm font-medium mb-2 text-gray-700">{t('languageLabel')}</label>
 								<select
 									value={language}
-									onChange={(e) => setLanguage(e.target.value)}
+									onChange={(e) => {
+										const nextLang = e.target.value;
+										setLanguage(nextLang);
+										i18n.changeLanguage(nextLang);
+										localStorage.setItem('lang', nextLang);
+									}}
 									className="w-full px-4 py-2 rounded-lg border bg-white border-gray-300"
 								>
 									<option value="fr">Français</option>
 									<option value="en">English</option>
 									<option value="es">Español</option>
-									<option value="de">Deutsch</option>
 								</select>
 							</div>
 							<div className="flex justify-end">
 								<button
 									type="button"
-									onClick={() => handleSaveLocalSection('langue')}
+									onClick={() => handleSaveLocalSection(t('sectionLanguage'))}
 									className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium flex items-center gap-2"
 								>
 									<Save className="w-4 h-4" />
-									Enregistrer les préférences
+									{t('savePreferences')}
 								</button>
 							</div>
 						</div>

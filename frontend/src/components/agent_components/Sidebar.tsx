@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { UserRole } from '../../types';
 import TikeoLogo from '../client_components/TikeoLogo';
 import { getMyProfile } from '../../services/profile';
+import {useTranslation} from 'react-i18next';
 
 const DEFAULT_AGENT_AVATAR = '/assets/avatars/avatar2.png';
 
@@ -12,9 +13,10 @@ interface SidebarProps {
 }
 
 export function Sidebar({ currentRole }: SidebarProps) {
+	const {t} = useTranslation('agent');
 	const navigate = useNavigate();
 	const location = useLocation()
-	const username = localStorage.getItem('username') || 'Utilisateur';
+	const username = localStorage.getItem('username') || t('defaultUser');
 
 	const [avatar, setAvatar] = useState(
 		localStorage.getItem('user_avatar') || DEFAULT_AGENT_AVATAR
@@ -68,11 +70,11 @@ export function Sidebar({ currentRole }: SidebarProps) {
 	};
 
 	const menuItems = [
-		{ id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT] },
-		{ id: 'tickets', label: 'Tickets', icon: Ticket, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT] },
-		{ id: 'users', label: 'Utilisateurs', icon: Users, roles: [UserRole.ADMIN] },
-		{ id: 'notifications', label: 'Notifications', icon: Bell, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT] },
-		{ id: 'settings', label: 'Paramètres', icon: Settings, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT] }
+		{ id: 'dashboard', label: t('sidebarDashboard'), icon: LayoutDashboard, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT] },
+		{ id: 'tickets', label: t('sidebarTickets'), icon: Ticket, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT] },
+		{ id: 'users', label: t('sidebarUsers'), icon: Users, roles: [UserRole.ADMIN] },
+		{ id: 'notifications', label: t('sidebarNotifications'), icon: Bell, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT] },
+		{ id: 'settings', label: t('sidebarSettings'), icon: Settings, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT] }
 	];
 
 	const filteredItems = menuItems.filter(item => item.roles.includes(currentRole));
@@ -129,7 +131,7 @@ export function Sidebar({ currentRole }: SidebarProps) {
 					onClick={handleLogout}
 					className="w-full flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors text-gray-700 hover:bg-gray-48">
 					<LogOut className="w-4 h-4" />
-					<span>Déconnexion</span>
+					<span>{t('logout')}</span>
 				</button>
 			</div >
 		</aside >

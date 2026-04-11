@@ -7,24 +7,27 @@ import CreateTicketView from '../../components/client_components/CreateTicketVie
 import {fetchMyTicketsForClientView} from '../../services/tickets';
 import {type TicketType, TicketPriority, TicketStatus} from '../../types';
 import {getSocket} from '../../services/singleton';
+import {useTranslation} from 'react-i18next';
 
 const noneTickets = '/assets/none_tickets.png';
 
 function ClientMyTickets() {
+	const {t} = useTranslation('tickets');
+
 	const status = [
-		{label: "Tous", value: null},
-		{label: "Ouverts", value: TicketStatus.OPEN},
-		{label: "En cours", value: TicketStatus.IN_PROGRESS},
-		{label: "Résolus", value: TicketStatus.RESOLVED},
-		{label: "Fermés", value: TicketStatus.CLOSED},
+		{label: t('all'), value: null},
+		{label: t('statusOpenPlural'), value: TicketStatus.OPEN},
+		{label: t('statusInProgress'), value: TicketStatus.IN_PROGRESS},
+		{label: t('statusResolvedPlural'), value: TicketStatus.RESOLVED},
+		{label: t('statusClosedPlural'), value: TicketStatus.CLOSED},
 	];
 
 	const priorities = [
-		{label: "Tous", value: null},
-		{label: "Basses", value: TicketPriority.LOW},
-		{label: "Moyennes", value: TicketPriority.MEDIUM},
-		{label: "Hautes", value: TicketPriority.HIGH},
-		{label: "Urgentes", value: TicketPriority.URGENT},
+		{label: t('all'), value: null},
+		{label: t('priorityLowPlural'), value: TicketPriority.LOW},
+		{label: t('priorityMediumPlural'), value: TicketPriority.MEDIUM},
+		{label: t('priorityHighPlural'), value: TicketPriority.HIGH},
+		{label: t('priorityUrgentPlural'), value: TicketPriority.URGENT},
 	];
 
 	const [currentFilterStatus, setCurrentFilterStatus] = useState(status[0].label);
@@ -98,34 +101,34 @@ function ClientMyTickets() {
 				<ContainerComp>
 					<div className="mb-7 flex items-center justify-between gap-3">
 						<h1 className="font-poppins text-navy font-semibold">
-							Mes Tickets
+							{t('myTicketsTitle')}
 						</h1>
 						<button
 							type="button"
 							onClick={() => setIsCreateTicketOpen(true)}
 							className="btn bg-navy outline-none border-none text-white shadow-none"
 						>
-							Créer un ticket
+							{t('createTicket')}
 						</button>
 					</div >
 					<div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-10">
 						<SearchInput />
-						<TicketFilter label="Status" list={status} currentFilterElement={currentFilterStatus} handleSelect={handleSelectStatus} />
-						<TicketFilter label="Priorite" list={priorities} currentFilterElement={currentFilterPriority} handleSelect={handleSelectPriority} />
+						<TicketFilter label={t('filterStatus')} list={status} currentFilterElement={currentFilterStatus} handleSelect={handleSelectStatus} />
+						<TicketFilter label={t('filterPriority')} list={priorities} currentFilterElement={currentFilterPriority} handleSelect={handleSelectPriority} />
 					</div>
 					{
 						isLoading ? (
-							<p className="text-sm text-gray-500">Chargement des tickets...</p>
+							<p className="text-sm text-gray-500">{t('loadingTickets')}</p>
 						) : (
 							<div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
 								{tickets.length === 0 ? (
 									<div className="col-span-full flex flex-col items-center mt-14 justify-center py-10 text-gray-400">
 										<img
 											src={noneTickets}
-											alt="Aucun ticket"
+											alt={t('noTickets')}
 											className="w-42 h-42 mb-4"
 										/>
-										<p>Aucun ticket disponible</p>
+										<p>{t('noTickets')}</p>
 									</div>
 								) : (
 									tickets.map((t, i) => <Ticket ticket={t} key={i} />)

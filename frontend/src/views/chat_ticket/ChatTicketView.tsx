@@ -27,6 +27,7 @@ import {
 } from '../../services/tickets';
 import { getSocket } from '../../services/singleton';
 import { getUserIdFromToken } from '../../services/auth';
+import {useTranslation} from 'react-i18next';
 
 type LocationState = {
 	ticket?: Ticket;
@@ -43,22 +44,22 @@ const getResponseAvatar = (response: ChatMessage) => {
 
 const statusConfig = {
 	[TicketStatus.OPEN]: {
-		label: 'Ouvert',
+		labelKey: 'statusOpen',
 		color: 'bg-red-100 text-red-700 border-red-200',
 		icon: AlertCircle,
 	},
 	[TicketStatus.IN_PROGRESS]: {
-		label: 'En cours',
+		labelKey: 'statusInProgress',
 		color: 'bg-orange-100 text-orange-700 border-orange-200',
 		icon: Clock,
 	},
 	[TicketStatus.RESOLVED]: {
-		label: 'Résolu',
+		labelKey: 'statusResolved',
 		color: 'bg-green-100 text-green-700 border-green-200',
 		icon: CheckCircle2,
 	},
 	[TicketStatus.CLOSED]: {
-		label: 'Fermé',
+		labelKey: 'statusClosed',
 		color: 'bg-gray-100 text-gray-700 border-gray-200',
 		icon: CheckCircle2,
 	},
@@ -67,13 +68,14 @@ const statusConfig = {
 const DEFAULT_AGENT_AVATAR = '/assets/avatars/avatar2.png';
 
 const priorityConfig = {
-	[TicketPriority.LOW]: { label: 'Basse', color: 'text-green-600', bg: 'bg-green-50' },
-	[TicketPriority.MEDIUM]: { label: 'Moyenne', color: 'text-blue-600', bg: 'bg-blue-50' },
-	[TicketPriority.HIGH]: { label: 'Haute', color: 'text-orange-600', bg: 'bg-orange-50' },
-	[TicketPriority.URGENT]: { label: 'Urgent', color: 'text-red-600', bg: 'bg-red-50' },
+	[TicketPriority.LOW]: { labelKey: 'priorityLow', color: 'text-green-600', bg: 'bg-green-50' },
+	[TicketPriority.MEDIUM]: { labelKey: 'priorityMedium', color: 'text-blue-600', bg: 'bg-blue-50' },
+	[TicketPriority.HIGH]: { labelKey: 'priorityHigh', color: 'text-orange-600', bg: 'bg-orange-50' },
+	[TicketPriority.URGENT]: { labelKey: 'priorityUrgent', color: 'text-red-600', bg: 'bg-red-50' },
 };
 
 function ChatTicketView() {
+	const {t, i18n} = useTranslation('chat');
 	const navigate = useNavigate();
 	const location = useLocation() as { state?: LocationState };
 	const [searchParams] = useSearchParams();
@@ -85,8 +87,8 @@ function ChatTicketView() {
 	const fallbackId = Number(searchParams.get('ticketId') ?? '0') || 0;
 	const fallbackTicket: Ticket = {
 		id: fallbackId,
-		title: 'Ticket',
-		description: 'Aucune description transmise.',
+		title: t('ticketFallbackTitle'),
+		description: t('ticketFallbackDescription'),
 		status: TicketStatus.OPEN,
 		priority: TicketPriority.MEDIUM,
 		createdAt: new Date(),
@@ -337,7 +339,7 @@ function ChatTicketView() {
 
 	const formatDate = (dateValue: Date | string) => {
 		const date = new Date(dateValue);
-		return new Intl.DateTimeFormat('fr-FR', {
+		return new Intl.DateTimeFormat(i18n.language, {
 			day: 'numeric',
 			month: 'long',
 			year: 'numeric',
@@ -348,7 +350,7 @@ function ChatTicketView() {
 
 	const formatDateShort = (dateValue: Date | string) => {
 		const date = new Date(dateValue);
-		return new Intl.DateTimeFormat('fr-FR', {
+		return new Intl.DateTimeFormat(i18n.language, {
 			day: 'numeric',
 			month: 'short',
 			hour: '2-digit',
@@ -413,14 +415,14 @@ function ChatTicketView() {
 						className="flex items-center gap-2 rounded-lg px-3 py-2 transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"
 					>
 						<ArrowLeft className="h-5 w-5" />
-						<span className="font-medium">Retour</span>
+						<span className="font-medium">{t('back')}</span>
 					</button >
 					<div className="flex items-center gap-2">
 						<Link
 							to="/agent"
 							className="rounded-lg border px-3 py-2 text-sm font-medium transition-colors border-gray-300 text-gray-700 hover:bg-gray-100"
 						>
-							Dashboard
+							{t('dashboard')}
 						</Link>
 					</div>
 				</div>
@@ -429,10 +431,10 @@ function ChatTicketView() {
 					<div className="flex-1">
 						<div className="mb-2 flex items-center gap-3">
 							<p className="text-xs text-gray-600">
-								Statut: <span className="font-medium">{statusConfig[ticket.status].label}</span>
+								{t('status')}: <span className="font-medium">{t(statusConfig[ticket.status].labelKey)}</span>
 							</p>
 							<p className="text-xs text-gray-600">
-								Type: <span className={`font-medium ${priorityConfig[ticket.priority].color}`}>{priorityConfig[ticket.priority].label}</span>
+								{t('type')}: <span className={`font-medium ${priorityConfig[ticket.priority].color}`}>{t(priorityConfig[ticket.priority].labelKey)}</span>
 							</p>
 						</div>
 						<h1 className="mb-2 text-2xl font-bold text-gray-900">{ticket.title}</h1>
@@ -440,7 +442,7 @@ function ChatTicketView() {
 							<div className="flex items-center gap-2">
 								<User className="h-4 w-4" />
 								<span>
-									Créé par <strong>{ticket.author.login || 'Unknown'}</strong>
+									{t('createdBy')} <strong>{ticket.author.login || t('unknownUser')}</strong>
 								</span>
 							</div>
 							<div className="flex items-center gap-1">
@@ -455,7 +457,7 @@ function ChatTicketView() {
 			<div className="flex flex-col gap-4 p-4 md:flex-row md:p-6">
 				<div className="flex-1 space-y-4">
 					<div className="rounded-xl border p-6 bg-white border-gray-200">
-						<h2 className="mb-4 text-lg font-bold text-gray-900">Description</h2>
+						<h2 className="mb-4 text-lg font-bold text-gray-900">{t('description')}</h2>
 						<p className="text-gray-700">{ticket.description}</p>
 					</div>
 
@@ -469,7 +471,7 @@ function ChatTicketView() {
 									}`}
 							>
 								<MessagesSquare className="h-5 w-5" />
-								Reponses ({responses.length})
+								{t('responses')} ({responses.length})
 							</button>
 							<button
 								onClick={() => setActiveTab('notes')}
@@ -479,7 +481,7 @@ function ChatTicketView() {
 									}`}
 							>
 								<Lock className="h-5 w-5" />
-								Notes internes ({notes.length})
+								{t('internalNotes')} ({notes.length})
 							</button>
 						</div>
 
@@ -487,23 +489,23 @@ function ChatTicketView() {
 							{activeTab === 'responses' ? (
 								isTicketHandledByAnotherAgent ? (
 									<div className="rounded-lg p-3 text-center text-sm bg-red-50 text-red-700">
-										Ce ticket est deja pris en charge par un autre agent.
+										{t('ticketHandledByAnotherAgent')}
 									</div>
 								) : (
 									<div className="space-y-6">
 										{ticket.status === TicketStatus.OPEN && (
 											<div className="rounded-lg p-3 text-center text-sm bg-yellow-50 text-yellow-700">
-												Le canal de messagerie s'ouvrira quand le statut sera "En cours".
+												{t('messagingOpensWhenInProgress')}
 											</div>
 										)}
 										{ticket.status === TicketStatus.RESOLVED && (
 											<div className="rounded-lg p-3 text-center text-sm bg-blue-50 text-blue-700">
-												Ticket resolu! veuillez modifier le ticket en ferme si le client a approuve.
+												{t('resolvedHint')}
 											</div>
 										)}
 										{ticket.status === TicketStatus.CLOSED && (
 											<div className="rounded-lg p-3 text-center text-sm bg-gray-100 text-gray-700">
-												Ticket ferme.
+												{t('closedHint')}
 											</div>
 										)}
 
@@ -511,12 +513,12 @@ function ChatTicketView() {
 											<div className="rounded-lg border p-4 bg-gray-50 border-gray-200">
 												<div className="mb-3 flex items-center gap-2">
 													<MessageSquare className="h-5 w-5 text-indigo-600" />
-													<span className="font-semibold text-gray-900">Repondre au client</span>
+													<span className="font-semibold text-gray-900">{t('replyToClient')}</span>
 												</div>
 												<textarea
 													value={newResponse}
 													onChange={(e) => setNewResponse(e.target.value)}
-													placeholder="Ecrivez votre reponse au client..."
+													placeholder={t('responsePlaceholder')}
 													rows={3}
 													className="w-full resize-none rounded-lg border px-4 py-3 transition-colors bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
 												/>
@@ -527,7 +529,7 @@ function ChatTicketView() {
 														className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
 													>
 														<Send className="h-4 w-4" />
-														Envoyer la reponse
+														{t('sendResponse')}
 													</button>
 												</div>
 											</div>
@@ -535,9 +537,9 @@ function ChatTicketView() {
 
 										<div className="space-y-4">
 											{isLoadingMessages ? (
-												<p className="text-center text-sm text-gray-500">Chargement...</p>
+												<p className="text-center text-sm text-gray-500">{t('loadingMessages')}</p>
 											) : responses.length === 0 ? (
-												<p className="text-center text-sm text-gray-500">Aucun message pour le moment.</p>
+												<p className="text-center text-sm text-gray-500">{t('noMessagesYet')}</p>
 											) : (
 												responses.map((response) => (
 													<div
@@ -565,7 +567,7 @@ function ChatTicketView() {
 																	</span>
 																	{response.isFromSupport && (
 																		<span className="rounded px-2 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-700">
-																			Support
+																			{t('supportBadge')}
 																		</span>
 																	)}
 																	<span className="text-sm text-gray-500">
@@ -585,19 +587,19 @@ function ChatTicketView() {
 							) : (
 								isInternalNotesLocked ? (
 									<div className="rounded-lg p-3 text-center text-sm bg-red-50 text-red-700">
-										Notes internes indisponibles pendant la prise en charge par l agent assigne.
+										{t('internalNotesLocked')}
 									</div>
 								) : (
 									<div className="space-y-6">
 										<div className="rounded-lg border p-4 bg-yellow-50/50 border-yellow-200">
 											<div className="mb-3 flex items-center gap-2">
 												<Lock className="h-5 w-5 text-yellow-600" />
-												<span className="font-semibold text-gray-900">Ajouter une note interne</span>
+												<span className="font-semibold text-gray-900">{t('addInternalNote')}</span>
 											</div>
 											<textarea
 												value={newNote}
 												onChange={(e) => setNewNote(e.target.value)}
-												placeholder="Ajoutez une note privee pour l equipe de support..."
+												placeholder={t('notePlaceholder')}
 												rows={3}
 												className="w-full resize-none rounded-lg border px-4 py-3 transition-colors bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500/20"
 											/>
@@ -608,7 +610,7 @@ function ChatTicketView() {
 													className="flex items-center gap-2 rounded-lg bg-yellow-600 px-4 py-2 font-medium text-white transition-colors hover:bg-yellow-700 disabled:cursor-not-allowed disabled:opacity-50"
 												>
 													<Send className="h-4 w-4" />
-													Ajouter la note
+													{t('addNote')}
 												</button>
 											</div>
 										</div>
@@ -634,12 +636,12 @@ function ChatTicketView() {
 
 				<div className="w-full space-y-4 md:w-80">
 					<div className="rounded-xl border p-6 bg-white border-gray-200">
-						<h3 className="mb-4 font-bold text-gray-900">Détails</h3>
+						<h3 className="mb-4 font-bold text-gray-900">{t('details')}</h3>
 						<div className="space-y-4">
 							<div>
 								<div className="mb-2 flex items-center gap-2 text-sm text-gray-600">
 									<Clock className="h-4 w-4" />
-									<span className="font-medium">Statut actuel</span>
+									<span className="font-medium">{t('currentStatus')}</span>
 								</div>
 								<select
 									value={selectedStatus}
@@ -647,10 +649,10 @@ function ChatTicketView() {
 									disabled={isTicketHandledByAnotherAgent || isClosedTicket}
 									className="w-full rounded-lg border px-3 py-2 text-sm bg-white border-gray-300 text-gray-900"
 								>
-									<option value={TicketStatus.OPEN}>Ouvert</option>
-									<option value={TicketStatus.IN_PROGRESS}>En cours</option>
-									<option value={TicketStatus.RESOLVED}>Résolu</option>
-									<option value={TicketStatus.CLOSED}>Fermé</option>
+									<option value={TicketStatus.OPEN}>{t('statusOpen')}</option>
+									<option value={TicketStatus.IN_PROGRESS}>{t('statusInProgress')}</option>
+									<option value={TicketStatus.RESOLVED}>{t('statusResolved')}</option>
+									<option value={TicketStatus.CLOSED}>{t('statusClosed')}</option>
 								</select>
 								<button
 									type="button"
@@ -658,28 +660,28 @@ function ChatTicketView() {
 									disabled={isTicketHandledByAnotherAgent || isClosedTicket || isSavingStatus || selectedStatus === ticket.status}
 									className="mt-2 w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
 								>
-									{isSavingStatus ? 'Mise a jour...' : 'Appliquer le statut'}
+									{isSavingStatus ? t('updatingStatus') : t('updateStatus')}
 								</button>
 								{isClosedTicket && (
 									<p className="mt-2 text-xs text-red-600">
-										Ticket fermé définitivement: statut non modifiable.
+										{t('closedImmutable')}
 									</p>
 								)}
 							</div>
 							<div>
 								<div className="mb-2 flex items-center gap-2 text-sm text-gray-599">
 									<Tag className="h-4 w-4" />
-									<span className="font-medium">Priorité</span>
+									<span className="font-medium">{t('priority')}</span>
 								</div>
 								<div className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 ${priorityConfig[ticket.priority].bg}`}>
 									<AlertCircle className={`h-4 w-4 ${priorityConfig[ticket.priority].color}`} />
-									<span className={`font-medium ${priorityConfig[ticket.priority].color}`}>{priorityConfig[ticket.priority].label}</span>
+									<span className={`font-medium ${priorityConfig[ticket.priority].color}`}>{t(priorityConfig[ticket.priority].labelKey)}</span>
 								</div>
 							</div>
 							<div>
 								<div className="mb-2 flex items-center gap-2 text-sm text-gray-600">
 									<User className="h-4 w-4" />
-									<span className="font-medium">Assigné à</span>
+									<span className="font-medium">{t('assignedTo')}</span>
 								</div>
 								{ticket.assignedTo ? (
 									<div className="flex items-center gap-2">
@@ -695,20 +697,20 @@ function ChatTicketView() {
 										</div>
 									</div>
 								) : (
-									<p className="text-sm text-gray-500">Non assigné</p>
+									<p className="text-sm text-gray-500">{t('unassigned')}</p>
 								)}
 							</div>
 							<div>
 								<div className="mb-2 flex items-center gap-2 text-sm text-gray-600">
 									<Calendar className="h-4 w-4" />
-									<span className="font-medium">Date de création</span>
+									<span className="font-medium">{t('createdAt')}</span>
 								</div>
 								<p className="text-sm text-gray-700">{formatDate(ticket.createdAt)}</p>
 							</div>
 							<div>
 								<div className="mb-2 flex items-center gap-2 text-sm text-gray-600">
 									<Clock className="h-4 w-4" />
-									<span className="font-medium">Dernière mise à jour</span>
+									<span className="font-medium">{t('updatedAt')}</span>
 								</div>
 								<p className="text-sm text-gray-700">{formatDate(ticket.updatedAt)}</p>
 							</div>

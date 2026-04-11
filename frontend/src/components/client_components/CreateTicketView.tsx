@@ -21,7 +21,7 @@ function CreateTicketView(props: CreateTicketViewProps) {
 	const [successMessage, setSuccessMessage] = useState('');
 	const modalRef = useRef<HTMLDivElement | null>(null);
 
-	const {t: t_client} = useTranslation("client_home");
+	const {t: tTickets} = useTranslation('tickets');
 
 	useEffect(() => {
 		const handleClickOutside = (e: MouseEvent) => {
@@ -59,12 +59,12 @@ function CreateTicketView(props: CreateTicketViewProps) {
 		setSuccessMessage('');
 
 		if (title.trim().length < 3) {
-			setErrorMessage('Le titre doit contenir au moins 3 caractères.');
+			setErrorMessage(tTickets('titleMinError'));
 			return;
 		}
 
 		if (description.trim().length < 10) {
-			setErrorMessage('La description doit contenir au moins 10 caractères.');
+			setErrorMessage(tTickets('descriptionMinError'));
 			return;
 		}
 
@@ -77,13 +77,13 @@ function CreateTicketView(props: CreateTicketViewProps) {
 				priority: activePriority ?? TicketPriority.MEDIUM,
 			});
 
-			setSuccessMessage('Ticket créé avec succès.');
+			setSuccessMessage(tTickets('ticketCreated'));
 			props.onTicketCreated?.();
 			setTimeout(() => {
 				handleClose();
 			}, 700);
 		} catch (error) {
-			setErrorMessage('Impossible de créer le ticket. Vérifie que tu es connecté.');
+			setErrorMessage(tTickets('ticketCreateError'));
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -103,7 +103,7 @@ function CreateTicketView(props: CreateTicketViewProps) {
 				${props.isOpen ? "scale-100 opacity-100" : "scale-75 opacity-0"}`}
 			>
 				<div className="flex items-center justify-between">
-					<h3 className="text-base">Créer un ticket</h3>
+					<h3 className="text-base">{tTickets('createTicketTitle')}</h3>
 					<div onClick={handleClose}>
 						<CloseButtonX />
 					</div>
@@ -113,13 +113,13 @@ function CreateTicketView(props: CreateTicketViewProps) {
 
 				<div className="my-4">
 					<label className="text-base block" htmlFor="title">
-						Titre
+						{tTickets('title')}
 					</label>
 
 					<input
 						type="text"
 						id="title"
-						placeholder="Entrer le titre de votre ticket ici ..."
+						placeholder={tTickets('titlePlaceholder')}
 						className="border py-3 px-3 text-sm w-full rounded mt-2"
 						value={title}
 						onChange={(e) => setTitle(e.target.value)}
@@ -127,7 +127,7 @@ function CreateTicketView(props: CreateTicketViewProps) {
 				</div>
 
 				<div className="my-4">
-					<h3 className="text-base mb-3">Priorité</h3>
+					<h3 className="text-base mb-3">{tTickets('priority')}</h3>
 
 					<div className="flex items-center gap-5">
 						<PriorityChoice priority={TicketPriority.LOW} active={activePriority === TicketPriority.LOW} onClick={handlePriorityChoice} />
@@ -138,10 +138,10 @@ function CreateTicketView(props: CreateTicketViewProps) {
 				</div>
 
 				<div className="my-4">
-					<h3 className="text-base mb-2">Description</h3>
+					<h3 className="text-base mb-2">{tTickets('description')}</h3>
 
 					<textarea
-						placeholder="Entrer la description de votre ticket ici ..."
+						placeholder={tTickets('descriptionPlaceholder')}
 						className="border py-3 px-3 min-h-[120px] text-sm w-full rounded"
 						value={description}
 						onChange={(e) => setDescription(e.target.value)}
@@ -161,7 +161,7 @@ function CreateTicketView(props: CreateTicketViewProps) {
 						onClick={handleClose}
 						disabled={isSubmitting}
 					>
-						Annuler
+						{tTickets('cancel')}
 					</button>
 
 					<button
@@ -169,7 +169,7 @@ function CreateTicketView(props: CreateTicketViewProps) {
 						onClick={handleCreateTicket}
 						disabled={isSubmitting}
 					>
-						{isSubmitting ? 'Création...' : 'Créer un ticket'}
+						{isSubmitting ? tTickets('creating') : tTickets('createTicket')}
 					</button>
 				</div>
 			</div>
