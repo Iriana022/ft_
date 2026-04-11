@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import {useState, useEffect, useRef} from 'react';
+import {Link, useLocation, useNavigate, useSearchParams} from 'react-router-dom';
 import {
 	AlertCircle,
 	ArrowLeft,
@@ -13,7 +13,7 @@ import {
 	Tag,
 	User,
 } from 'lucide-react';
-import { TicketPriority, TicketStatus, type Ticket, type ChatMessage, type TicketInternalNote } from '../../types';
+import {TicketPriority, TicketStatus, type Ticket, type ChatMessage, type TicketInternalNote} from '../../types';
 import {
 	markTicketMessagesAsRead,
 	updateTicketStatus,
@@ -25,8 +25,8 @@ import {
 	createTicketInternalNote,
 	type RawTicket,
 } from '../../services/tickets';
-import { getSocket } from '../../services/singleton';
-import { getUserIdFromToken } from '../../services/auth';
+import {getSocket} from '../../services/singleton';
+import {getUserIdFromToken} from '../../services/auth';
 import {useTranslation} from 'react-i18next';
 
 type LocationState = {
@@ -68,16 +68,16 @@ const statusConfig = {
 const DEFAULT_AGENT_AVATAR = '/assets/avatars/avatar2.png';
 
 const priorityConfig = {
-	[TicketPriority.LOW]: { labelKey: 'priorityLow', color: 'text-green-600', bg: 'bg-green-50' },
-	[TicketPriority.MEDIUM]: { labelKey: 'priorityMedium', color: 'text-blue-600', bg: 'bg-blue-50' },
-	[TicketPriority.HIGH]: { labelKey: 'priorityHigh', color: 'text-orange-600', bg: 'bg-orange-50' },
-	[TicketPriority.URGENT]: { labelKey: 'priorityUrgent', color: 'text-red-600', bg: 'bg-red-50' },
+	[TicketPriority.LOW]: {labelKey: 'priorityLow', color: 'text-green-600', bg: 'bg-green-50'},
+	[TicketPriority.MEDIUM]: {labelKey: 'priorityMedium', color: 'text-blue-600', bg: 'bg-blue-50'},
+	[TicketPriority.HIGH]: {labelKey: 'priorityHigh', color: 'text-orange-600', bg: 'bg-orange-50'},
+	[TicketPriority.URGENT]: {labelKey: 'priorityUrgent', color: 'text-red-600', bg: 'bg-red-50'},
 };
 
 function ChatTicketView() {
 	const {t, i18n} = useTranslation('chat');
 	const navigate = useNavigate();
-	const location = useLocation() as { state?: LocationState };
+	const location = useLocation() as {state?: LocationState};
 	const [searchParams] = useSearchParams();
 	const currentUserId = getUserIdFromToken(localStorage.getItem('access_token'));
 	const [activeTab, setActiveTab] = useState<'responses' | 'notes'>('responses');
@@ -117,7 +117,7 @@ function ChatTicketView() {
 
 
 	const scrollToBottom = () => {
-		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+		messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
 	};
 
 	const [chatUnlocked, setChatUnlocked] = useState(
@@ -181,7 +181,7 @@ function ChatTicketView() {
 
 		const joinInternal = () => {
 			const token = localStorage.getItem('access_token') ?? undefined;
-			socket.emit('joinInternalNotes', { ticketId: ticket.id, token });
+			socket.emit('joinInternalNotes', {ticketId: ticket.id, token});
 		};
 
 		const onInternalNoteCreated = (note: TicketInternalNote) => {
@@ -189,7 +189,7 @@ function ChatTicketView() {
 
 			setNotes((prev) => {
 				if (prev.some((n) => n.id === note.id)) return prev;
-				return [...prev, { ...note, createdAt: new Date(note.createdAt) }];
+				return [...prev, {...note, createdAt: new Date(note.createdAt)}];
 			});
 		};
 
@@ -199,7 +199,7 @@ function ChatTicketView() {
 		if (socket.connected) joinInternal();
 
 		return () => {
-			socket.emit('leaveInternalNotes', { ticketId: ticket.id });
+			socket.emit('leaveInternalNotes', {ticketId: ticket.id});
 			socket.off('connect', joinInternal);
 			socket.off('ticketInternalNoteCreated', onInternalNoteCreated);
 		};
@@ -305,7 +305,7 @@ function ChatTicketView() {
 
 		const joinRoom = () => {
 			const token = localStorage.getItem('access_token') ?? undefined;
-			socket.emit('joinTicket', { ticketId: ticket.id, token });
+			socket.emit('joinTicket', {ticketId: ticket.id, token});
 		};
 
 		const onNewMessage = (message: ChatMessage) => {
@@ -321,7 +321,7 @@ function ChatTicketView() {
 				];
 			});
 			if (!message.isFromSupport && !isTicketHandledByAnotherAgent) {
-				markTicketMessagesAsRead(ticket.id).catch(() => { });
+				markTicketMessagesAsRead(ticket.id).catch(() => {});
 			}
 		};
 
@@ -331,7 +331,7 @@ function ChatTicketView() {
 		if (socket.connected)
 			joinRoom();
 		return () => {
-			socket.emit('leaveTicket', { ticketId: ticket.id });
+			socket.emit('leaveTicket', {ticketId: ticket.id});
 			socket.off('connect', joinRoom);
 			socket.off('newMessage', onNewMessage);
 		};
@@ -406,7 +406,7 @@ function ChatTicketView() {
 	};
 
 	return (
-		<div className="min-h-screen bg-gray-50">
+		<div className="min-h-screen bg-cream">
 			<div className="border-b px-4 py-4 md:px-8 bg-white border-gray-200">
 				<div className="flex items-center justify-between">
 					< button
@@ -466,7 +466,7 @@ function ChatTicketView() {
 							<button
 								onClick={() => setActiveTab('responses')}
 								className={`flex flex-1 items-center justify-center gap-2 px-6 py-4 font-medium transition-colors ${activeTab === 'responses'
-									? 'border-b-2 border-indigo-600 bg-gray-50 text-indigo-600'
+									? 'border-b-2 border-navy bg-gray-50 text-navy'
 									: 'text-gray-600 hover:bg-gray-50'
 									}`}
 							>
@@ -476,7 +476,7 @@ function ChatTicketView() {
 							<button
 								onClick={() => setActiveTab('notes')}
 								className={`flex flex-1 items-center justify-center gap-2 px-6 py-4 font-medium transition-colors ${activeTab === 'notes'
-									? 'border-b-2 border-indigo-600 bg-gray-50 text-indigo-600'
+									? 'border-b-2 border-navy bg-gray-50 text-navy'
 									: 'text-gray-600 hover:bg-gray-50'
 									}`}
 							>
@@ -658,7 +658,7 @@ function ChatTicketView() {
 									type="button"
 									onClick={handleUpdateStatus}
 									disabled={isTicketHandledByAnotherAgent || isClosedTicket || isSavingStatus || selectedStatus === ticket.status}
-									className="mt-2 w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+									className="mt-2 w-full rounded-lg bg-navy px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
 								>
 									{isSavingStatus ? t('updatingStatus') : t('updateStatus')}
 								</button>

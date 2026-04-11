@@ -94,7 +94,7 @@ export function Dashboard() {
 	const stats = useMemo(() => getTicketStats(tickets), [tickets]);
 
 	return (
-		<div className="flex-1 overflow-auto bg-gray-50">
+		<div className="flex-1 overflow-auto bg-cream">
 			{/* Notification popup */}
 			{notification && (
 				<div className="fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-4 rounded-xl shadow-lg border bg-white border-indigo-500 text-gray-900 transition-all">

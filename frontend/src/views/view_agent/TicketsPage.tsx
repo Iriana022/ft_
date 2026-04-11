@@ -82,7 +82,7 @@ export function TicketsPage() {
 		});
 
 	return (
-		<div className="flex-1 overflow-auto bg-gray-50">
+		<div className="flex-1 overflow-auto bg-cream">
 			{/* Header */}
 			<div className="border-b px-8 py-6 bg-white border-gray-200">
 				<div className="flex items-center justify-between mb-6">

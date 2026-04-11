@@ -1,7 +1,7 @@
-import type { Ticket } from '../../types';
-import { TicketStatus, TicketPriority } from '../../types';
-import { Clock, User, AlertCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import type {Ticket} from '../../types';
+import {TicketStatus, TicketPriority} from '../../types';
+import {Clock, User, AlertCircle} from 'lucide-react';
+import {useNavigate} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 
 interface TicketListProps {
@@ -16,24 +16,24 @@ const getAssignedAgentAvatar = (ticket: Ticket) => {
 	return avatar && avatar.length > 0 ? avatar : DEFAULT_AGENT_AVATAR;
 };
 
-export function TicketList({ tickets, maxItems }: TicketListProps) {
+export function TicketList({tickets, maxItems}: TicketListProps) {
 	const {t} = useTranslation('agent');
 	const {t: tt} = useTranslation('tickets');
 	const navigate = useNavigate();
 	const displayTickets = maxItems ? tickets.slice(0, maxItems) : tickets;
 
 	const statusConfig = {
-		[TicketStatus.OPEN]: { label: tt('statusOpen'), color: 'bg-red-100 text-red-700' },
-		[TicketStatus.IN_PROGRESS]: { label: tt('statusInProgress'), color: 'bg-orange-100 text-orange-700' },
-		[TicketStatus.RESOLVED]: { label: tt('statusResolved'), color: 'bg-green-100 text-green-700' },
-		[TicketStatus.CLOSED]: { label: tt('statusClosed'), color: 'bg-gray-100 text-gray-700' },
+		[TicketStatus.OPEN]: {label: tt('statusOpen'), color: 'bg-red-100 text-red-700'},
+		[TicketStatus.IN_PROGRESS]: {label: tt('statusInProgress'), color: 'bg-orange-100 text-orange-700'},
+		[TicketStatus.RESOLVED]: {label: tt('statusResolved'), color: 'bg-green-100 text-green-700'},
+		[TicketStatus.CLOSED]: {label: tt('statusClosed'), color: 'bg-gray-100 text-gray-700'},
 	};
 
 	const priorityConfig = {
-		[TicketPriority.LOW]: { label: tt('priorityLow'), color: 'text-green-600' },
-		[TicketPriority.MEDIUM]: { label: tt('priorityMedium'), color: 'text-blue-600' },
-		[TicketPriority.HIGH]: { label: tt('priorityHigh'), color: 'text-orange-600' },
-		[TicketPriority.URGENT]: { label: tt('priorityUrgent'), color: 'text-red-600' },
+		[TicketPriority.LOW]: {label: tt('priorityLow'), color: 'text-green-600'},
+		[TicketPriority.MEDIUM]: {label: tt('priorityMedium'), color: 'text-blue-600'},
+		[TicketPriority.HIGH]: {label: tt('priorityHigh'), color: 'text-orange-600'},
+		[TicketPriority.URGENT]: {label: tt('priorityUrgent'), color: 'text-red-600'},
 	};
 
 	const formatDate = (date: Date) => {
