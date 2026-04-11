@@ -32,6 +32,7 @@ function Header() {
 
 	const {t} = useTranslation("nav");
 	const {t: tc} = useTranslation("common");
+	const {t: tn} = useTranslation('notifications');
 
 	const handleLogout = () => {
 		localStorage.removeItem('access_token');
@@ -96,7 +97,7 @@ function Header() {
 						[
 							{
 								id: Date.now(),
-								text: 'Nouveau message sur le ticket #' + payload.ticketId,
+								text: tn('newMessageOnTicket', {ticketId: payload.ticketId}),
 								createdAt: new Date().toISOString(),
 							},
 							...old,

@@ -5,8 +5,10 @@ import type { Ticket } from '../../types';
 import { TicketList } from './TicketList';
 import { fetchTickets, normalizeTicket, sortTicketsForAgent, type RawTicket } from '../../services/tickets';
 import { getSocket } from '../../services/singleton';
+import {useTranslation} from 'react-i18next';
 
 export function TicketsPage() {
+	const {t} = useTranslation('agent');
 	const [tickets, setTickets] = useState<Ticket[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [searchTerm, setSearchTerm] = useState('');
@@ -85,9 +87,9 @@ export function TicketsPage() {
 			<div className="border-b px-8 py-6 bg-white border-gray-200">
 				<div className="flex items-center justify-between mb-6">
 					<div>
-						<h1 className="text-2xl font-bold text-gray-900">Tous les tickets</h1>
+						<h1 className="text-2xl font-bold text-gray-900">{t('allTicketsTitle')}</h1>
 						<p className="text-gray-600 mt-1">
-							Gérez et suivez tous vos tickets de support
+							{t('allTicketsSubtitle')}
 						</p>
 					</div>
 				</div>
@@ -99,7 +101,7 @@ export function TicketsPage() {
 						<Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
 						<input
 							type="text"
-							placeholder="Rechercher un ticket..."
+							placeholder={t('searchPlaceholder')}
 							value={searchTerm}
 							onChange={(e) => setSearchTerm(e.target.value)}
 							className="w-full pl-10 pr-4 py-2 rounded-lg border bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
@@ -114,11 +116,11 @@ export function TicketsPage() {
 							onChange={(e) => setStatusFilter(e.target.value as TicketStatus | 'ALL')}
 							className="px-4 py-2 rounded-lg border bg-white border-gray-300 text-gray-900 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
 						>
-							<option value="ALL">Tous les statuts</option>
-							<option value={TicketStatus.OPEN}>Ouvert</option>
-							<option value={TicketStatus.IN_PROGRESS}>En cours</option>
-							<option value={TicketStatus.RESOLVED}>Résolu</option>
-							<option value={TicketStatus.CLOSED}>Fermé</option>
+							<option value="ALL">{t('allStatuses')}</option>
+							<option value={TicketStatus.OPEN}>{t('statusOpen')}</option>
+							<option value={TicketStatus.IN_PROGRESS}>{t('statusInProgress')}</option>
+							<option value={TicketStatus.RESOLVED}>{t('statusResolved')}</option>
+							<option value={TicketStatus.CLOSED}>{t('statusClosed')}</option>
 						</select>
 					</div>
 
@@ -128,11 +130,11 @@ export function TicketsPage() {
 						onChange={(e) => setPriorityFilter(e.target.value as TicketPriority | 'ALL')}
 						className="px-4 py-2 rounded-lg border bg-white border-gray-300 text-gray-900 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
 					>
-						<option value="ALL">Toutes les priorités</option>
-						<option value={TicketPriority.URGENT}>Urgent</option>
-						<option value={TicketPriority.HIGH}>Haute</option>
-						<option value={TicketPriority.MEDIUM}>Moyenne</option>
-						<option value={TicketPriority.LOW}>Basse</option>
+							<option value="ALL">{t('allPriorities')}</option>
+							<option value={TicketPriority.URGENT}>{t('priorityUrgent')}</option>
+							<option value={TicketPriority.HIGH}>{t('priorityHigh')}</option>
+							<option value={TicketPriority.MEDIUM}>{t('priorityMedium')}</option>
+							<option value={TicketPriority.LOW}>{t('priorityLow')}</option>
 					</select>
 				</div>
 			</div>
@@ -141,13 +143,13 @@ export function TicketsPage() {
 			<div className="p-8">
 				{isLoading ? (
 					<div className="rounded-xl border p-12 text-center bg-white border-gray-200">
-						<p className="text-gray-600">Chargement des tickets...</p>
+						<p className="text-gray-600">{t('loadingTickets')}</p>
 					</div>
 				) : (
 					<>
 						{/* Results Count */}
 						<div className="mb-4 text-gray-600">
-							{filteredTickets.length} ticket{filteredTickets.length > 1 ? 's' : ''} trouvé{filteredTickets.length > 1 ? 's' : ''}
+							{t('ticketsFound', {count: filteredTickets.length})}
 						</div>
 
 						{/* Tickets List */}
@@ -159,10 +161,10 @@ export function TicketsPage() {
 									<Search className="w-8 h-8 text-gray-400" />
 								</div>
 								<h3 className="text-lg font-semibold mb-2 text-gray-900">
-									Aucun ticket trouvé
+									{t('noTicketFoundTitle')}
 								</h3>
 								<p className="text-gray-600">
-									Essayez de modifier vos filtres ou votre recherche
+									{t('noTicketFoundDescription')}
 								</p>
 							</div>
 						)}

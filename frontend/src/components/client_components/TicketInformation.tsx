@@ -5,6 +5,7 @@ import PriorityChoice from './PriorityChoice';
 import {type TicketType} from '../../types';
 import {ChatBubbleLeftEllipsisIcon} from '@heroicons/react/24/outline';
 import {useNavigate} from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
 
 interface TicketInformationProps {
 	ticket: TicketType,
@@ -13,6 +14,7 @@ interface TicketInformationProps {
 }
 
 function TicketInformation(props: TicketInformationProps) {
+	const {t} = useTranslation('tickets');
 	const [title, setTitle] = useState(props.ticket.title);
 	const [description, setDescription] = useState(props.ticket.description);
 	const navigate = useNavigate();
@@ -39,7 +41,7 @@ function TicketInformation(props: TicketInformationProps) {
 				<Separator />
 
 				<div>
-					<h4 className="text-base mb-1">Messages</h4>
+					<h4 className="text-base mb-1">{t('messages')}</h4>
 					<button
 						className="btn btn-sm btn-soft relative"
 						onClick={() => navigate('/chat_ticket_client', {state: props.ticket})}
@@ -55,13 +57,13 @@ function TicketInformation(props: TicketInformationProps) {
 
 				<div className="my-4">
 					<label className="text-base block" htmlFor="title">
-						Titre
+						{t('title')}
 					</label>
 
 					<input
 						type="text"
 						id="title"
-						placeholder="Entrer le titre de votre ticket ici ..."
+						placeholder={t('titlePlaceholder')}
 						className="border py-3 px-3 text-sm w-full rounded mt-2"
 						value={title}
 						onChange={e => setTitle(e.target.value)}
@@ -69,7 +71,7 @@ function TicketInformation(props: TicketInformationProps) {
 				</div>
 
 				<div className="my-4">
-					<h3 className="text-base mb-3">Priorité</h3>
+					<h3 className="text-base mb-3">{t('priority')}</h3>
 
 					<div className="flex items-center gap-5">
 						{/* TODO: allow changement on priority */}
@@ -78,10 +80,10 @@ function TicketInformation(props: TicketInformationProps) {
 				</div>
 
 				<div className="my-4">
-					<h3 className="text-base mb-2">Description</h3>
+					<h3 className="text-base mb-2">{t('description')}</h3>
 
 					<textarea
-						placeholder="Entrer la description de votre ticket ici ..."
+						placeholder={t('descriptionPlaceholder')}
 						className="border py-3 px-3 min-h-[120px] text-sm w-full rounded"
 						value={description}
 						onChange={e => setDescription(e.target.value)}
@@ -93,7 +95,7 @@ function TicketInformation(props: TicketInformationProps) {
 						className="btn btn-info"
 						onClick={props.onClose}
 					>
-						Sauvegarder
+						{t('save')}
 					</button>
 				</div>
 			</div>

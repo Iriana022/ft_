@@ -1,3 +1,5 @@
+import {useTranslation} from 'react-i18next';
+
 interface ConfirmModalProps {
 	isOpen: boolean;
 	onClose: () => void;
@@ -6,6 +8,8 @@ interface ConfirmModalProps {
 }
 
 function ConfirmModal({isOpen, onClose, onConfirm, loading}: ConfirmModalProps) {
+	const {t} = useTranslation('profile');
+
 	if (!isOpen) return null;
 
 	return (
@@ -16,9 +20,9 @@ function ConfirmModal({isOpen, onClose, onConfirm, loading}: ConfirmModalProps) 
 			/>
 
 			<div className="relative bg-white rounded-xl p-6 w-[90%] max-w-md shadow-lg">
-				<h2 className="text-lg font-semibold mb-2">Supprimer le compte</h2>
+				<h2 className="text-lg font-semibold mb-2">{t('confirmDeleteTitle')}</h2>
 				<p className="text-sm text-gray-600 mb-6">
-					Cette action est irréversible. Voulez-vous vraiment supprimer votre compte ?
+					{t('confirmDeleteDescription')}
 				</p>
 
 				<div className="flex justify-end gap-3">
@@ -26,14 +30,14 @@ function ConfirmModal({isOpen, onClose, onConfirm, loading}: ConfirmModalProps) 
 						onClick={onClose}
 						className="px-4 py-2 rounded text-sm bg-gray-200 hover:bg-gray-300"
 					>
-						Annuler
+						{t('cancel')}
 					</button>
 					<button
 						onClick={onConfirm}
 						disabled={loading}
 						className="px-4 py-2 rounded bg-red-300 text-black text-sm transition hover:bg-red-400 disabled:opacity-60"
 					>
-						{loading ? "Suppression..." : "Supprimer"}
+						{loading ? t('deleting') : t('delete')}
 					</button>
 				</div>
 			</div>

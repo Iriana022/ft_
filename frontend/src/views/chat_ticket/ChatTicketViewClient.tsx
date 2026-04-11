@@ -8,6 +8,7 @@ import { TicketStatus } from '../../types';
 import { getTicketMessages, sendTicketMessage } from '../../services/tickets';
 import { getSocket } from '../../services/singleton';
 import { markTicketMessagesAsRead } from '../../services/tickets';
+import {useTranslation} from 'react-i18next';
 
 interface TicketMessageHeaderProps {
   title: string;
@@ -41,6 +42,7 @@ function TicketMessageHeader({ title }: TicketMessageHeaderProps) {
 }
 
 function ChatTicketViewClient() {
+	const {t, i18n} = useTranslation('chat');
   const location = useLocation();
   const state = (location.state ?? {}) as Partial<TicketType>;
   const ticketId = state.id ?? 0;
@@ -170,7 +172,7 @@ function ChatTicketViewClient() {
 
   const formatDateShort = (dateValue: Date | string) => {
     const date = new Date(dateValue);
-    return new Intl.DateTimeFormat('fr-FR', {
+    return new Intl.DateTimeFormat(i18n.language, {
       day: 'numeric',
       month: 'short',
       hour: '2-digit',
@@ -180,19 +182,19 @@ function ChatTicketViewClient() {
 
   return (
     <>
-      <TicketMessageHeader title={state.title ?? 'Conversation ticket'} />
+      <TicketMessageHeader title={state.title ?? t('conversationTitleFallback')} />
 
       {/* Canal fermé */}
       {isClosed && (
         <div className="mx-4 mt-4 rounded-lg bg-gray-100 border border-gray-300 p-3 text-center text-sm text-gray-600">
-          🔒 Ce canal de messagerie est fermé.
+		  🔒 {t('ticketChannelClosed')}
         </div>
       )}
 
       {/* Canal pas encore ouvert */}
       {!chatUnlocked && !isClosed && (
         <div className="mx-4 mt-4 rounded-lg bg-yellow-50 border border-yellow-200 p-3 text-center text-sm text-yellow-700">
-          ⏳ Le canal de messagerie s'ouvrira quand un agent prendra en charge votre ticket.
+		  ⏳ {t('clientChannelPending')}
         </div>
       )}
 
@@ -200,9 +202,9 @@ function ChatTicketViewClient() {
       <ContainerComp>
         <div className="flex flex-col space-y-4 p-4 overflow-y-auto max-h-[60vh]">
           {isLoading ? (
-            <p className="text-center text-sm text-gray-500">Chargement...</p>
+      <p className="text-center text-sm text-gray-500">{t('loadingMessages')}</p>
           ) : messages.length === 0 ? (
-            <p className="text-center text-sm text-gray-500">Aucun message pour le moment.</p>
+      <p className="text-center text-sm text-gray-500">{t('noMessagesYet')}</p>
           ) : (
             messages.map((msg) => (
               <div key={msg.id} className={`chat ${msg.isFromSupport ? 'chat-start' : 'chat-end'}`}>
@@ -241,7 +243,7 @@ function ChatTicketViewClient() {
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                placeholder={canSendMessage ? 'Écrire un message...' : 'Envoi désactivé : pas d’agent disponible'}
+        				placeholder={canSendMessage ? t('writeMessagePlaceholder') : t('sendDisabledNoAgent')}
                 disabled={!canSendMessage || isClosed}
                 className="input input-bordered w-full min-h-[50px] bg-gray-100 text-sm md:text-base"
               />
@@ -250,7 +252,7 @@ function ChatTicketViewClient() {
                 disabled={!canSendMessage || isClosed || !newMessage.trim()}
                 className="btn btn-primary"
               >
-                Envoyer
+				{t('send')}
               </button>
             </div>
           </div>

@@ -5,6 +5,7 @@ import {ArrowLeftIcon} from '@heroicons/react/24/solid';
 import {useNavigate} from 'react-router-dom';
 import {type Message} from '../../types';
 import Avatar from './Avatar';
+import {useTranslation} from 'react-i18next';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 const avatar2 = '/assets/avatars/avatar2.png';
@@ -80,6 +81,8 @@ function TicketMessageBody({messages}: TicketMessageBodyProps) {
 }
 
 function TicketMessageFooter() {
+	const {t} = useTranslation('chat');
+
 	return (
 		<div className="sticky bottom-0 left-0 right-0 z-50 bg-base-100 border-t">
 			<ContainerComp>
@@ -87,11 +90,11 @@ function TicketMessageFooter() {
 					<div className="flex gap-2 w-full items-center">
 						<input
 							type="text"
-							placeholder="Écrire un message..."
+							placeholder={t('writeMessagePlaceholder')}
 							className="input input-bordered w-full min-h-[50px] bg-gray-100 text-sm md:text-base"
 						/>
 						<button className="btn btn-primary">
-							Envoyer
+							{t('send')}
 						</button>
 					</div>
 				</div>

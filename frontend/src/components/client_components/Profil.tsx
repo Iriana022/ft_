@@ -6,10 +6,12 @@ import {useNavigate} from 'react-router-dom';
 import Avatar from './Avatar';
 import Footer from '../../layout/Footer';
 import {getMyProfile, updateMyProfile, uploadMyAvatar} from '../../services/profile';
+import {useTranslation} from 'react-i18next';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
 function Profil() {
+	const {t} = useTranslation('profile');
 	const [firstname, setFirstname] = useState('');
 	const [lastname, setLastname] = useState('');
 	const [email, setEmail] = useState('');
@@ -21,7 +23,7 @@ function Profil() {
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 	const handleSave = async () => {
 		if (!email.trim()) {
-			setError('Email is missing');
+			setError(t('emailMissing'));
 			return;
 		}
 		try {
@@ -40,7 +42,7 @@ function Profil() {
 			localStorage.setItem('username', savedUsername);
 		} catch (err) {
 			console.error('Erreur sauvegarde profil:', err);
-			setError('Impossible de sauvegarder le profil');
+			setError(t('saveProfileError'));
 		} finally {
 			setIsLoading(false);
 		}
@@ -58,7 +60,7 @@ function Profil() {
 			localStorage.setItem('user_avatar', nextAvatar);
 		} catch (err) {
 			console.error('Error on uploading your avatar:', err);
-			setError('changing the avatar is impossible');
+			setError(t('avatarChangeError'));
 		} finally {
 			setIsLoading(false);
 			if (fileInputRef.current)
@@ -83,7 +85,7 @@ function Profil() {
 				localStorage.setItem('user_avatar', nextAvatar);
 			} catch (err) {
 				console.error('Error loading profile:', err);
-				setError('Loading profile information impossible');
+				setError(t('loadProfileError'));
 			} finally {
 				setIsLoading(false);
 			}
@@ -99,7 +101,7 @@ function Profil() {
 						<button onClick={() => navigate("/client")} className="cursor-pointer transition hover:bg-gray-300 p-2 rounded-full">
 							<ArrowLeftIcon className="w-5 h-5" />
 						</button>
-						<h3 className="text-navy text-2xl font-semibold">Profile</h3>
+						<h3 className="text-navy text-2xl font-semibold">{t('profilePageTitle')}</h3>
 					</header>
 				</ContainerComp>
 			</div>
@@ -124,16 +126,16 @@ function Profil() {
 								fileInputRef.current?.click()
 							}
 							disabled={isLoading}>
-							{isLoading ? 'Upload...' : "Changer l'avatar"}
+							{isLoading ? t('uploading') : t('uploadAvatar')}
 						</button>
 					</div>
-					<h3 className="mt-8 mb-5 text-md md:text-xl font-semibold text-navy text-center md:text-start">Informations personnelles:</h3>
+					<h3 className="mt-8 mb-5 text-md md:text-xl font-semibold text-navy text-center md:text-start">{t('personalInfoTitle')}:</h3>
 					{error && (
 						<p className="mb-4 text-sm text-red-500">{error}</p>
 					)}
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div className="max-w-md">
-							<label className="block mb-2">Username</label>
+							<label className="block mb-2">{t('username')}</label>
 							<input
 								type="text"
 								value={username}
@@ -143,7 +145,7 @@ function Profil() {
 						</div>
 
 						<div className="max-w-md">
-							<label className="block mb-2">Nom</label>
+							<label className="block mb-2">{t('firstName')}</label>
 							<input
 								type="text"
 								value={firstname}
@@ -153,7 +155,7 @@ function Profil() {
 						</div>
 
 						<div className="max-w-md">
-							<label className="block mb-2">Prénom</label>
+							<label className="block mb-2">{t('lastName')}</label>
 							<input
 								type="text"
 								value={lastname}
@@ -163,7 +165,7 @@ function Profil() {
 						</div>
 
 						<div className="max-w-md">
-							<label className="block mb-3">Email</label>
+							<label className="block mb-3">{t('email')}</label>
 							<input
 								type="email"
 								value={email}
@@ -178,7 +180,7 @@ function Profil() {
 							onClick={handleSave}
 							disabled={isLoading}
 						>
-							{isLoading ? 'Saving...' : 'Sauvegarder'}
+							{isLoading ? t('savingProfile') : t('saveProfile')}
 						</button>
 					</div>
 				</ContainerComp>

@@ -1,5 +1,6 @@
 import {useState, useMemo, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
 import {
 	ChevronLeftIcon,
 	ChevronRightIcon,
@@ -32,7 +33,7 @@ import TicketFilter from '../../components/client_components/TicketFilter';
 import {UserRole} from '../../types';
 import {fetchTickets, fetchUsers, normalizeTicket, type RawTicket, deleteUserByAdmin, fetchTicketResolutionHistory, type TicketResolutionHistoryItem} from '../../services/tickets';
 import {format, subDays, isSameDay} from 'date-fns';
-import {fr} from 'date-fns/locale';
+import {fr, enUS, es} from 'date-fns/locale';
 import {getSocket} from '../../services/singleton';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
@@ -44,6 +45,7 @@ function VerticalSeparator() {
 }
 
 function AdminHeader() {
+	const {t} = useTranslation('admin');
 	const navigate = useNavigate();
 
 	const handleLogout = () => {
@@ -58,10 +60,10 @@ function AdminHeader() {
 		<div className="px-4 w-full flex items-center justify-between">
 			<div>
 				<h3 className="text-navy">
-					Tableau de bord
+					{t('dashboard')}
 				</h3>
 				<span className="text-xs md:text-sm">
-					Bienvenue, Administrateur
+					{t('welcomeAdmin')}
 				</span>
 			</div>
 			<div className="flex items-center gap-4">
@@ -76,7 +78,7 @@ function AdminHeader() {
 					onClick={handleLogout}
 					className="btn btn-primary"
 				>
-					Deconnexion
+					{t('logout')}
 				</button>
 			</div>
 		</div>
@@ -89,10 +91,11 @@ interface DrawerTogglerProps {
 };
 
 function DrawerToggler(props: DrawerTogglerProps) {
+	const {t} = useTranslation('admin');
 	return (
 		<button
 			type="button"
-			aria-label="toggle sidebar"
+			aria-label={t('toggleSidebar')}
 			className="bg-white p-1 rounded-full shadow-sm hidden md:block"
 			onClick={props.onClick}
 		>
@@ -182,7 +185,8 @@ interface CreatedAndResolvedIndicatorProps {
 }
 
 function CreatedAndResolvedIndicator(props: CreatedAndResolvedIndicatorProps) {
-	const text = props.type === "created" ? "Crees" : "Resolus";
+	const {t} = useTranslation('admin');
+	const text = props.type === "created" ? t('created') : t('resolved');
 	const bg = props.type === "created" ? "bg-navy" : "bg-status-resolved";
 	return (
 		<>
@@ -195,11 +199,13 @@ function CreatedAndResolvedIndicator(props: CreatedAndResolvedIndicatorProps) {
 const generateDailyTickets = (
 	tickets: Ticket[],
 	resolutionHistory: TicketResolutionHistoryItem[],
+	language: string,
 ) => {
+	const locale = language.startsWith('es') ? es : language.startsWith('en') ? enUS : fr;
 	const last7Days = [...Array(7)].map((_, i) => subDays(new Date(), i)).reverse();
 
 	return last7Days.map((date) => {
-		const name = format(date, 'eee', {locale: fr});
+		const name = format(date, 'eee', {locale});
 
 		const created = tickets.filter((t) =>
 			isSameDay(new Date(t.createdAt), date)
@@ -219,6 +225,7 @@ const generateDailyTickets = (
 };
 
 function TicketsActivities() {
+	const {t, i18n} = useTranslation('admin');
 	const [tickets, setTickets] = useState<Ticket[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -237,7 +244,7 @@ function TicketsActivities() {
 				setError(null);
 			} catch (e) {
 				console.error('Erreur chargement tickets admin:', e);
-				setError('Impossible de charger les tickets');
+				setError(t('loadTicketsError'));
 			} finally {
 				setLoading(false);
 			}
@@ -267,21 +274,21 @@ function TicketsActivities() {
 	}, []);
 
 	if (loading) {
-		return <div className="p-4">Chargement des tickets...</div>;
+		return <div className="p-4">{t('loadingTickets')}</div>;
 	}
 
 	if (error) {
 		return <div className="p-4 text-red-600">{error}</div>;
 	}
 
-	const dailyTickets = generateDailyTickets(tickets, resolutionHistory);
+	const dailyTickets = generateDailyTickets(tickets, resolutionHistory, i18n.language);
 
 	return (
 		<div className="w-full md:w-[60%] bg-white shadow rounded-md p-5">
 			<div className="flex items-center justify-between">
 				<div>
-					<h3 className="text-base font-medium text-navy">Activite des tickets</h3>
-					<p className="text-xs md:text-sm text-gray-600">Apercu des 7 derniers jours</p>
+					<h3 className="text-base font-medium text-navy">{t('ticketsActivity')}</h3>
+					<p className="text-xs md:text-sm text-gray-600">{t('last7Days')}</p>
 				</div>
 				<div className="flex items-center gap-3 md:gap-4">
 					<div className="flex items-center gap-1 md:gap-2">
@@ -296,8 +303,8 @@ function TicketsActivities() {
 				<ResponsiveContainer>
 					<LineChart responsive data={dailyTickets}>
 						<CartesianGrid stroke="#aaa" strokeDasharray="5 5" />
-						<Line type="monotone" dataKey="created" stroke="var(--color-navy)" strokeWidth={2} name="Crees" dot={false} activeDot={{r: 5}} />
-						<Line type="monotone" dataKey="resolved" stroke="var(--color-status-resolved)" strokeWidth={2} name="Resolus" dot={false} activeDot={{r: 5}} />
+						<Line type="monotone" dataKey="created" stroke="var(--color-navy)" strokeWidth={2} name={t('created')} dot={false} activeDot={{r: 5}} />
+						<Line type="monotone" dataKey="resolved" stroke="var(--color-status-resolved)" strokeWidth={2} name={t('resolved')} dot={false} activeDot={{r: 5}} />
 						<XAxis dataKey="name" tick={{fontSize: 12}} />
 						<YAxis tick={{fontSize: 12}} />
 						<Tooltip />
@@ -310,17 +317,18 @@ function TicketsActivities() {
 }
 
 function RecentTicketsHeader() {
+	const {t} = useTranslation('admin');
 	return (
 		<div className="flex items-center justify-between px-5 pt-3">
 			<div>
 				<h3 className="text-base">
-					Tickets recents
+					{t('recentTickets')}
 				</h3>
-				<p className="text-xs md:text-sm text-gray-600">Dernieres demandes de support</p>
+				<p className="text-xs md:text-sm text-gray-600">{t('latestSupportRequests')}</p>
 			</div>
 			{/* TODO: change this to Link component */}
 			<Link to="tickets" className="block text-navy font-medium text-xs md:text-sm">
-				Voir tout
+				{t('viewAll')}
 			</Link>
 		</div>
 	);
@@ -352,20 +360,20 @@ function getStatusColor(status: TicketStatus) {
 	return (color);
 }
 
-function getStatusText(status: TicketStatus) {
+function getStatusText(status: TicketStatus, t: (key: string) => string) {
 	let statusText: string | undefined;
 	switch (status) {
 		case TicketStatus.OPEN: {
-			statusText = "Ouvert";
+			statusText = t('statusOpen');
 		} break;
 		case TicketStatus.IN_PROGRESS: {
-			statusText = "En cours";
+			statusText = t('statusInProgress');
 		} break;
 		case TicketStatus.RESOLVED: {
-			statusText = "Resolu";
+			statusText = t('statusResolved');
 		} break;
 		case TicketStatus.CLOSED: {
-			statusText = "Ferme";
+			statusText = t('statusClosed');
 		} break;
 		default: {
 			throw new Error("Unkown ticket status");
@@ -374,20 +382,20 @@ function getStatusText(status: TicketStatus) {
 	return (statusText);
 }
 
-function getPriorityText(priority: TicketPriority) {
+function getPriorityText(priority: TicketPriority, t: (key: string) => string) {
 	let priorityText: string | undefined;
 	switch (priority) {
 		case TicketPriority.LOW: {
-			priorityText = "Basse";
+			priorityText = t('priorityLow');
 		} break;
 		case TicketPriority.MEDIUM: {
-			priorityText = "Moyenne";
+			priorityText = t('priorityMedium');
 		} break;
 		case TicketPriority.HIGH: {
-			priorityText = "Haute";
+			priorityText = t('priorityHigh');
 		} break;
 		case TicketPriority.URGENT: {
-			priorityText = "Urgent";
+			priorityText = t('priorityUrgent');
 		} break;
 		default: {
 			throw new Error("Unkown ticket priority");
@@ -438,6 +446,7 @@ function upsertTicketFromSocket(prev: Ticket[], payload: RawTicket): Ticket[] {
 }
 
 function RecentTickets() {
+	const {t, i18n} = useTranslation('admin');
 	const [tickets, setTickets] = useState<Ticket[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -451,7 +460,7 @@ function RecentTickets() {
 				setError(null);
 			} catch (e) {
 				console.error('Erreur chargement tickets admin:', e);
-				setError('Impossible de charger les tickets');
+				setError(t('loadTicketsError'));
 			} finally {
 				setLoading(false);
 			}
@@ -486,18 +495,18 @@ function RecentTickets() {
 				<table className="min-w-[700px] w-full text-sm text-left">
 					<thead className="text-gray-500 border-b">
 						<tr>
-							<th className="px-5 pb-3 font-medium">ID</th>
-							<th className="px-5 pb-3 font-medium">Titre</th>
-							<th className="px-5 pb-3 font-medium">Utilisateur</th>
-							<th className="px-5 pb-3 font-medium">Status</th>
-							<th className="px-5 pb-3 font-medium">Priorité</th>
-							<th className="px-5 pb-3 font-medium">Date</th>
+							<th className="px-5 pb-3 font-medium">{t('idColumn')}</th>
+							<th className="px-5 pb-3 font-medium">{t('titleColumn')}</th>
+							<th className="px-5 pb-3 font-medium">{t('userColumn')}</th>
+							<th className="px-5 pb-3 font-medium">{t('statusColumn')}</th>
+							<th className="px-5 pb-3 font-medium">{t('priorityColumn')}</th>
+							<th className="px-5 pb-3 font-medium">{t('dateColumn')}</th>
 						</tr>
 					</thead>
 					<tbody>
 						{loading ? (
 							<tr>
-								<td colSpan={6} className="text-center py-6 text-gray-400">Chargement des tickets...</td>
+								<td colSpan={6} className="text-center py-6 text-gray-400">{t('loadingTickets')}</td>
 							</tr>
 						) : error ? (
 							<tr>
@@ -505,7 +514,7 @@ function RecentTickets() {
 							</tr>
 						) : tickets.length === 0 ? (
 							<tr>
-								<td colSpan={6} className="text-center py-6 text-gray-400">Aucun ticket disponible</td>
+								<td colSpan={6} className="text-center py-6 text-gray-400">{t('noTickets')}</td>
 							</tr>
 						) : (
 							[...tickets]
@@ -518,16 +527,16 @@ function RecentTickets() {
 										<td className="px-5 py-3">{ticket.author?.login ?? "N/A"}</td>
 										<td className="px-5 py-3">
 											<span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(ticket.status)[0]} ${getStatusColor(ticket.status)[1]}`}>
-												{getStatusText(ticket.status)}
+												{getStatusText(ticket.status, t)}
 											</span>
 										</td>
 										<td className="px-5 py-3">
 											<span className={`px-2 py-1 rounded-full text-xs ${getPriorityColor(ticket.priority)[0]} ${getPriorityColor(ticket.priority)[1]}`}>
-												{getPriorityText(ticket.priority)}
+												{getPriorityText(ticket.priority, t)}
 											</span>
 										</td>
 										<td className="px-5 py-3 text-gray-500">
-											{ticket.createdAt.toLocaleDateString("fr-FR").replace(/\//g, "-")}
+											{ticket.createdAt.toLocaleDateString(i18n.language).replace(/\//g, "-")}
 										</td>
 									</tr>
 								))
@@ -540,6 +549,7 @@ function RecentTickets() {
 }
 
 export function AdminDashboard() {
+	const {t} = useTranslation('admin');
 	const [tickets, setTickets] = useState<Ticket[]>([]);
 	const [users, setUsers] = useState<User[]>([]);
 	const loadTickets = async () => {
@@ -589,25 +599,25 @@ export function AdminDashboard() {
 		<div className="p-4">
 			<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 				<StatCard
-					title="Total tickets"
+					title={t('totalTickets')}
 					count={tickets.length}
 					icon={TicketIcon}
 					type={StatCardType.TOTAL_TICKET}
 				/>
 				<StatCard
-					title="Tickets ouverts"
+					title={t('openTickets')}
 					count={openTickets.length}
 					icon={ClockIcon}
 					type={StatCardType.OPEN_TICKET}
 				/>
 				<StatCard
-					title="Tickets fermes"
+					title={t('closedTickets')}
 					count={closedTickets.length}
 					icon={TicketIcon}
 					type={StatCardType.CLOSED_TICKET}
 				/>
 				<StatCard
-					title="Utilisateurs"
+					title={t('users')}
 					count={users.length}
 					icon={UsersIcon}
 					type={StatCardType.USERS}
@@ -630,13 +640,14 @@ interface TicketsFooterProps {
 }
 
 function TicketsFooter(props: TicketsFooterProps) {
+	const {t} = useTranslation('admin');
 	const start = (props.currentPage - 1) * 8 + 1;
 	const end = Math.min(props.currentPage * 8, props.totalItems);
 
 	return (
 		<div className="px-5 pt-3 flex items-center justify-between">
 			<span className="text-xs md:text-sm text-gray-600">
-				Affichage {start}-{end} sur {props.totalItems} tickets
+				{t('displayingRange', {start, end, total: props.totalItems})}
 			</span>
 			<div className="flex items-center gap-3">
 				<button
@@ -644,14 +655,14 @@ function TicketsFooter(props: TicketsFooterProps) {
 					disabled={props.currentPage == 1}
 					className="btn text-xs md:text-sm font-medium disabled:opacity-50 rounded-lg border border-1 bg-cream text-gray-600"
 				>
-					Precedent
+					{t('previous')}
 				</button>
 				<button
 					onClick={props.onNext}
 					disabled={props.currentPage === props.totalPages}
 					className="btn text-xs md:text-sm font-medium disabled:opacity-50 rounded-lg border border-1 bg-cream text-gray-600"
 				>
-					Suivant
+					{t('next')}
 				</button>
 			</div>
 		</div>
@@ -684,21 +695,22 @@ function ActionIcon(props: ActionIconProps) {
 }
 
 export function AdminTickets() {
+	const {t, i18n} = useTranslation('admin');
 	// TODO: refactor this code
 	const statusFilterElements = [
-		{label: "Tous", value: null},
-		{label: "Ouverts", value: TicketStatus.OPEN},
-		{label: "En cours", value: TicketStatus.IN_PROGRESS},
-		{label: "Résolus", value: TicketStatus.RESOLVED},
-		{label: "Fermés", value: TicketStatus.CLOSED},
+		{label: t('all'), value: null},
+		{label: t('openPlural'), value: TicketStatus.OPEN},
+		{label: t('inProgressPlural'), value: TicketStatus.IN_PROGRESS},
+		{label: t('resolvedPlural'), value: TicketStatus.RESOLVED},
+		{label: t('closedPlural'), value: TicketStatus.CLOSED},
 	];
 
 	const priorityFilterElements = [
-		{label: "Tous", value: null},
-		{label: "Basses", value: TicketPriority.LOW},
-		{label: "Moyennes", value: TicketPriority.MEDIUM},
-		{label: "Hautes", value: TicketPriority.HIGH},
-		{label: "Urgentes", value: TicketPriority.URGENT},
+		{label: t('all'), value: null},
+		{label: t('lowPlural'), value: TicketPriority.LOW},
+		{label: t('mediumPlural'), value: TicketPriority.MEDIUM},
+		{label: t('highPlural'), value: TicketPriority.HIGH},
+		{label: t('urgentPlural'), value: TicketPriority.URGENT},
 	];
 
 	const [currentFilterStatus, setCurrentFilterStatus] = useState<TicketStatus | null>(null);
@@ -718,7 +730,7 @@ export function AdminTickets() {
 				setError(null);
 			} catch (e) {
 				console.error('Erreur chargement tickets admin:', e);
-				setError('Impossible de charger les tickets');
+				setError(t('loadTicketsError'));
 			} finally {
 				setLoading(false);
 			}
@@ -780,7 +792,7 @@ export function AdminTickets() {
 	//console.log(tickets[0]?.author?.login);
 
 	if (loading) {
-		return <div className="p-4">Chargement des tickets...</div>;
+		return <div className="p-4">{t('loadingTickets')}</div>;
 	}
 
 	if (error) {
@@ -792,11 +804,11 @@ export function AdminTickets() {
 			<div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:justify-between">
 				<label className="input text-sm border rounded-lg border-gray-200 max-w-[280px]">
 					<MagnifyingGlassIcon className="w-4 h-4 text-gray-600" />
-					<input type="search" className="text-sm" required placeholder="Rechercher des tickets" />
+					<input type="search" className="text-sm" required placeholder={t('searchTicketsPlaceholder')} />
 				</label>
 				<div className="flex items-center gap-4">
-					<TicketFilter label="Status" list={statusFilterElements} currentFilterElement={currentFilterElementStatus?.label ?? "Tous"} handleSelect={handleSelectStatus} />
-					<TicketFilter label="Priorite" list={priorityFilterElements} currentFilterElement={currentFilterElementPriority?.label ?? "Tous"} handleSelect={handleSelectPriority} />
+					<TicketFilter label={t('statusLabel')} list={statusFilterElements} currentFilterElement={currentFilterElementStatus?.label ?? t('all')} handleSelect={handleSelectStatus} />
+					<TicketFilter label={t('priorityLabel')} list={priorityFilterElements} currentFilterElement={currentFilterElementPriority?.label ?? t('all')} handleSelect={handleSelectPriority} />
 				</div>
 			</div>
 			<div className="bg-white py-4 rounded-md shadow mt-8">
@@ -804,12 +816,12 @@ export function AdminTickets() {
 					<table className="min-w-[700px] w-full text-sm text-left">
 						<thead className="text-gray-500 border-b">
 							<tr>
-								<th className="px-5 pb-3 font-medium whitespace-nowrap">ID</th>
-								<th className="px-5 pb-3 font-medium whitespace-nowrap">Titre</th>
-								<th className="px-5 pb-3 font-medium whitespace-nowrap">Statut</th>
-								<th className="px-5 pb-3 font-medium whitespace-nowrap">Priorite</th>
-								<th className="px-5 pb-3 font-medium whitespace-nowrap">Client</th>
-								<th className="px-5 pb-3 font-medium whitespace-nowrap">Date</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">{t('idColumn')}</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">{t('titleColumn')}</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">{t('statusColumn')}</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">{t('priorityColumn')}</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">{t('clientColumn')}</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">{t('dateColumn')}</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -828,20 +840,20 @@ export function AdminTickets() {
 										<td className="px-5 py-3 whitespace-nowrap">
 											<span
 												className={`px-2 py-1 rounded-full text-xs ${getStatusColor(ticket.status)[0]} ${getStatusColor(ticket.status)[1]}`}>
-												{getStatusText(ticket.status)}
+												{getStatusText(ticket.status, t)}
 											</span>
 										</td>
 										<td className="px-5 py-3 whitespace-nowrap">
 											<span
 												className={`px-2 py-1 rounded-full text-xs ${getPriorityColor(ticket.priority)[0]} ${getPriorityColor(ticket.priority)[1]}`}>
-												{getPriorityText(ticket.priority)}
+												{getPriorityText(ticket.priority, t)}
 											</span>
 										</td>
 										<td className="px-5 py-3 whitespace-nowrap">
 											{ticket.author.login ?? ticket.author.email}
 										</td>
 										<td className="px-5 py-3 text-gray-500 whitespace-nowrap">
-											{new Date(ticket.createdAt).toLocaleDateString("fr-FR").replace(/\//g, "-")}
+											{new Date(ticket.createdAt).toLocaleDateString(i18n.language).replace(/\//g, "-")}
 										</td>
 									</tr>
 								))
@@ -861,31 +873,33 @@ export function AdminTickets() {
 	);
 }
 
-function getRoleString(role: UserRole): string {
+function getRoleString(role: UserRole, authT: (key: string) => string, adminT: (key: string) => string): string {
 	let roleString: string = "";
 
 	switch (role) {
 		case UserRole.CLIENT: {
-			roleString = "Client";
+			roleString = authT('client');
 		} break;
 		case UserRole.AGENT: {
-			roleString = "Agent";
+			roleString = authT('agent');
 		} break;
 		case UserRole.ADMIN: {
-			roleString = "Admin";
+			roleString = adminT('adminLabel');
 		}
 	}
 	return (roleString);
 }
 
 export function AdminUsers() {
+	const {t: authT} = useTranslation('auth');
+	const {t} = useTranslation('admin');
 	const [users, setUsers] = useState<User[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
 
 	const handleDeleteUser = async (userId: number) => {
-		const confirmed = window.confirm('Supprimer cet utilisateur ? Les tickets seront conservés.');
+		const confirmed = window.confirm(t('deleteUserConfirm'));
 		if (!confirmed) return;
 
 		try {
@@ -894,7 +908,7 @@ export function AdminUsers() {
 			setUsers((prev) => prev.filter((u) => u.id !== userId));
 		} catch (e) {
 			console.error('Erreur suppression utilisateur admin:', e);
-			alert('Impossible de supprimer cet utilisateur');
+			alert(t('deleteUserError'));
 		} finally {
 			setDeletingUserId(null);
 		}
@@ -908,7 +922,7 @@ export function AdminUsers() {
 				setError(null);
 			} catch (e) {
 				console.error('Erreur chargement tickets admin:', e);
-				setError('Impossible de charger les tickets');
+				setError(t('loadUsersError'));
 			} finally {
 				setLoading(false);
 			}
@@ -918,7 +932,7 @@ export function AdminUsers() {
 	}, []);
 
 	if (loading) {
-		return <div className="p-4">Chargement des tickets...</div>;
+		return <div className="p-4">{t('loadingUsers')}</div>;
 	}
 
 	if (error) {
@@ -930,7 +944,7 @@ export function AdminUsers() {
 		<div>
 			<label className="hidden md:flex input text-sm bg-white rounded-lg border border-gray-200 max-w-[280px]">
 				<MagnifyingGlassIcon className="w-4 h-4 text-gray-600" />
-				<input type="search" className="text-sm" required placeholder="Rechercher des utilisateurs" />
+				<input type="search" className="text-sm" required placeholder={t('searchUsersPlaceholder')} />
 			</label>
 
 			<div className="bg-white rounded-md shadow mt-8 pt-3">
@@ -938,11 +952,11 @@ export function AdminUsers() {
 					<table className="min-w-[700px] w-full text-sm text-left">
 						<thead className="text-gray-500 border-b">
 							<tr>
-								<th className="px-5 pb-3 font-medium whitespace-nowrap">Utilisateurs</th>
-								<th className="px-5 pb-3 font-medium whitespace-nowrap">Role</th>
-								<th className="px-5 pb-3 font-medium whitespace-nowrap">Tickets</th>
-								<th className="px-5 pb-3 font-medium whitespace-nowrap">Inscription</th>
-								<th className="px-5 pb-3 font-medium whitespace-nowrap">Actions</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">{t('usersColumn')}</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">{t('roleColumn')}</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">{t('ticketsColumn')}</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">{t('registrationColumn')}</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">{t('actionsColumn')}</th>
 							</tr>
 						</thead>
 
@@ -964,7 +978,7 @@ export function AdminUsers() {
 										</td>
 										<td className="px-5 py-3 whitespace-nowrap">
 											<span className="badge bg-gray-200 text-xs p-2 rounded-full">
-												{getRoleString(user.role)}
+												{getRoleString(user.role, authT, t)}
 											</span>
 										</td>
 										<td className="px-5 py-3 whitespace-nowrap">
@@ -979,7 +993,7 @@ export function AdminUsers() {
 												onClick={() => void handleDeleteUser(user.id)}
 												disabled={deletingUserId === user.id}
 												className="p-2 transition hover:bg-blue-200 rounded-full disabled:opacity-50"
-												aria-label="Supprimer utilisateur"
+												aria-label={t('delete')}
 											>
 												{
 													user.role !== UserRole.ADMIN ?
@@ -1000,9 +1014,10 @@ export function AdminUsers() {
 }
 
 export function AdminStats() {
+	const {t} = useTranslation('admin');
 	return (
 		<div>
-			Stats
+			{t('sidebarStats')}
 		</div>
 	);
 }
@@ -1013,6 +1028,7 @@ interface DrawerSideContentProps {
 }
 
 function DrawerSideContent(props: DrawerSideContentProps) {
+	const {t} = useTranslation('admin');
 	const handleNavClick = () => {
 		if (window.innerWidth < 1024) {
 			props.setIsOpen(false);
@@ -1040,11 +1056,11 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 							 focus:bg-sky/50
 							`
 						}
-						data-tip="Tableau de bord"
+						data-tip={t('sidebarDashboard')}
 						onClick={handleNavClick}
 					>
 						<Squares2X2Icon className="w-5 h-5" />
-						<span className="is-drawer-close:hidden text-sm">Tableau de bord</span>
+						<span className="is-drawer-close:hidden text-sm">{t('sidebarDashboard')}</span>
 					</NavLink>
 				</li>
 				<li>
@@ -1056,11 +1072,11 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 								focus:bg-sky/25
 							`
 						}
-						data-tip="Tickets"
+						data-tip={t('sidebarTickets')}
 						onClick={handleNavClick}
 					>
 						<TicketIcon className="w-5 h-5" />
-						<span className="is-drawer-close:hidden text-sm">Tickets</span>
+						<span className="is-drawer-close:hidden text-sm">{t('sidebarTickets')}</span>
 					</NavLink>
 				</li>
 				<li>
@@ -1072,11 +1088,11 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 								focus:bg-sky/25
 							`
 						}
-						data-tip="Users"
+						data-tip={t('sidebarUsers')}
 						onClick={handleNavClick}
 					>
 						<UsersIcon className="w-5 h-5" />
-						<span className="is-drawer-close:hidden text-sm">Utilisateurs</span>
+						<span className="is-drawer-close:hidden text-sm">{t('sidebarUsers')}</span>
 					</NavLink>
 				</li>
 				<li>
@@ -1088,11 +1104,11 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 							focus:bg-sky/25
 							`
 						}
-						data-tip="Statistiques"
+						data-tip={t('sidebarStats')}
 						onClick={handleNavClick}
 					>
 						<ChartBarSquareIcon className="w-5 h-5" />
-						<span className="is-drawer-close:hidden text-sm">Statistiques</span>
+						<span className="is-drawer-close:hidden text-sm">{t('sidebarStats')}</span>
 					</NavLink>
 				</li>
 			</ul>
@@ -1102,7 +1118,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 					<span>AD</span>
 				</div>
 				<div className="flex flex-col">
-					<span className="text-sm">Administrateur</span>
+					<span className="text-sm">{t('adminLabel')}</span>
 					<span className="text-xs">tikeoadmin@tikeo.com</span>
 				</div>
 			</div>
