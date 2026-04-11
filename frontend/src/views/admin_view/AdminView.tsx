@@ -1,6 +1,6 @@
-import {useState, useMemo, useEffect} from 'react';
-import {useNavigate} from 'react-router-dom';
-import {useTranslation} from 'react-i18next';
+import { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
 	ChevronLeftIcon,
 	ChevronRightIcon,
@@ -30,11 +30,14 @@ import {
 } from 'recharts';
 import Separator from '../../components/login_components/Separator';
 import TicketFilter from '../../components/client_components/TicketFilter';
-import {UserRole} from '../../types';
-import {fetchTickets, fetchUsers, normalizeTicket, type RawTicket, deleteUserByAdmin, fetchTicketResolutionHistory, type TicketResolutionHistoryItem} from '../../services/tickets';
-import {format, subDays, isSameDay} from 'date-fns';
-import {fr, enUS, es} from 'date-fns/locale';
-import {getSocket} from '../../services/singleton';
+import { UserRole } from '../../types';
+import { fetchTickets, fetchUsers, normalizeTicket, type RawTicket, deleteUserByAdmin, fetchTicketResolutionHistory, type TicketResolutionHistoryItem } from '../../services/tickets';
+import { format, subDays, isSameDay } from 'date-fns';
+import { fr, enUS, es } from 'date-fns/locale';
+import { getSocket } from '../../services/singleton';
+import { jsPDF } from 'jspdf';
+import { autoTable } from 'jspdf-autotable';
+
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -45,7 +48,7 @@ function VerticalSeparator() {
 }
 
 function AdminHeader() {
-	const {t} = useTranslation('admin');
+	const { t } = useTranslation('admin');
 	const navigate = useNavigate();
 
 	const handleLogout = () => {
@@ -91,7 +94,7 @@ interface DrawerTogglerProps {
 };
 
 function DrawerToggler(props: DrawerTogglerProps) {
-	const {t} = useTranslation('admin');
+	const { t } = useTranslation('admin');
 	return (
 		<button
 			type="button"
@@ -185,7 +188,7 @@ interface CreatedAndResolvedIndicatorProps {
 }
 
 function CreatedAndResolvedIndicator(props: CreatedAndResolvedIndicatorProps) {
-	const {t} = useTranslation('admin');
+	const { t } = useTranslation('admin');
 	const text = props.type === "created" ? t('created') : t('resolved');
 	const bg = props.type === "created" ? "bg-navy" : "bg-status-resolved";
 	return (
@@ -205,7 +208,7 @@ const generateDailyTickets = (
 	const last7Days = [...Array(7)].map((_, i) => subDays(new Date(), i)).reverse();
 
 	return last7Days.map((date) => {
-		const name = format(date, 'eee', {locale});
+		const name = format(date, 'eee', { locale });
 
 		const created = tickets.filter((t) =>
 			isSameDay(new Date(t.createdAt), date)
@@ -225,7 +228,7 @@ const generateDailyTickets = (
 };
 
 function TicketsActivities() {
-	const {t, i18n} = useTranslation('admin');
+	const { t, i18n } = useTranslation('admin');
 	const [tickets, setTickets] = useState<Ticket[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -303,10 +306,10 @@ function TicketsActivities() {
 				<ResponsiveContainer>
 					<LineChart responsive data={dailyTickets}>
 						<CartesianGrid stroke="#aaa" strokeDasharray="5 5" />
-						<Line type="monotone" dataKey="created" stroke="var(--color-navy)" strokeWidth={2} name={t('created')} dot={false} activeDot={{r: 5}} />
-						<Line type="monotone" dataKey="resolved" stroke="var(--color-status-resolved)" strokeWidth={2} name={t('resolved')} dot={false} activeDot={{r: 5}} />
-						<XAxis dataKey="name" tick={{fontSize: 12}} />
-						<YAxis tick={{fontSize: 12}} />
+						<Line type="monotone" dataKey="created" stroke="var(--color-navy)" strokeWidth={2} name={t('created')} dot={false} activeDot={{ r: 5 }} />
+						<Line type="monotone" dataKey="resolved" stroke="var(--color-status-resolved)" strokeWidth={2} name={t('resolved')} dot={false} activeDot={{ r: 5 }} />
+						<XAxis dataKey="name" tick={{ fontSize: 12 }} />
+						<YAxis tick={{ fontSize: 12 }} />
 						<Tooltip />
 						<RechartsDevtools />
 					</LineChart>
@@ -317,7 +320,7 @@ function TicketsActivities() {
 }
 
 function RecentTicketsHeader() {
-	const {t} = useTranslation('admin');
+	const { t } = useTranslation('admin');
 	return (
 		<div className="flex items-center justify-between px-5 pt-3">
 			<div>
@@ -446,7 +449,7 @@ function upsertTicketFromSocket(prev: Ticket[], payload: RawTicket): Ticket[] {
 }
 
 function RecentTickets() {
-	const {t, i18n} = useTranslation('admin');
+	const { t, i18n } = useTranslation('admin');
 	const [tickets, setTickets] = useState<Ticket[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -549,7 +552,7 @@ function RecentTickets() {
 }
 
 export function AdminDashboard() {
-	const {t} = useTranslation('admin');
+	const { t } = useTranslation('admin');
 	const [tickets, setTickets] = useState<Ticket[]>([]);
 	const [users, setUsers] = useState<User[]>([]);
 	const loadTickets = async () => {
@@ -640,14 +643,14 @@ interface TicketsFooterProps {
 }
 
 function TicketsFooter(props: TicketsFooterProps) {
-	const {t} = useTranslation('admin');
+	const { t } = useTranslation('admin');
 	const start = (props.currentPage - 1) * 8 + 1;
 	const end = Math.min(props.currentPage * 8, props.totalItems);
 
 	return (
 		<div className="px-5 pt-3 flex items-center justify-between">
 			<span className="text-xs md:text-sm text-gray-600">
-				{t('displayingRange', {start, end, total: props.totalItems})}
+				{t('displayingRange', { start, end, total: props.totalItems })}
 			</span>
 			<div className="flex items-center gap-3">
 				<button
@@ -695,22 +698,22 @@ function ActionIcon(props: ActionIconProps) {
 }
 
 export function AdminTickets() {
-	const {t, i18n} = useTranslation('admin');
+	const { t, i18n } = useTranslation('admin');
 	// TODO: refactor this code
 	const statusFilterElements = [
-		{label: t('all'), value: null},
-		{label: t('openPlural'), value: TicketStatus.OPEN},
-		{label: t('inProgressPlural'), value: TicketStatus.IN_PROGRESS},
-		{label: t('resolvedPlural'), value: TicketStatus.RESOLVED},
-		{label: t('closedPlural'), value: TicketStatus.CLOSED},
+		{ label: t('all'), value: null },
+		{ label: t('openPlural'), value: TicketStatus.OPEN },
+		{ label: t('inProgressPlural'), value: TicketStatus.IN_PROGRESS },
+		{ label: t('resolvedPlural'), value: TicketStatus.RESOLVED },
+		{ label: t('closedPlural'), value: TicketStatus.CLOSED },
 	];
 
 	const priorityFilterElements = [
-		{label: t('all'), value: null},
-		{label: t('lowPlural'), value: TicketPriority.LOW},
-		{label: t('mediumPlural'), value: TicketPriority.MEDIUM},
-		{label: t('highPlural'), value: TicketPriority.HIGH},
-		{label: t('urgentPlural'), value: TicketPriority.URGENT},
+		{ label: t('all'), value: null },
+		{ label: t('lowPlural'), value: TicketPriority.LOW },
+		{ label: t('mediumPlural'), value: TicketPriority.MEDIUM },
+		{ label: t('highPlural'), value: TicketPriority.HIGH },
+		{ label: t('urgentPlural'), value: TicketPriority.URGENT },
 	];
 
 	const [currentFilterStatus, setCurrentFilterStatus] = useState<TicketStatus | null>(null);
@@ -891,8 +894,8 @@ function getRoleString(role: UserRole, authT: (key: string) => string, adminT: (
 }
 
 export function AdminUsers() {
-	const {t: authT} = useTranslation('auth');
-	const {t} = useTranslation('admin');
+	const { t: authT } = useTranslation('auth');
+	const { t } = useTranslation('admin');
 	const [users, setUsers] = useState<User[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -1014,10 +1017,132 @@ export function AdminUsers() {
 }
 
 export function AdminStats() {
-	const {t} = useTranslation('admin');
+	const { t, i18n } = useTranslation('admin');
+	const [isExporting, setIsExporting] = useState(false);
+	const [exportError, setExportError] = useState<string | null>(null);
+
+	const handleExportPdf = async () => {
+		try {
+			setIsExporting(true);
+			setExportError(null);
+
+			const [tickets, users, resolutionHistory] = await Promise.all([
+				fetchTickets(),
+				fetchUsers(),
+				fetchTicketResolutionHistory(7),
+			]);
+
+			const doc = new jsPDF({
+				orientation: 'landscape',
+				unit: 'pt',
+				format: 'a4',
+			});
+
+			const generatedAt = new Date();
+
+			doc.setFontSize(18);
+			doc.text('Tikeo - Admin Report', 40, 40);
+
+			doc.setFontSize(10);
+			doc.text(
+				t('generatedOn') + ': ' + generatedAt.toLocaleString(i18n.language),
+				40,
+				58
+			);
+
+			const totalTickets = tickets.length;
+			const openTickets = tickets.filter((ticket) => ticket.status === TicketStatus.OPEN).length;
+			const inProgressTickets = tickets.filter((ticket) => ticket.status === TicketStatus.IN_PROGRESS).length;
+			const resolvedTickets = tickets.filter((ticket) => ticket.status === TicketStatus.RESOLVED).length;
+			const closedTickets = tickets.filter((ticket) => ticket.status === TicketStatus.CLOSED).length;
+
+			autoTable(doc, {
+				startY: 76,
+				head: [[t('metric'), t('value')]],
+				body: [
+					[t('totalTickets'), String(totalTickets)],
+					[t('openPlural'), String(openTickets)],
+					[t('inProgressPlural'), String(inProgressTickets)],
+					[t('resolvedPlural'), String(resolvedTickets)],
+					[t('closedPlural'), String(closedTickets)],
+					[t('users'), String(users.length)],
+				],
+				styles: { fontSize: 10 },
+				headStyles: { fillColor: [22, 56, 95] },
+			});
+
+			const dailyActivity = generateDailyTickets(tickets, resolutionHistory, i18n.language);
+
+			autoTable(doc, {
+				startY: (doc as any).lastAutoTable.finalY + 16,
+				head: [[t('day'), t('created'), t('resolved')]],
+				body: dailyActivity.map((item) => [
+					item.name,
+					String(item.created),
+					String(item.resolved),
+				]),
+				styles: { fontSize: 9 },
+				headStyles: { fillColor: [46, 139, 87] },
+			});
+
+			const ticketRows = [...tickets]
+				.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+				.map((ticket) => [
+					'TK-' + ticket.id,
+					ticket.title,
+					getStatusText(ticket.status, t),
+					getPriorityText(ticket.priority, t),
+					ticket.author?.login ?? ticket.author?.email ?? 'N/A',
+					ticket.createdAt.toLocaleDateString(i18n.language).replace(/\//g, '-'),
+				]);
+
+			autoTable(doc, {
+				startY: (doc as any).lastAutoTable.finalY + 16,
+				head: [[t('idColumn'), t('titleColumn'), t('statusColumn'), t('priorityColumn'), t('clientColumn'), t('dateColumn')]],
+				body: ticketRows.length > 0 ? ticketRows : [[t('noTickets'), '', '', '', '', '']],
+				styles: { fontSize: 8, cellPadding: 4 },
+				headStyles: { fillColor: [22, 56, 95] },
+				columnStyles: {
+					0: { cellWidth: 55 },
+					1: { cellWidth: 220 },
+					2: { cellWidth: 90 },
+					3: { cellWidth: 90 },
+					4: { cellWidth: 130 },
+					5: { cellWidth: 90 },
+				},
+			});
+
+			const datePart = generatedAt.toISOString().slice(0, 10);
+			doc.save('tikeo-admin-report-' + datePart + '.pdf');
+		} catch (error) {
+			console.error('PDF export error:', error);
+			setExportError(t('exportPdfError'));
+		} finally {
+			setIsExporting(false);
+		}
+	};
+
 	return (
-		<div>
-			{t('sidebarStats')}
+		<div className="bg-white rounded-md shadow p-5">
+			<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+				<div>
+					<h3 className="text-base text-navy font-medium">{t('sidebarStats')}</h3>
+					<p className="text-sm text-gray-500">{t('exportPdfDescription')}</p>
+				</div>
+
+				<button
+					type="button"
+					className="btn btn-primary"
+					onClick={() => void handleExportPdf()}
+					disabled={isExporting}
+				>
+					{isExporting ? t('exportingPdf') : t('exportPdf')}
+				</button>
+			</div>
+
+			{exportError ? (
+				<p className="text-sm text-red-600 mt-3">{exportError}</p>
+			) : null}
 		</div>
 	);
 }
@@ -1028,7 +1153,7 @@ interface DrawerSideContentProps {
 }
 
 function DrawerSideContent(props: DrawerSideContentProps) {
-	const {t} = useTranslation('admin');
+	const { t } = useTranslation('admin');
 	const handleNavClick = () => {
 		if (window.innerWidth < 1024) {
 			props.setIsOpen(false);

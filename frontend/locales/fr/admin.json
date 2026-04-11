@@ -62,5 +62,14 @@
   "sidebarTickets": "Tickets",
   "sidebarUsers": "Utilisateurs",
   "sidebarStats": "Statistiques",
-  "adminLabel": "Administrateur"
+  "adminLabel": "Administrateur",
+  "exportPdf": "Exporter en PDF",
+  "exportingPdf": "Export PDF...",
+  "exportPdfError": "Impossible de générer le PDF",
+  "exportPdfDescription": "Télécharge un rapport avec les métriques, l'activité des 7 derniers jours et la liste des tickets.",
+  "generatedOn": "Généré le",
+  "metric": "Métrique",
+  "value": "Valeur",
+  "activityLast7Days": "Activité (7 jours)",
+  "day": "Jour"
 }
