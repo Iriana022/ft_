@@ -158,7 +158,7 @@ Total: 2 points
 ### User Management
 * **Minor:** Implement remote authentication with OAuth 2.0 (Google, GitHub, 42, etc.). -> **1 point**
 * **Major:** Advanced permissions system: -> **2 points**
-  - View, edit, and delete users (CRUD). (sahaza)
+  - View, edit, and delete users (CRUD). (edit a revoir Sahaza)
   - Roles management (admin, user, guest, moderator, etc.).
   - Different views and actions based on user role.
 * **Minor:** User activity analytics and insights dashboard. -> **1 point**

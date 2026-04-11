@@ -21,9 +21,9 @@ import {
 import TikeoLogo from '../../components/client_components/TikeoLogo';
 import Notification from '../../components/client_components/Notification';
 import Avatar from '../../components/client_components/Avatar';
-import {Outlet, Link, NavLink} from 'react-router-dom';
-import {type HeroIconType, type Ticket, type User, TicketStatus, TicketPriority, StatCardType} from '../../types';
-import {RechartsDevtools} from '@recharts/devtools';
+import { Outlet, Link, NavLink } from 'react-router-dom';
+import { type HeroIconType, type Ticket, type User, TicketStatus, TicketPriority, StatCardType } from '../../types';
+import { RechartsDevtools } from '@recharts/devtools';
 import {
 	LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
 	ResponsiveContainer
@@ -442,7 +442,7 @@ function upsertTicketFromSocket(prev: Ticket[], payload: RawTicket): Ticket[] {
 		return [nextTicket, ...prev];
 	}
 
-	return prev.map((t) => (t.id === nextTicket.id ? {...t, ...nextTicket} : t));
+	return prev.map((t) => (t.id === nextTicket.id ? { ...t, ...nextTicket } : t));
 }
 
 function RecentTickets() {
@@ -1050,7 +1050,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 					<NavLink
 						to="/admin"
 						end
-						className={({isActive}) =>
+						className={({ isActive }) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 							 ${isActive ? "bg-sky/25" : ""}
 							 focus:bg-sky/50
@@ -1066,7 +1066,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 				<li>
 					<NavLink
 						to="tickets"
-						className={({isActive}) =>
+						className={({ isActive }) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 								${isActive ? "bg-sky/25" : ""}
 								focus:bg-sky/25
@@ -1082,7 +1082,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 				<li>
 					<NavLink
 						to="users"
-						className={({isActive}) =>
+						className={({ isActive }) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 								${isActive ? "bg-sky/25" : ""}
 								focus:bg-sky/25
@@ -1098,7 +1098,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 				<li>
 					<NavLink
 						to="stats"
-						className={({isActive}) =>
+						className={({ isActive }) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 							${isActive ? "bg-sky/25" : ""}
 							focus:bg-sky/25

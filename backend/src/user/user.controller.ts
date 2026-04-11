@@ -7,6 +7,9 @@ import { extname } from 'path';
 import { diskStorage } from 'multer';
 import { join } from 'path';
 import { unlink } from 'fs/promises';
+import { UserRole } from '@prisma/client';
+import { Roles } from 'src/auth/roles.decorator';
+import { RolesGuard } from 'src/auth/roles.guard';
 
 @Controller('user')
 export class UserController {
@@ -18,7 +21,8 @@ export class UserController {
 	}
 
 	@Get()
-	@UseGuards(JwtAuthGuard)
+	@UseGuards(JwtAuthGuard, RolesGuard)
+	@Roles(UserRole.ADMIN)
 	findAll() {
 		return this.userService.findAll();
 	}
@@ -83,7 +87,8 @@ export class UserController {
 	}
 
 	@Delete(':id')
-	@UseGuards(JwtAuthGuard)
+	@UseGuards(JwtAuthGuard, RolesGuard)
+	@Roles(UserRole.ADMIN)
 	@HttpCode(HttpStatus.NO_CONTENT)
 	async deleteUserByAdmin(
 		@Param('id', ParseIntPipe) id: number,
