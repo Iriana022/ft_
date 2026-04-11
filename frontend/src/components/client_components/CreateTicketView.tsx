@@ -4,6 +4,7 @@ import CloseButtonX from './CloseButtonX';
 import PriorityChoice from './PriorityChoice';
 import {TicketPriority} from '../../types';
 import {createClientTicket} from '../../services/tickets';
+import {useTranslation} from 'react-i18next';
 
 interface CreateTicketViewProps {
 	isOpen: boolean,
@@ -19,6 +20,8 @@ function CreateTicketView(props: CreateTicketViewProps) {
 	const [errorMessage, setErrorMessage] = useState('');
 	const [successMessage, setSuccessMessage] = useState('');
 	const modalRef = useRef<HTMLDivElement | null>(null);
+
+	const {t: t_client} = useTranslation("client_home");
 
 	useEffect(() => {
 		const handleClickOutside = (e: MouseEvent) => {

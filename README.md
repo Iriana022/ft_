@@ -1,71 +1,127 @@
 # ft_transcendence
 
-Bienvenue sur notre projet **ft_transcendence**, le dernier défi du tronc commun de 42.  
-Il s'agit d'une plateforme web complète permettant de gerer des tickets de service de dev en temps reel.
+Welcome to **Tikeo**, our **ft_transcendence** project and the final challenge of the 42 common core.
+
+**Tikeo** is a feedback ticket management platform designed to streamline communication between users and support teams in real time.
+
+### 🎯 Project Description
+
+Tikeo is built around three main user roles:
+
+* **Client**:
+
+  * Creates tickets (feedback, issues, requests)
+  * Tracks ticket status in real time
+  * Chats directly with the assigned agent
+
+* **Agent**:
+
+  * Takes ownership of tickets
+  * Communicates with clients through a chat system
+  * Updates ticket status and progress
+
+* **Admin**:
+
+  * Has full access to the platform
+  * Manages users (clients and agents)
+  * Can delete users, tickets, and moderate the system
+
+This structure allows efficient ticket handling, real-time interaction, and full administrative control.
 
 ---
 
-## 🏗 Architecture du Projet
-Le projet est architecturé en **ft_** pour simplifier le déploiement et la gestion des environnements :
-- **Backend**: NestJS.
-- **Frontend**: React (ou Next.js).
-- **Base de données**: PostgreSQL.
-- **ORM**: Prisma
-- **CSS Library**: TailwindCSS
-- **Conteneurisation**: Docker & Docker Compose.
+## 🏗 Project Architecture
+
+The project is structured with **ft_** to simplify deployment and environment management:
+
+* **Backend**: NestJS
+* **Frontend**: React
+* **Database**: PostgreSQL
+* **ORM**: Prisma
+* **CSS Library**: TailwindCSS
+* **Containerization**: Docker & Docker Compose
 
 ---
 
-## 🚀 Installation Rapide (Environnement Linux)
+## 🚀 Quick Installation (Linux Environment)
 
-### 1. Cloner le projet
+### 1. Clone the project
+
 ```bash
 git clone https://github.com/Iriana022/ft_ ft_transcendence
 cd ft_transcendence
-docker compose up --build -d
+make
 ```
 
-### 2. Config env
+### 2. Configure environment variables
+
 ```bash
-cd backend 
+cd backend
 cp .env.example .env
 ```
-+ fill env var(client ID and client secret)
 
-### 3. Migration
-```bash
-docker exec -it nest_backend npx prisma migrate dev --name <migration name>
-docker exec -it nest_backend npx prisma db push
-```
+* Fill in the required environment variables:
 
-## 🚀 Démarrage sur navigateur
-+ Allez sur votre navigateur
-+ Taper https://localhost:8443
-+ Inscrivez vous dans register
-+ Connectez-vous dans l'interface de connexion
-+ Enjoy it <br>
+- **DATABASE_URL**: Connection string used by Prisma to access the PostgreSQL database (includes user, password, host, port, and database name).
+- **GOOGLE_CLIENT_ID**: Public identifier of your application for Google OAuth authentication.
+- **GOOGLE_CLIENT_SECRET**: Secret key associated with your Google OAuth application (must be kept private).
+- **GOOGLE_REDIRECT_URI**: URL where Google redirects the user after successful authentication.
+- **JWT_SECRET**: Secret key used to sign and verify JSON Web Tokens for user authentication.
+- **ADMIN_LOGIN**: Default username for the initial admin account.
+- **ADMIN_EMAIL**: Email address for the initial admin account.
+- **ADMIN_PASSWORD**: Password for the initial admin account (should be changed in production).
+
+## 🚀 Launch in Browser
+
+* Open your browser
+* Go to [https://localhost:8443](https://localhost:8443)
+* Register a new account
+* Log in through the authentication interface
+* Enjoy it 🚀
+
 ![alt text](kermit.png)
 
+---
 
-## Les membres de l'équipe (Team members)
-Pour la réalisation de ce projet, nous sommes quatres personnes. Voici nos contributions respéctives :
-- **Product Owner(PO) and developer**: Mihangy(Pmihangy)
-- **Product Manager(PM)/Scrum Master and developer**: Sahaza(Srasolom).
-- **Technical Lead / Architect and developper**: Iriana(Irazafim).
-- **Developper**: Finaritra(Vmpianim)
+## 👥 Team Members
 
-## Commit message convention
+This project was developed by a team of four people. Here are our respective roles:
 
-| Type     | Description |
-|----------|-------------|
-| feat     | A new feature |
-| fix      | A bug fix |
-| docs     | Documentation changes (e.g., README, comments) |
-| style    | Code style changes (e.g., formatting, missing semicolons) |
-| refactor | Code refactoring (no new features or bug fixes) |
-| perf     | Performance improvements |
-| test     | Adding or modifying tests |
+* **Product Owner (PO) & Developer**: Mihangy (pmihangy)
+* **Product Manager (PM) / Scrum Master & Developer**: Sahaza (srasolom)
+* **Technical Lead / Architect & Developer**: Iriana (irazafim)
+* **Developer**: Finaritra (vmpianim)
+
+---
+
+## 📝 Commit Message Convention
+
+| Type     | Description                                                   |
+| -------- | ------------------------------------------------------------- |
+| feat     | A new feature                                                 |
+| fix      | A bug fix                                                     |
+| docs     | Documentation changes (e.g., README, comments)                |
+| style    | Code style changes (e.g., formatting, missing semicolons)     |
+| refactor | Code refactoring (no new features or bug fixes)               |
+| perf     | Performance improvements                                      |
+| test     | Adding or modifying tests                                     |
 | build    | Build system or dependency changes (e.g., npm, Docker, CI/CD) |
-| ci       | CI/CD configuration changes |
+| ci       | CI/CD configuration changes                                   |
 | chore    | Maintenance tasks (e.g., updating configs, cleaning up files) |
-| revert   | Reverts a previous commit |
+| revert   | Reverts a previous commit                                     |
+
+Example: git commit -m "docs(README): make the README.md more explicit and complete"
+
+---
+
+## ✅ Completed Modules
+
+The following modules have been successfully implemented:
+
+### Web
+
+### Accessibility and Internationalization
+
+### User Management
+
+---
