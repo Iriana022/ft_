@@ -8,7 +8,6 @@ import { UpdateMeDto } from './dto/update-me.dto';
 @Injectable()
 export class UserService {
     constructor(private prisma: PrismaService) { }
-    private readonly deletedUserEmail = 'deleted-user@system.local';
     private readonly uploadsPrefix = '/api/uploads/';
     private isManagedUploadAvatar(avatar: string | null | undefined) {
         return !!avatar && avatar.startsWith(this.uploadsPrefix);
@@ -18,19 +17,65 @@ export class UserService {
         return join(process.cwd(), 'uploads', basename(avatarUrl));
     }
 
+    private async hardDeleteUserAndLinkedTickets(userId: number) {
+        await this.prisma.$transaction(async (tx) => {
+            // Tickets liés à l'utilisateur (client auteur OU agent assigné)
+            const linkedTickets = await tx.ticket.findMany({
+                where: {
+                    OR: [
+                        { authorId: userId },
+                        { AssignedToId: userId },
+                    ],
+                },
+                select: { id: true },
+            });
+
+            const linkedTicketIds = linkedTickets.map((t) => t.id);
+
+            if (linkedTicketIds.length > 0) {
+                await tx.ticketStatusHistory.deleteMany({
+                    where: { ticketId: { in: linkedTicketIds } },
+                });
+
+                await tx.ticketInternalNote.deleteMany({
+                    where: { ticketId: { in: linkedTicketIds } },
+                });
+
+                await tx.chatMessage.deleteMany({
+                    where: { ticketId: { in: linkedTicketIds } },
+                });
+
+                await tx.ticket.deleteMany({
+                    where: { id: { in: linkedTicketIds } },
+                });
+            }
+
+            await tx.ticketStatusHistory.deleteMany({
+                where: { changedById: userId },
+            });
+
+            await tx.ticketInternalNote.deleteMany({
+                where: { authorId: userId },
+            });
+
+            await tx.chatMessage.deleteMany({
+                where: { authorId: userId },
+            });
+
+            await tx.user.delete({
+                where: { id: userId },
+            });
+        });
+    }
+
     async create(data: { login: string, email: string }) {
         return this.prisma.user.create({ data })
     }
 
     async findAll() {
         return this.prisma.user.findMany({
-            where: {
-                email: {
-                    not: this.deletedUserEmail,
-                },
-            },
             include: {
-                ticketsCreated: true, // Demande à Prisma de joindre les tickets liés
+                ticketsCreated: true,
             },
         });
     }
@@ -127,30 +172,9 @@ export class UserService {
             throw new NotFoundException('User not found');
         }
         const avatarToDelete = user.avatar;
-        await this.prisma.$transaction(async (tx) => {
-            await tx.ticket.updateMany({
-                where: { AssignedToId: userId },
-                data: { AssignedToId: null },
-            });
 
+        await this.hardDeleteUserAndLinkedTickets(userId);
 
-            await tx.chatMessage.deleteMany({
-                where: {
-                    OR: [
-                        { authorId: userId },
-                        { ticket: { authorId: userId } },
-                    ],
-                },
-            });
-
-            await tx.ticket.deleteMany({
-                where: { authorId: userId },
-            });
-
-            await tx.user.delete({
-                where: { id: userId },
-            });
-        });
         if (avatarToDelete && this.isManagedUploadAvatar(avatarToDelete)) {
             const avatarPath = this.toUploadDiskPath(avatarToDelete);
             await unlink(avatarPath).catch(() => undefined);
@@ -168,65 +192,20 @@ export class UserService {
 
         const targetUser = await this.prisma.user.findUnique({
             where: { id: targetUserId },
-            select: { id: true, avatar: true, email: true },
+            select: { id: true, avatar: true, email: true, role: true },
         });
 
         if (!targetUser) {
             throw new NotFoundException('User not found');
         }
 
-        if (targetUser.email === this.deletedUserEmail) {
-            throw new ForbiddenException('Ce compte système ne peut pas être supprimé');
+        if (targetUser.role === UserRole.ADMIN) {
+            throw new ForbiddenException('Un admin ne peut pas supprimer un autre admin');
         }
 
         const avatarToDelete = targetUser.avatar;
 
-        await this.prisma.$transaction(async (tx) => {
-            const deletedUser = await tx.user.upsert({
-                where: { email: this.deletedUserEmail },
-                update: {},
-                create: {
-                    email: this.deletedUserEmail,
-                    firstName: 'Utilisateur',
-                    lastName: 'supprime',
-                    role: UserRole.CLIENT,
-                },
-                select: { id: true },
-            });
-
-            if (deletedUser.id === targetUserId) {
-                throw new ForbiddenException('Ce compte système ne peut pas être supprimé');
-            }
-
-            await tx.ticket.updateMany({
-                where: { authorId: targetUserId },
-                data: { authorId: deletedUser.id },
-            });
-
-            await tx.ticket.updateMany({
-                where: { AssignedToId: targetUserId },
-                data: { AssignedToId: null },
-            });
-
-            await tx.chatMessage.updateMany({
-                where: { authorId: targetUserId },
-                data: { authorId: deletedUser.id },
-            });
-
-            await tx.ticketInternalNote.updateMany({
-                where: { authorId: targetUserId },
-                data: { authorId: deletedUser.id },
-            });
-
-            await tx.ticketStatusHistory.updateMany({
-                where: { changedById: targetUserId },
-                data: { changedById: deletedUser.id },
-            });
-
-            await tx.user.delete({
-                where: { id: targetUserId },
-            });
-        });
+        await this.hardDeleteUserAndLinkedTickets(targetUserId);
 
         if (avatarToDelete && this.isManagedUploadAvatar(avatarToDelete)) {
             const avatarPath = this.toUploadDiskPath(avatarToDelete);
