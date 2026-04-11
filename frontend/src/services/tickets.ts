@@ -150,6 +150,9 @@ export const fetchUsers = async (): Promise<User[]> => {
 	return rawUsers.map(normalizeUser);
 };
 
+export const deleteUserByAdmin = async (userId: number): Promise<void> => {
+	await api.delete('/user/' + userId);
+};
 
 export const getTicketInternalNotes = async (ticketId: number): Promise<TicketInternalNote[]> => {
 	const response = await api.get('/tickets/' + ticketId + '/internal-notes');
