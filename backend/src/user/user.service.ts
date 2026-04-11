@@ -1,12 +1,14 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { unlink } from 'fs/promises';
 import { basename, join } from 'path';
+import { UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateMeDto } from './dto/update-me.dto';
 
 @Injectable()
 export class UserService {
     constructor(private prisma: PrismaService) { }
+    private readonly deletedUserEmail = 'deleted-user@system.local';
     private readonly uploadsPrefix = '/api/uploads/';
     private isManagedUploadAvatar(avatar: string | null | undefined) {
         return !!avatar && avatar.startsWith(this.uploadsPrefix);
@@ -22,10 +24,15 @@ export class UserService {
 
     async findAll() {
         return this.prisma.user.findMany({
-            include: {
-              ticketsCreated: true, // Demande à Prisma de joindre les tickets liés
+            where: {
+                email: {
+                    not: this.deletedUserEmail,
+                },
             },
-      });
+            include: {
+                ticketsCreated: true, // Demande à Prisma de joindre les tickets liés
+            },
+        });
     }
 
     async findMe(userId: number) {
@@ -144,6 +151,83 @@ export class UserService {
                 where: { id: userId },
             });
         });
+        if (avatarToDelete && this.isManagedUploadAvatar(avatarToDelete)) {
+            const avatarPath = this.toUploadDiskPath(avatarToDelete);
+            await unlink(avatarPath).catch(() => undefined);
+        }
+    }
+
+    async deleteUserByAdmin(adminId: number, targetUserId: number, adminRole: UserRole) {
+        if (adminRole !== UserRole.ADMIN) {
+            throw new ForbiddenException('Seul un admin peut supprimer un utilisateur');
+        }
+
+        if (targetUserId === adminId) {
+            throw new ForbiddenException('Vous ne pouvez pas supprimer votre propre compte ici');
+        }
+
+        const targetUser = await this.prisma.user.findUnique({
+            where: { id: targetUserId },
+            select: { id: true, avatar: true, email: true },
+        });
+
+        if (!targetUser) {
+            throw new NotFoundException('User not found');
+        }
+
+        if (targetUser.email === this.deletedUserEmail) {
+            throw new ForbiddenException('Ce compte système ne peut pas être supprimé');
+        }
+
+        const avatarToDelete = targetUser.avatar;
+
+        await this.prisma.$transaction(async (tx) => {
+            const deletedUser = await tx.user.upsert({
+                where: { email: this.deletedUserEmail },
+                update: {},
+                create: {
+                    email: this.deletedUserEmail,
+                    firstName: 'Utilisateur',
+                    lastName: 'supprime',
+                    role: UserRole.CLIENT,
+                },
+                select: { id: true },
+            });
+
+            if (deletedUser.id === targetUserId) {
+                throw new ForbiddenException('Ce compte système ne peut pas être supprimé');
+            }
+
+            await tx.ticket.updateMany({
+                where: { authorId: targetUserId },
+                data: { authorId: deletedUser.id },
+            });
+
+            await tx.ticket.updateMany({
+                where: { AssignedToId: targetUserId },
+                data: { AssignedToId: null },
+            });
+
+            await tx.chatMessage.updateMany({
+                where: { authorId: targetUserId },
+                data: { authorId: deletedUser.id },
+            });
+
+            await tx.ticketInternalNote.updateMany({
+                where: { authorId: targetUserId },
+                data: { authorId: deletedUser.id },
+            });
+
+            await tx.ticketStatusHistory.updateMany({
+                where: { changedById: targetUserId },
+                data: { changedById: deletedUser.id },
+            });
+
+            await tx.user.delete({
+                where: { id: targetUserId },
+            });
+        });
+
         if (avatarToDelete && this.isManagedUploadAvatar(avatarToDelete)) {
             const avatarPath = this.toUploadDiskPath(avatarToDelete);
             await unlink(avatarPath).catch(() => undefined);
