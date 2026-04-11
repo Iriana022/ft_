@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {useState, useMemo, useEffect} from 'react';
+import {useNavigate} from 'react-router-dom';
 import {
 	ChevronLeftIcon,
 	ChevronRightIcon,
@@ -20,20 +20,20 @@ import {
 import TikeoLogo from '../../components/client_components/TikeoLogo';
 import Notification from '../../components/client_components/Notification';
 import Avatar from '../../components/client_components/Avatar';
-import { Outlet, Link, NavLink } from 'react-router-dom';
-import { type HeroIconType, type Ticket, type User, TicketStatus, TicketPriority, StatCardType } from '../../types';
-import { RechartsDevtools } from '@recharts/devtools';
+import {Outlet, Link, NavLink} from 'react-router-dom';
+import {type HeroIconType, type Ticket, type User, TicketStatus, TicketPriority, StatCardType} from '../../types';
+import {RechartsDevtools} from '@recharts/devtools';
 import {
 	LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
 	ResponsiveContainer
 } from 'recharts';
 import Separator from '../../components/login_components/Separator';
 import TicketFilter from '../../components/client_components/TicketFilter';
-import { UserRole } from '../../types';
-import { fetchTickets, fetchUsers, normalizeTicket, type RawTicket, deleteUserByAdmin, fetchTicketResolutionHistory, type TicketResolutionHistoryItem } from '../../services/tickets';
-import { format, subDays, isSameDay } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import { getSocket } from '../../services/singleton';
+import {UserRole} from '../../types';
+import {fetchTickets, fetchUsers, normalizeTicket, type RawTicket, deleteUserByAdmin, fetchTicketResolutionHistory, type TicketResolutionHistoryItem} from '../../services/tickets';
+import {format, subDays, isSameDay} from 'date-fns';
+import {fr} from 'date-fns/locale';
+import {getSocket} from '../../services/singleton';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -199,7 +199,7 @@ const generateDailyTickets = (
 	const last7Days = [...Array(7)].map((_, i) => subDays(new Date(), i)).reverse();
 
 	return last7Days.map((date) => {
-		const name = format(date, 'eee', { locale: fr });
+		const name = format(date, 'eee', {locale: fr});
 
 		const created = tickets.filter((t) =>
 			isSameDay(new Date(t.createdAt), date)
@@ -296,10 +296,10 @@ function TicketsActivities() {
 				<ResponsiveContainer>
 					<LineChart responsive data={dailyTickets}>
 						<CartesianGrid stroke="#aaa" strokeDasharray="5 5" />
-						<Line type="monotone" dataKey="created" stroke="var(--color-navy)" strokeWidth={2} name="Crees" dot={false} activeDot={{ r: 5 }} />
-						<Line type="monotone" dataKey="resolved" stroke="var(--color-status-resolved)" strokeWidth={2} name="Resolus" dot={false} activeDot={{ r: 5 }} />
-						<XAxis dataKey="name" tick={{ fontSize: 12 }} />
-						<YAxis tick={{ fontSize: 12 }} />
+						<Line type="monotone" dataKey="created" stroke="var(--color-navy)" strokeWidth={2} name="Crees" dot={false} activeDot={{r: 5}} />
+						<Line type="monotone" dataKey="resolved" stroke="var(--color-status-resolved)" strokeWidth={2} name="Resolus" dot={false} activeDot={{r: 5}} />
+						<XAxis dataKey="name" tick={{fontSize: 12}} />
+						<YAxis tick={{fontSize: 12}} />
 						<Tooltip />
 						<RechartsDevtools />
 					</LineChart>
@@ -434,7 +434,7 @@ function upsertTicketFromSocket(prev: Ticket[], payload: RawTicket): Ticket[] {
 		return [nextTicket, ...prev];
 	}
 
-	return prev.map((t) => (t.id === nextTicket.id ? { ...t, ...nextTicket } : t));
+	return prev.map((t) => (t.id === nextTicket.id ? {...t, ...nextTicket} : t));
 }
 
 function RecentTickets() {
@@ -686,19 +686,19 @@ function ActionIcon(props: ActionIconProps) {
 export function AdminTickets() {
 	// TODO: refactor this code
 	const statusFilterElements = [
-		{ label: "Tous", value: null },
-		{ label: "Ouverts", value: TicketStatus.OPEN },
-		{ label: "En cours", value: TicketStatus.IN_PROGRESS },
-		{ label: "Résolus", value: TicketStatus.RESOLVED },
-		{ label: "Fermés", value: TicketStatus.CLOSED },
+		{label: "Tous", value: null},
+		{label: "Ouverts", value: TicketStatus.OPEN},
+		{label: "En cours", value: TicketStatus.IN_PROGRESS},
+		{label: "Résolus", value: TicketStatus.RESOLVED},
+		{label: "Fermés", value: TicketStatus.CLOSED},
 	];
 
 	const priorityFilterElements = [
-		{ label: "Tous", value: null },
-		{ label: "Basses", value: TicketPriority.LOW },
-		{ label: "Moyennes", value: TicketPriority.MEDIUM },
-		{ label: "Hautes", value: TicketPriority.HIGH },
-		{ label: "Urgentes", value: TicketPriority.URGENT },
+		{label: "Tous", value: null},
+		{label: "Basses", value: TicketPriority.LOW},
+		{label: "Moyennes", value: TicketPriority.MEDIUM},
+		{label: "Hautes", value: TicketPriority.HIGH},
+		{label: "Urgentes", value: TicketPriority.URGENT},
 	];
 
 	const [currentFilterStatus, setCurrentFilterStatus] = useState<TicketStatus | null>(null);
@@ -808,9 +808,8 @@ export function AdminTickets() {
 								<th className="px-5 pb-3 font-medium whitespace-nowrap">Titre</th>
 								<th className="px-5 pb-3 font-medium whitespace-nowrap">Statut</th>
 								<th className="px-5 pb-3 font-medium whitespace-nowrap">Priorite</th>
-								<th className="px-5 pb-3 font-medium whitespace-nowrap">Utilisateur</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">Client</th>
 								<th className="px-5 pb-3 font-medium whitespace-nowrap">Date</th>
-								<th className="px-5 pb-3 font-medium whitespace-nowrap">Actions</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -843,10 +842,6 @@ export function AdminTickets() {
 										</td>
 										<td className="px-5 py-3 text-gray-500 whitespace-nowrap">
 											{new Date(ticket.createdAt).toLocaleDateString("fr-FR").replace(/\//g, "-")}
-										</td>
-										<td className="px-5 py-3 text-gray-500 whitespace-nowrap flex items-center gap-5">
-											<ActionIcon icon={EyeIcon} className="w-3 h-4" />
-											<ActionIcon icon={TrashIcon} className="w-4 h-4 text-red-500" />
 										</td>
 									</tr>
 								))
@@ -986,7 +981,11 @@ export function AdminUsers() {
 												className="p-2 transition hover:bg-blue-200 rounded-full disabled:opacity-50"
 												aria-label="Supprimer utilisateur"
 											>
-												<TrashIcon className="w-4 h-4 text-red-500" />
+												{
+													user.role !== UserRole.ADMIN ?
+														(<TrashIcon className="w-4 h-4 text-red-500" />) :
+														''
+												}
 											</button>
 										</td>
 									</tr>
@@ -1035,7 +1034,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 					<NavLink
 						to="/admin"
 						end
-						className={({ isActive }) =>
+						className={({isActive}) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 							 ${isActive ? "bg-sky/25" : ""}
 							 focus:bg-sky/50
@@ -1051,7 +1050,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 				<li>
 					<NavLink
 						to="tickets"
-						className={({ isActive }) =>
+						className={({isActive}) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 								${isActive ? "bg-sky/25" : ""}
 								focus:bg-sky/25
@@ -1067,7 +1066,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 				<li>
 					<NavLink
 						to="users"
-						className={({ isActive }) =>
+						className={({isActive}) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 								${isActive ? "bg-sky/25" : ""}
 								focus:bg-sky/25
@@ -1083,7 +1082,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 				<li>
 					<NavLink
 						to="stats"
-						className={({ isActive }) =>
+						className={({isActive}) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 							${isActive ? "bg-sky/25" : ""}
 							focus:bg-sky/25

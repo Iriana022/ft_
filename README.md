@@ -119,9 +119,61 @@ Example: git commit -m "docs(README): make the README.md more explicit and compl
 The following modules have been successfully implemented:
 
 ### Web
+* **Major:** Use a framework for both the frontend and backend. -> **2 points**
+  - Use a frontent framework: React
+  - Use a backend framework: NestJS
+* **Minor:** Use a frotend framework: React -> **1 point**
+* **Minor:** Use a backend framework: NestJS -> **1 point**
+* **Major:** Implement real-time features using WebSockets or similar technology. -> **2 points**
+  - Real-time updates across clients.
+  - Handle connection/disconnection gracefully.
+  - Efficient message broadcasting.
+* **Major:** A public API to teract with the database with a secured API key, rate
+limiting, documentation, and at least 5 endpoints: -> **2 points**
+  - GET /api/{something}
+  - POST /api/{something}
+  - PUT /api/{something} (sahaza)
+  - DELETE /api/{something}
+  - PATCH /api/{something}
+* **Major:** Use an ORM for the database. -> **2 points**
+* **Minor:** A complete notification system for all creation, update, and deletion actions. -> **1 point** (sahaza)
+* **Minor:** Implement advanced search functionality with filters, sorting, and pagination. -> **1 point** (mihangy)
+
+Total: 12 points
 
 ### Accessibility and Internationalization
+* **Minor:** Support for multiple languages (at least 3 languages). -> **1 point** (mihangy)
+  - Implement i18n (internationalization) system.
+  - At least 3 complete language translations.
+  - Language swicther in the UI.
+  - All user-facing text must be translatable.
+* **Minor:** Support for additional browsers. -> **1 point**
+  - Full compatibility with at least 2 additional browsers (Firefox, Safari, Edge, etc.)
+  - Test and fix all features in each browser.
+  - Document any browser-specific limitations.
+  - Consistent UI/UX across all supported browsers.
+
+Total: 2 points
 
 ### User Management
+* **Minor:** Implement remote authentication with OAuth 2.0 (Google, GitHub, 42, etc.). -> **1 point**
+* **Major:** Advanced permissions system: -> **2 points**
+  - View, edit, and delete users (CRUD). (sahaza)
+  - Roles management (admin, user, guest, moderator, etc.).
+  - Different views and actions based on user role.
+* **Minor:** User activity analytics and insights dashboard. -> **1 point**
+
+Total: 4 points
+
+### Data and Analytics
+* **Major:** Advanced analytics dashboard with data visualization. -> **2 points**
+  - Interactive charts and graphs (line, bar, pie, etc.).
+  - Real-time data updates.
+  - Export functionality (PDF, CSV, etc.). (sahaza)
+  - Customizable date ranges and filters. (mihangy)
+
+Total: 2 points
 
 ---
+
+Final Total: 20 points
