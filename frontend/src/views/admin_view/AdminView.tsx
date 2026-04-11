@@ -1,5 +1,5 @@
-import {useState, useMemo, useEffect} from 'react';
-import {useNavigate} from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
 	ChevronLeftIcon,
 	ChevronRightIcon,
@@ -20,19 +20,21 @@ import {
 import TikeoLogo from '../../components/client_components/TikeoLogo';
 import Notification from '../../components/client_components/Notification';
 import Avatar from '../../components/client_components/Avatar';
-import {Outlet, Link, NavLink} from 'react-router-dom';
-import {type HeroIconType, type Ticket, type User, TicketStatus, TicketPriority, StatCardType} from '../../types';
-import {RechartsDevtools} from '@recharts/devtools';
+import { Outlet, Link, NavLink } from 'react-router-dom';
+import { type HeroIconType, type Ticket, type User, TicketStatus, TicketPriority, StatCardType } from '../../types';
+import { RechartsDevtools } from '@recharts/devtools';
 import {
 	LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
 	ResponsiveContainer
 } from 'recharts';
 import Separator from '../../components/login_components/Separator';
 import TicketFilter from '../../components/client_components/TicketFilter';
-import {UserRole} from '../../types';
-import {fetchTickets, fetchUsers} from '../../services/tickets';
-import {format, subDays, isSameDay} from 'date-fns';
-import {fr} from 'date-fns/locale';
+import { UserRole } from '../../types';
+import { fetchTickets, fetchUsers } from '../../services/tickets';
+import { format, subDays, isSameDay } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { getSocket } from '../../services/singleton';
+import { normalizeTicket, type RawTicket } from '../../services/tickets';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -175,13 +177,13 @@ function StatCard(props: StatCardProps) {
 }
 
 const dailyData = [
-	{name: "Lun", created: 42, resolved: 35},
-	{name: "Mar", created: 55, resolved: 47},
-	{name: "Mer", created: 63, resolved: 58},
-	{name: "Jeu", created: 49, resolved: 44},
-	{name: "Ven", created: 58, resolved: 52},
-	{name: "Sam", created: 36, resolved: 30},
-	{name: "Dim", created: 28, resolved: 22},
+	{ name: "Lun", created: 42, resolved: 35 },
+	{ name: "Mar", created: 55, resolved: 47 },
+	{ name: "Mer", created: 63, resolved: 58 },
+	{ name: "Jeu", created: 49, resolved: 44 },
+	{ name: "Ven", created: 58, resolved: 52 },
+	{ name: "Sam", created: 36, resolved: 30 },
+	{ name: "Dim", created: 28, resolved: 22 },
 ];
 
 type CreatedOrResolved = "created" | "resolved";
@@ -207,7 +209,7 @@ const generateDailyTickets = (tickets: Ticket[]) => {
 
 	return last7Days.map((date) => {
 		// 2. Formater le nom du jour (Lun, Mar...)
-		const name = format(date, 'eee', {locale: fr}); // 'eee' donne 'lun.', 'mar.'...
+		const name = format(date, 'eee', { locale: fr }); // 'eee' donne 'lun.', 'mar.'...
 
 		// 3. Compter les tickets créés ce jour-là
 		const created = tickets.filter((t) =>
@@ -285,14 +287,14 @@ function TicketsActivities() {
 						<CartesianGrid stroke="#aaa" strokeDasharray="5 5" />
 						<Line type="monotone" dataKey="created" stroke="var(--color-navy)" strokeWidth={2} name="Crees"
 							dot={false}
-							activeDot={{r: 5}}
+							activeDot={{ r: 5 }}
 						/>
 						<Line type="monotone" dataKey="resolved" stroke="var(--color-status-resolved)" strokeWidth={2} name="Resolus"
 							dot={false}
-							activeDot={{r: 5}}
+							activeDot={{ r: 5 }}
 						/>
-						<XAxis dataKey="name" tick={{fontSize: 12}} />
-						<YAxis tick={{fontSize: 12}} />
+						<XAxis dataKey="name" tick={{ fontSize: 12 }} />
+						<YAxis tick={{ fontSize: 12 }} />
 						<Tooltip />
 						<RechartsDevtools />
 					</LineChart>
@@ -420,6 +422,16 @@ function getPriorityColor(priority: TicketPriority): [string, string] {
 	return color;
 }
 
+function upsertTicketFromSocket(prev: Ticket[], payload: RawTicket): Ticket[] {
+	const nextTicket = normalizeTicket(payload);
+	const exists = prev.some((t) => t.id === nextTicket.id);
+	if (!exists) {
+		return [nextTicket, ...prev];
+	}
+
+	return prev.map((t) => (t.id === nextTicket.id ? { ...t, ...nextTicket } : t));
+}
+
 function RecentTickets() {
 	const [tickets, setTickets] = useState<Ticket[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -441,6 +453,24 @@ function RecentTickets() {
 		};
 
 		loadTickets();
+
+		const socket = getSocket();
+
+		const onNewTicket = (payload: RawTicket) => {
+			setTickets((prev) => upsertTicketFromSocket(prev, payload));
+		};
+
+		const onTicketStatusUpdated = (payload: RawTicket) => {
+			setTickets((prev) => upsertTicketFromSocket(prev, payload));
+		};
+
+		socket.on('newTicket', onNewTicket);
+		socket.on('ticketStatusUpdated', onTicketStatusUpdated);
+
+		return () => {
+			socket.off('newTicket', onNewTicket);
+			socket.off('ticketStatusUpdated', onTicketStatusUpdated);
+		};
 	}, []);
 
 	return (
@@ -558,6 +588,23 @@ export function AdminDashboard() {
 	useEffect(() => {
 		loadTickets();
 		loadUsers();
+		const socket = getSocket();
+
+		const onNewTicket = (payload: RawTicket) => {
+			setTickets((prev) => upsertTicketFromSocket(prev, payload));
+		};
+
+		const onTicketStatusUpdated = (payload: RawTicket) => {
+			setTickets((prev) => upsertTicketFromSocket(prev, payload));
+		};
+
+		socket.on('newTicket', onNewTicket);
+		socket.on('ticketStatusUpdated', onTicketStatusUpdated);
+
+		return () => {
+			socket.off('newTicket', onNewTicket);
+			socket.off('ticketStatusUpdated', onTicketStatusUpdated);
+		};
 	}, []);
 
 	const openTickets = tickets.filter((t) => t.status === TicketStatus.OPEN);
@@ -664,19 +711,19 @@ function ActionIcon(props: ActionIconProps) {
 export function AdminTickets() {
 	// TODO: refactor this code
 	const statusFilterElements = [
-		{label: "Tous", value: null},
-		{label: "Ouverts", value: TicketStatus.OPEN},
-		{label: "En cours", value: TicketStatus.IN_PROGRESS},
-		{label: "Résolus", value: TicketStatus.RESOLVED},
-		{label: "Fermés", value: TicketStatus.CLOSED},
+		{ label: "Tous", value: null },
+		{ label: "Ouverts", value: TicketStatus.OPEN },
+		{ label: "En cours", value: TicketStatus.IN_PROGRESS },
+		{ label: "Résolus", value: TicketStatus.RESOLVED },
+		{ label: "Fermés", value: TicketStatus.CLOSED },
 	];
 
 	const priorityFilterElements = [
-		{label: "Tous", value: null},
-		{label: "Basses", value: TicketPriority.LOW},
-		{label: "Moyennes", value: TicketPriority.MEDIUM},
-		{label: "Hautes", value: TicketPriority.HIGH},
-		{label: "Urgentes", value: TicketPriority.URGENT},
+		{ label: "Tous", value: null },
+		{ label: "Basses", value: TicketPriority.LOW },
+		{ label: "Moyennes", value: TicketPriority.MEDIUM },
+		{ label: "Hautes", value: TicketPriority.HIGH },
+		{ label: "Urgentes", value: TicketPriority.URGENT },
 	];
 
 	const [currentFilterStatus, setCurrentFilterStatus] = useState<TicketStatus | null>(null);
@@ -703,6 +750,24 @@ export function AdminTickets() {
 		};
 
 		loadTickets();
+
+		const socket = getSocket();
+
+		const onNewTicket = (payload: RawTicket) => {
+			setTickets((prev) => upsertTicketFromSocket(prev, payload));
+		};
+
+		const onTicketStatusUpdated = (payload: RawTicket) => {
+			setTickets((prev) => upsertTicketFromSocket(prev, payload));
+		};
+
+		socket.on('newTicket', onNewTicket);
+		socket.on('ticketStatusUpdated', onTicketStatusUpdated);
+
+		return () => {
+			socket.off('newTicket', onNewTicket);
+			socket.off('ticketStatusUpdated', onTicketStatusUpdated);
+		};
 	}, []);
 	const currentFilterElementStatus = statusFilterElements.find(e => e.value === currentFilterStatus);
 	const currentFilterElementPriority = priorityFilterElements.find(e => e.value === currentFilterPriority);
@@ -971,7 +1036,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 					<NavLink
 						to="/admin"
 						end
-						className={({isActive}) =>
+						className={({ isActive }) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 							 ${isActive ? "bg-sky/25" : ""}
 							 focus:bg-sky/50
@@ -987,7 +1052,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 				<li>
 					<NavLink
 						to="tickets"
-						className={({isActive}) =>
+						className={({ isActive }) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 								${isActive ? "bg-sky/25" : ""}
 								focus:bg-sky/25
@@ -1003,7 +1068,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 				<li>
 					<NavLink
 						to="users"
-						className={({isActive}) =>
+						className={({ isActive }) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 								${isActive ? "bg-sky/25" : ""}
 								focus:bg-sky/25
@@ -1019,7 +1084,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 				<li>
 					<NavLink
 						to="stats"
-						className={({isActive}) =>
+						className={({ isActive }) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 							${isActive ? "bg-sky/25" : ""}
 							focus:bg-sky/25
