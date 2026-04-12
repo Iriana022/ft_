@@ -14,8 +14,8 @@ const sizes = {
 function Avatar({src, size = "md"}: AvatarProps) {
 	return (
 		<div
-			className={`${sizes[size]} border border-2 border-navy/50
-			focus:border-navy/80 transition hover:border-navy/80
+			className={`${sizes[size]} border border-2 border-sky
+			focus:border-navy/80 transition
 			block rounded-full overflow-hidden group`}
 		>
 			<img
