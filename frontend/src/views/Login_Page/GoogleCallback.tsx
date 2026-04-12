@@ -22,6 +22,7 @@ export function GoogleCallback() {
         if (token) {
             // --- ON SUIT TA LOGIQUE EXACTE DU LOGIN CARD ---
             localStorage.setItem('access_token', token);
+            window.dispatchEvent(new Event('auth-token-updated'));
             localStorage.removeItem('user_avatar');
             if (next === 'select_role') {
                 localStorage.removeItem('user_role');

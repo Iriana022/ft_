@@ -53,7 +53,7 @@
   "registrationColumn": "Inscription",
   "actionsColumn": "Actions",
   "searchUsersPlaceholder": "Rechercher des utilisateurs",
-  "deleteUserConfirm": "Supprimer cet utilisateur ? Les tickets seront conservés.",
+  "deleteUserConfirm": "Supprimer cet utilisateur ? Les tickets seront supprimés.",
   "deleteUserError": "Impossible de supprimer cet utilisateur",
   "delete": "Supprimer",
   "loadingUsers": "Chargement des utilisateurs...",

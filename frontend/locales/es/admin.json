@@ -53,7 +53,7 @@
   "registrationColumn": "Registro",
   "actionsColumn": "Acciones",
   "searchUsersPlaceholder": "Buscar usuarios",
-  "deleteUserConfirm": "¿Eliminar este usuario? Los tickets se conservarán.",
+  "deleteUserConfirm": "¿Eliminar este usuario? Los tickets se eliminarán.",
   "deleteUserError": "No se pudo eliminar este usuario",
   "delete": "Eliminar",
   "loadingUsers": "Cargando usuarios...",

@@ -239,3 +239,25 @@ export const sendTicketMessage = async (
 		createdAt: new Date(response.data.createdAt),
 	};
 };
+
+export type RawNotification = {
+	id: number;
+	code:
+	| 'NEW_CLIENT_TICKET'
+	| 'USER_PROFILE_UPDATED'
+	| 'USER_LOGGED_IN'
+	| 'TICKET_STATUS_UPDATED';
+	payload: Record<string, unknown>;
+	createdAt: string;
+	readAt: string | null;
+};
+
+export const fetchMyNotifications = async (): Promise<RawNotification[]> => {
+	const response = await api.get('/user/notifications');
+	return (response.data ?? []) as RawNotification[];
+};
+
+export const readAllMyNotifications = async (): Promise<{ updatedCount: number }> => {
+	const response = await api.put('/user/notifications/read-all');
+	return response.data as { updatedCount: number };
+};

@@ -22,6 +22,7 @@ export function SelectRole() {
 
 			if (accessToken) {
 				localStorage.setItem('access_token', accessToken);
+				window.dispatchEvent(new Event('auth-token-updated'));
 			}
 			localStorage.setItem('user_role', role);
 

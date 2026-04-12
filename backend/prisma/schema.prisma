@@ -27,6 +27,26 @@ enum Priority{
 	URGENT
 }
 
+enum NotificationCode {
+  NEW_CLIENT_TICKET
+  USER_PROFILE_UPDATED
+  USER_LOGGED_IN
+  TICKET_STATUS_UPDATED
+}
+
+model Notification {
+  id          Int              @id @default(autoincrement())
+  recipientId Int
+  recipient   User             @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  code        NotificationCode
+  payload     Json
+  createdAt   DateTime         @default(now())
+  readAt      DateTime?
+
+  @@index([recipientId, createdAt])
+  @@index([recipientId, readAt])
+}
+
 model ChatMessage {
     id            Int      @id @default(autoincrement())
     content       String
@@ -60,6 +80,7 @@ model User {
   messages ChatMessage[]
   internalNotes  TicketInternalNote[]
   ticketStatusChanges TicketStatusHistory[] @relation("TicketStatusChangedBy")
+  notifications Notification[]
 }
 
 model Ticket {

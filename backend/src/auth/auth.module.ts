@@ -7,6 +7,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { JwtStrategy } from './jwt.strategy';
 import { RolesGuard } from './roles.guard';
 import { GoogleModule } from './google/google.module';
+import { TicketsModule } from 'src/tickets/tickets.module';
 
 @Module({
   imports: [
@@ -14,7 +15,9 @@ import { GoogleModule } from './google/google.module';
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'secret',
       signOptions: { expiresIn: '60m' },
-    }), GoogleModule,
+    }),
+    GoogleModule,
+    TicketsModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, PrismaService, JwtStrategy, RolesGuard],
