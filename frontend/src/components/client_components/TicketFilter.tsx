@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import {FunnelIcon} from '@heroicons/react/24/outline';
 import {ChevronDownIcon} from '@heroicons/react/24/outline';
 import {TicketStatus, TicketPriority} from '../../types';
@@ -10,7 +10,10 @@ interface TicketFilterElementProps {
 
 function TicketFilterElement(props: TicketFilterElementProps) {
 	return (
-		<div className="text-sm py-2 border-b pl-2"
+		<div
+			className="px-3 py-2 text-sm text-dark cursor-pointer
+		hover:bg-light-blue/30 hover:text-navy
+		transition-colors duration-150"
 			onClick={props.onClick}
 		>
 			{props.name}
@@ -32,12 +35,29 @@ interface TicketFilterProps {
 
 function TicketFilter(props: TicketFilterProps) {
 	const [open, setOpen] = useState(false);
+	const dropdownRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+				setOpen(false);
+			}
+		}
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		}
+	}, []);
 
 	return (
-		<div className="flex items-center gap-2">
+		<div ref={dropdownRef} className="flex items-center gap-2">
 			<span className="text-xs md:text-sm">{props.label}: </span>
 			<div
-				className="relative flex items-center justify-between w-[100px] md:w-[150px] gap-1 md:gap-2 border py-2 px-3 bg-gray-100 cursor-pointer rounded"
+				className="relative flex items-center justify-between w-[100px] md:w-[150px]
+				gap-2 border border-navy/20 py-2 px-3
+				bg-cream text-navy rounded-lg
+				cursor-pointer shadow-sm
+				hover:border-sky transition"
 				onClick={() => setOpen(!open)}
 			>
 				<div className="flex items-center gap-2">
@@ -47,9 +67,11 @@ function TicketFilter(props: TicketFilterProps) {
 					</span>
 				</div>
 				<ChevronDownIcon className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
-				<div className={`absolute top-full left-0 w-full z-50 border bg-white rounded-b shadow-md
-        transition-all duration-200 origin-top
-        ${open ? "opacity-100 scale-y-100" : "opacity-0 scale-y-0 pointer-events-none"}`}
+				<div
+					className={`absolute top-full left-0 w-full mt-2 z-50 rounded-lg shadow-lg
+					bg-cream border border-navy/10 overflow-hidden
+					transition-all duration-200 origin-top
+					${open ? 'opacity-100 scale-y-100' : 'opacity-0 scale-y-0 pointer-events-none'}`}
 				>
 					{props.list.map((element, index) => (
 						<TicketFilterElement

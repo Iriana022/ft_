@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/solid';
-import { TrashIcon } from '@heroicons/react/24/outline';
-import { type User, UserRole } from '../../../types';
-import { deleteUserByAdmin, fetchUsers } from '../../../services/tickets';
+import {useEffect, useMemo, useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {MagnifyingGlassIcon} from '@heroicons/react/24/solid';
+import {TrashIcon} from '@heroicons/react/24/outline';
+import {type User, UserRole} from '../../../types';
+import {deleteUserByAdmin, fetchUsers} from '../../../services/tickets';
 
 function getRoleString(role: UserRole, authT: (key: string) => string, adminT: (key: string) => string): string {
 	let roleString = '';
@@ -23,8 +23,9 @@ function getRoleString(role: UserRole, authT: (key: string) => string, adminT: (
 }
 
 export function AdminUsers() {
-	const { t: authT } = useTranslation('auth');
-	const { t } = useTranslation('admin');
+	const {t: authT} = useTranslation('auth');
+	const {t} = useTranslation('admin');
+
 	const [users, setUsers] = useState<User[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -37,41 +38,17 @@ export function AdminUsers() {
 
 		try {
 			setDeletingUserId(userId);
+
 			await deleteUserByAdmin(userId);
+
 			setUsers((prev) => prev.filter((user) => user.id !== userId));
 		} catch (e) {
-			console.error('Erreur suppression utilisateur admin:', e);
+			console.error(e);
 			alert(t('deleteUserError'));
 		} finally {
 			setDeletingUserId(null);
 		}
 	};
-
-	useEffect(() => {
-		const loadUsers = async () => {
-			try {
-				setLoading(true);
-				const data = await fetchUsers();
-				setUsers(data);
-				setError(null);
-			} catch (e) {
-				console.error('Erreur chargement tickets admin:', e);
-				setError(t('loadUsersError'));
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		void loadUsers();
-	}, [t]);
-
-	if (loading) {
-		return <div className="p-4">{t('loadingUsers')}</div>;
-	}
-
-	if (error) {
-		return <div className="p-4 text-red-600">{error}</div>;
-	}
 
 	const filteredUsers = useMemo(() => {
 		const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -89,6 +66,31 @@ export function AdminUsers() {
 			);
 		});
 	}, [authT, searchTerm, t, users]);
+
+	useEffect(() => {
+		const loadUsers = async () => {
+			try {
+				setLoading(true);
+				const data = await fetchUsers();
+				setUsers(data);
+				setError(null);
+			} catch (e) {
+				setError(t('loadUsersError'));
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		void loadUsers();
+	}, [t]);
+
+	if (loading) {
+		return <div className="p-4">{t('loadingUsers')}</div>;
+	}
+
+	if (error) {
+		return <div className="p-4 text-red-600">{error}</div>;
+	}
 
 	return (
 		<div>

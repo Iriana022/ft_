@@ -1,10 +1,10 @@
-import { type MouseEvent, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/solid';
+import {type MouseEvent, useEffect, useMemo, useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {MagnifyingGlassIcon} from '@heroicons/react/24/solid';
 import TicketFilter from '../../../components/client_components/TicketFilter';
-import { TicketPriority, TicketStatus, type Ticket } from '../../../types';
-import { fetchTickets, type RawTicket } from '../../../services/tickets';
-import { getSocket } from '../../../services/singleton';
+import {TicketPriority, TicketStatus, type Ticket} from '../../../types';
+import {fetchTickets, type RawTicket} from '../../../services/tickets';
+import {getSocket} from '../../../services/singleton';
 import {
 	getPriorityColor,
 	getPriorityText,
@@ -22,14 +22,14 @@ interface TicketsFooterProps {
 }
 
 function TicketsFooter(props: TicketsFooterProps) {
-	const { t } = useTranslation('admin');
+	const {t} = useTranslation('admin');
 	const start = props.totalItems === 0 ? 0 : (props.currentPage - 1) * 8 + 1;
 	const end = props.totalItems === 0 ? 0 : Math.min(props.currentPage * 8, props.totalItems);
 
 	return (
 		<div className="px-5 pt-3 flex items-center justify-between">
 			<span className="text-xs md:text-sm text-gray-600">
-				{t('displayingRange', { start, end, total: props.totalItems })}
+				{t('displayingRange', {start, end, total: props.totalItems})}
 			</span>
 			<div className="flex items-center gap-3">
 				<button
@@ -64,21 +64,21 @@ interface PriorityFilter {
 }
 
 export function AdminTickets() {
-	const { t, i18n } = useTranslation('admin');
+	const {t, i18n} = useTranslation('admin');
 	const statusFilterElements = [
-		{ label: t('all'), value: null },
-		{ label: t('openPlural'), value: TicketStatus.OPEN },
-		{ label: t('inProgressPlural'), value: TicketStatus.IN_PROGRESS },
-		{ label: t('resolvedPlural'), value: TicketStatus.RESOLVED },
-		{ label: t('closedPlural'), value: TicketStatus.CLOSED },
+		{label: t('all'), value: null},
+		{label: t('openPlural'), value: TicketStatus.OPEN},
+		{label: t('inProgressPlural'), value: TicketStatus.IN_PROGRESS},
+		{label: t('resolvedPlural'), value: TicketStatus.RESOLVED},
+		{label: t('closedPlural'), value: TicketStatus.CLOSED},
 	];
 
 	const priorityFilterElements = [
-		{ label: t('all'), value: null },
-		{ label: t('lowPlural'), value: TicketPriority.LOW },
-		{ label: t('mediumPlural'), value: TicketPriority.MEDIUM },
-		{ label: t('highPlural'), value: TicketPriority.HIGH },
-		{ label: t('urgentPlural'), value: TicketPriority.URGENT },
+		{label: t('all'), value: null},
+		{label: t('lowPlural'), value: TicketPriority.LOW},
+		{label: t('mediumPlural'), value: TicketPriority.MEDIUM},
+		{label: t('highPlural'), value: TicketPriority.HIGH},
+		{label: t('urgentPlural'), value: TicketPriority.URGENT},
 	];
 
 	const [currentFilterStatus, setCurrentFilterStatus] = useState<TicketStatus | null>(null);
