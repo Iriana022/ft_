@@ -1,0 +1,242 @@
+import { type MouseEvent, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { MagnifyingGlassIcon } from '@heroicons/react/24/solid';
+import TicketFilter from '../../../components/client_components/TicketFilter';
+import { TicketPriority, TicketStatus, type Ticket } from '../../../types';
+import { fetchTickets, type RawTicket } from '../../../services/tickets';
+import { getSocket } from '../../../services/singleton';
+import {
+	getPriorityColor,
+	getPriorityText,
+	getStatusColor,
+	getStatusText,
+	upsertTicketFromSocket,
+} from '../adminHelpers';
+
+interface TicketsFooterProps {
+	currentPage: number,
+	totalPages: number,
+	totalItems: number,
+	onNext: () => void;
+	onPrev: () => void;
+}
+
+function TicketsFooter(props: TicketsFooterProps) {
+	const { t } = useTranslation('admin');
+	const start = (props.currentPage - 1) * 8 + 1;
+	const end = Math.min(props.currentPage * 8, props.totalItems);
+
+	return (
+		<div className="px-5 pt-3 flex items-center justify-between">
+			<span className="text-xs md:text-sm text-gray-600">
+				{t('displayingRange', { start, end, total: props.totalItems })}
+			</span>
+			<div className="flex items-center gap-3">
+				<button
+					onClick={props.onPrev}
+					disabled={props.currentPage == 1}
+					className="btn text-xs md:text-sm font-medium disabled:opacity-50 rounded-lg border border-1 bg-cream text-gray-600"
+				>
+					{t('previous')}
+				</button>
+				<button
+					onClick={props.onNext}
+					disabled={props.currentPage === props.totalPages}
+					className="btn text-xs md:text-sm font-medium disabled:opacity-50 rounded-lg border border-1 bg-cream text-gray-600"
+				>
+					{t('next')}
+				</button>
+			</div>
+		</div>
+	);
+}
+
+const ITEMS_PER_PAGE = 8;
+
+interface StatusFilter {
+	label: string,
+	value: TicketStatus | null,
+}
+
+interface PriorityFilter {
+	label: string,
+	value: TicketPriority | null,
+}
+
+export function AdminTickets() {
+	const { t, i18n } = useTranslation('admin');
+	const statusFilterElements = [
+		{ label: t('all'), value: null },
+		{ label: t('openPlural'), value: TicketStatus.OPEN },
+		{ label: t('inProgressPlural'), value: TicketStatus.IN_PROGRESS },
+		{ label: t('resolvedPlural'), value: TicketStatus.RESOLVED },
+		{ label: t('closedPlural'), value: TicketStatus.CLOSED },
+	];
+
+	const priorityFilterElements = [
+		{ label: t('all'), value: null },
+		{ label: t('lowPlural'), value: TicketPriority.LOW },
+		{ label: t('mediumPlural'), value: TicketPriority.MEDIUM },
+		{ label: t('highPlural'), value: TicketPriority.HIGH },
+		{ label: t('urgentPlural'), value: TicketPriority.URGENT },
+	];
+
+	const [currentFilterStatus, setCurrentFilterStatus] = useState<TicketStatus | null>(null);
+	const [currentFilterPriority, setCurrentFilterPriority] = useState<TicketPriority | null>(null);
+
+	const [tickets, setTickets] = useState<Ticket[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+
+	useEffect(() => {
+		const loadTickets = async () => {
+			try {
+				setLoading(true);
+				const data = await fetchTickets();
+				setTickets(data);
+				setError(null);
+			} catch (e) {
+				console.error('Erreur chargement tickets admin:', e);
+				setError(t('loadTicketsError'));
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		void loadTickets();
+
+		const socket = getSocket();
+
+		const onNewTicket = (payload: RawTicket) => {
+			setTickets((prev) => upsertTicketFromSocket(prev, payload));
+		};
+
+		const onTicketStatusUpdated = (payload: RawTicket) => {
+			setTickets((prev) => upsertTicketFromSocket(prev, payload));
+		};
+
+		socket.on('newTicket', onNewTicket);
+		socket.on('ticketStatusUpdated', onTicketStatusUpdated);
+
+		return () => {
+			socket.off('newTicket', onNewTicket);
+			socket.off('ticketStatusUpdated', onTicketStatusUpdated);
+		};
+	}, [t]);
+
+	const currentFilterElementStatus = statusFilterElements.find((element) => element.value === currentFilterStatus);
+	const currentFilterElementPriority = priorityFilterElements.find((element) => element.value === currentFilterPriority);
+
+	const filteredTickets = useMemo(() => {
+		return tickets.filter((ticket) => {
+			const matchStatus =
+				currentFilterStatus === null || ticket.status === currentFilterStatus;
+
+			const matchPriority =
+				currentFilterPriority === null || ticket.priority === currentFilterPriority;
+
+			return matchStatus && matchPriority;
+		});
+	}, [tickets, currentFilterStatus, currentFilterPriority]);
+
+	const [currentPage, setCurrentPage] = useState(1);
+
+	const totalItems = filteredTickets.length;
+	const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+
+	const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+	const currentTickets = filteredTickets.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+	const handleSelectStatus = (event: MouseEvent, element: StatusFilter) => {
+		event.stopPropagation();
+		setCurrentFilterStatus(element.value);
+		setCurrentPage(1);
+	};
+
+	const handleSelectPriority = (event: MouseEvent, element: PriorityFilter) => {
+		event.stopPropagation();
+		setCurrentFilterPriority(element.value);
+		setCurrentPage(1);
+	};
+
+	if (loading) {
+		return <div className="p-4">{t('loadingTickets')}</div>;
+	}
+
+	if (error) {
+		return <div className="p-4 text-red-600">{error}</div>;
+	}
+
+	return (
+		<div>
+			<div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:justify-between">
+				<label className="input text-sm border rounded-lg border-gray-200 max-w-[280px]">
+					<MagnifyingGlassIcon className="w-4 h-4 text-gray-600" />
+					<input type="search" className="text-sm" required placeholder={t('searchTicketsPlaceholder')} />
+				</label>
+				<div className="flex items-center gap-4">
+					<TicketFilter label={t('statusLabel')} list={statusFilterElements} currentFilterElement={currentFilterElementStatus?.label ?? t('all')} handleSelect={handleSelectStatus} />
+					<TicketFilter label={t('priorityLabel')} list={priorityFilterElements} currentFilterElement={currentFilterElementPriority?.label ?? t('all')} handleSelect={handleSelectPriority} />
+				</div>
+			</div>
+			<div className="bg-white py-4 rounded-md shadow mt-8">
+				<div className="w-full overflow-x-auto">
+					<table className="min-w-[700px] w-full text-sm text-left">
+						<thead className="text-gray-500 border-b">
+							<tr>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">{t('idColumn')}</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">{t('titleColumn')}</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">{t('statusColumn')}</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">{t('priorityColumn')}</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">{t('clientColumn')}</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">{t('dateColumn')}</th>
+							</tr>
+						</thead>
+						<tbody>
+							{
+								currentTickets.map((ticket) => (
+									<tr
+										key={ticket.id}
+										className="border-b hover:bg-cream/70 transition"
+									>
+										<td className="px-5 py-3 text-navy whitespace-nowrap">
+											TK-{ticket.id}
+										</td>
+										<td className="px-5 py-3 whitespace-nowrap">
+											{ticket.title}
+										</td>
+										<td className="px-5 py-3 whitespace-nowrap">
+											<span
+												className={`px-2 py-1 rounded-full text-xs ${getStatusColor(ticket.status)[0]} ${getStatusColor(ticket.status)[1]}`}>
+												{getStatusText(ticket.status, t)}
+											</span>
+										</td>
+										<td className="px-5 py-3 whitespace-nowrap">
+											<span
+												className={`px-2 py-1 rounded-full text-xs ${getPriorityColor(ticket.priority)[0]} ${getPriorityColor(ticket.priority)[1]}`}>
+												{getPriorityText(ticket.priority, t)}
+											</span>
+										</td>
+										<td className="px-5 py-3 whitespace-nowrap">
+											{ticket.author.login ?? ticket.author.email}
+										</td>
+										<td className="px-5 py-3 text-gray-500 whitespace-nowrap">
+											{new Date(ticket.createdAt).toLocaleDateString(i18n.language).replace(/\//g, '-')}
+										</td>
+									</tr>
+								))
+							}
+						</tbody>
+					</table>
+				</div>
+				<TicketsFooter
+					currentPage={currentPage}
+					totalPages={totalPages}
+					totalItems={totalItems}
+					onNext={() => setCurrentPage((page) => Math.min(page + 1, totalPages))}
+					onPrev={() => setCurrentPage((page) => Math.max(page - 1, 1))}
+				/>
+			</div>
+		</div>
+	);
+}
