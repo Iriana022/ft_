@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import {useState, useMemo, useEffect} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
 import {
 	ChevronLeftIcon,
 	ChevronRightIcon,
@@ -16,28 +16,27 @@ import {
 	ChartBarSquareIcon,
 	ClockIcon,
 	TrashIcon,
-	EyeIcon,
 } from '@heroicons/react/24/outline';
 import TikeoLogo from '../../components/client_components/TikeoLogo';
 import Notification from '../../components/client_components/Notification';
 import Avatar from '../../components/client_components/Avatar';
-import { Outlet, Link, NavLink } from 'react-router-dom';
-import { type HeroIconType, type Ticket, type User, TicketStatus, TicketPriority, StatCardType } from '../../types';
-import { RechartsDevtools } from '@recharts/devtools';
+import {Outlet, Link, NavLink} from 'react-router-dom';
+import {type HeroIconType, type Ticket, type User, TicketStatus, TicketPriority, StatCardType} from '../../types';
+import {RechartsDevtools} from '@recharts/devtools';
 import {
 	LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
 	ResponsiveContainer
 } from 'recharts';
 import Separator from '../../components/login_components/Separator';
 import TicketFilter from '../../components/client_components/TicketFilter';
-import { UserRole } from '../../types';
-import { fetchTickets, fetchUsers, normalizeTicket, type RawTicket, deleteUserByAdmin, fetchTicketResolutionHistory, type TicketResolutionHistoryItem } from '../../services/tickets';
-import { format, subDays, isSameDay } from 'date-fns';
-import { fr, enUS, es } from 'date-fns/locale';
-import { getSocket } from '../../services/singleton';
-import { jsPDF } from 'jspdf';
-import { autoTable } from 'jspdf-autotable';
-
+import {UserRole} from '../../types';
+import {fetchTickets, fetchUsers, normalizeTicket, type RawTicket, deleteUserByAdmin, fetchTicketResolutionHistory, type TicketResolutionHistoryItem} from '../../services/tickets';
+import {format, subDays, isSameDay} from 'date-fns';
+import {fr, enUS, es} from 'date-fns/locale';
+import {getSocket} from '../../services/singleton';
+import {jsPDF} from 'jspdf';
+import {autoTable} from 'jspdf-autotable';
+import LanguageSelector from '../../components/client_components/LanguageSelector';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -48,7 +47,7 @@ function VerticalSeparator() {
 }
 
 function AdminHeader() {
-	const { t } = useTranslation('admin');
+	const {t} = useTranslation('admin');
 	const navigate = useNavigate();
 
 	const handleLogout = () => {
@@ -70,6 +69,7 @@ function AdminHeader() {
 				</span>
 			</div>
 			<div className="flex items-center gap-4">
+				<LanguageSelector />
 				<Notification hasNotification={true} />
 				<VerticalSeparator />
 				<div className="flex items-center gap-2">
@@ -94,7 +94,7 @@ interface DrawerTogglerProps {
 };
 
 function DrawerToggler(props: DrawerTogglerProps) {
-	const { t } = useTranslation('admin');
+	const {t} = useTranslation('admin');
 	return (
 		<button
 			type="button"
@@ -188,7 +188,7 @@ interface CreatedAndResolvedIndicatorProps {
 }
 
 function CreatedAndResolvedIndicator(props: CreatedAndResolvedIndicatorProps) {
-	const { t } = useTranslation('admin');
+	const {t} = useTranslation('admin');
 	const text = props.type === "created" ? t('created') : t('resolved');
 	const bg = props.type === "created" ? "bg-navy" : "bg-status-resolved";
 	return (
@@ -208,7 +208,7 @@ const generateDailyTickets = (
 	const last7Days = [...Array(7)].map((_, i) => subDays(new Date(), i)).reverse();
 
 	return last7Days.map((date) => {
-		const name = format(date, 'eee', { locale });
+		const name = format(date, 'eee', {locale});
 
 		const created = tickets.filter((t) =>
 			isSameDay(new Date(t.createdAt), date)
@@ -228,7 +228,7 @@ const generateDailyTickets = (
 };
 
 function TicketsActivities() {
-	const { t, i18n } = useTranslation('admin');
+	const {t, i18n} = useTranslation('admin');
 	const [tickets, setTickets] = useState<Ticket[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -306,10 +306,10 @@ function TicketsActivities() {
 				<ResponsiveContainer>
 					<LineChart responsive data={dailyTickets}>
 						<CartesianGrid stroke="#aaa" strokeDasharray="5 5" />
-						<Line type="monotone" dataKey="created" stroke="var(--color-navy)" strokeWidth={2} name={t('created')} dot={false} activeDot={{ r: 5 }} />
-						<Line type="monotone" dataKey="resolved" stroke="var(--color-status-resolved)" strokeWidth={2} name={t('resolved')} dot={false} activeDot={{ r: 5 }} />
-						<XAxis dataKey="name" tick={{ fontSize: 12 }} />
-						<YAxis tick={{ fontSize: 12 }} />
+						<Line type="monotone" dataKey="created" stroke="var(--color-navy)" strokeWidth={2} name={t('created')} dot={false} activeDot={{r: 5}} />
+						<Line type="monotone" dataKey="resolved" stroke="var(--color-status-resolved)" strokeWidth={2} name={t('resolved')} dot={false} activeDot={{r: 5}} />
+						<XAxis dataKey="name" tick={{fontSize: 12}} />
+						<YAxis tick={{fontSize: 12}} />
 						<Tooltip />
 						<RechartsDevtools />
 					</LineChart>
@@ -320,7 +320,7 @@ function TicketsActivities() {
 }
 
 function RecentTicketsHeader() {
-	const { t } = useTranslation('admin');
+	const {t} = useTranslation('admin');
 	return (
 		<div className="flex items-center justify-between px-5 pt-3">
 			<div>
@@ -445,11 +445,11 @@ function upsertTicketFromSocket(prev: Ticket[], payload: RawTicket): Ticket[] {
 		return [nextTicket, ...prev];
 	}
 
-	return prev.map((t) => (t.id === nextTicket.id ? { ...t, ...nextTicket } : t));
+	return prev.map((t) => (t.id === nextTicket.id ? {...t, ...nextTicket} : t));
 }
 
 function RecentTickets() {
-	const { t, i18n } = useTranslation('admin');
+	const {t, i18n} = useTranslation('admin');
 	const [tickets, setTickets] = useState<Ticket[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -552,7 +552,7 @@ function RecentTickets() {
 }
 
 export function AdminDashboard() {
-	const { t } = useTranslation('admin');
+	const {t} = useTranslation('admin');
 	const [tickets, setTickets] = useState<Ticket[]>([]);
 	const [users, setUsers] = useState<User[]>([]);
 	const loadTickets = async () => {
@@ -643,14 +643,14 @@ interface TicketsFooterProps {
 }
 
 function TicketsFooter(props: TicketsFooterProps) {
-	const { t } = useTranslation('admin');
+	const {t} = useTranslation('admin');
 	const start = (props.currentPage - 1) * 8 + 1;
 	const end = Math.min(props.currentPage * 8, props.totalItems);
 
 	return (
 		<div className="px-5 pt-3 flex items-center justify-between">
 			<span className="text-xs md:text-sm text-gray-600">
-				{t('displayingRange', { start, end, total: props.totalItems })}
+				{t('displayingRange', {start, end, total: props.totalItems})}
 			</span>
 			<div className="flex items-center gap-3">
 				<button
@@ -698,22 +698,22 @@ function ActionIcon(props: ActionIconProps) {
 }
 
 export function AdminTickets() {
-	const { t, i18n } = useTranslation('admin');
+	const {t, i18n} = useTranslation('admin');
 	// TODO: refactor this code
 	const statusFilterElements = [
-		{ label: t('all'), value: null },
-		{ label: t('openPlural'), value: TicketStatus.OPEN },
-		{ label: t('inProgressPlural'), value: TicketStatus.IN_PROGRESS },
-		{ label: t('resolvedPlural'), value: TicketStatus.RESOLVED },
-		{ label: t('closedPlural'), value: TicketStatus.CLOSED },
+		{label: t('all'), value: null},
+		{label: t('openPlural'), value: TicketStatus.OPEN},
+		{label: t('inProgressPlural'), value: TicketStatus.IN_PROGRESS},
+		{label: t('resolvedPlural'), value: TicketStatus.RESOLVED},
+		{label: t('closedPlural'), value: TicketStatus.CLOSED},
 	];
 
 	const priorityFilterElements = [
-		{ label: t('all'), value: null },
-		{ label: t('lowPlural'), value: TicketPriority.LOW },
-		{ label: t('mediumPlural'), value: TicketPriority.MEDIUM },
-		{ label: t('highPlural'), value: TicketPriority.HIGH },
-		{ label: t('urgentPlural'), value: TicketPriority.URGENT },
+		{label: t('all'), value: null},
+		{label: t('lowPlural'), value: TicketPriority.LOW},
+		{label: t('mediumPlural'), value: TicketPriority.MEDIUM},
+		{label: t('highPlural'), value: TicketPriority.HIGH},
+		{label: t('urgentPlural'), value: TicketPriority.URGENT},
 	];
 
 	const [currentFilterStatus, setCurrentFilterStatus] = useState<TicketStatus | null>(null);
@@ -894,8 +894,8 @@ function getRoleString(role: UserRole, authT: (key: string) => string, adminT: (
 }
 
 export function AdminUsers() {
-	const { t: authT } = useTranslation('auth');
-	const { t } = useTranslation('admin');
+	const {t: authT} = useTranslation('auth');
+	const {t} = useTranslation('admin');
 	const [users, setUsers] = useState<User[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -1017,7 +1017,7 @@ export function AdminUsers() {
 }
 
 export function AdminStats() {
-	const { t, i18n } = useTranslation('admin');
+	const {t, i18n} = useTranslation('admin');
 	const [isExporting, setIsExporting] = useState(false);
 	const [exportError, setExportError] = useState<string | null>(null);
 
@@ -1067,8 +1067,8 @@ export function AdminStats() {
 					[t('closedPlural'), String(closedTickets)],
 					[t('users'), String(users.length)],
 				],
-				styles: { fontSize: 10 },
-				headStyles: { fillColor: [22, 56, 95] },
+				styles: {fontSize: 10},
+				headStyles: {fillColor: [22, 56, 95]},
 			});
 
 			const dailyActivity = generateDailyTickets(tickets, resolutionHistory, i18n.language);
@@ -1081,8 +1081,8 @@ export function AdminStats() {
 					String(item.created),
 					String(item.resolved),
 				]),
-				styles: { fontSize: 9 },
-				headStyles: { fillColor: [46, 139, 87] },
+				styles: {fontSize: 9},
+				headStyles: {fillColor: [46, 139, 87]},
 			});
 
 			const ticketRows = [...tickets]
@@ -1100,15 +1100,15 @@ export function AdminStats() {
 				startY: (doc as any).lastAutoTable.finalY + 16,
 				head: [[t('idColumn'), t('titleColumn'), t('statusColumn'), t('priorityColumn'), t('clientColumn'), t('dateColumn')]],
 				body: ticketRows.length > 0 ? ticketRows : [[t('noTickets'), '', '', '', '', '']],
-				styles: { fontSize: 8, cellPadding: 4 },
-				headStyles: { fillColor: [22, 56, 95] },
+				styles: {fontSize: 8, cellPadding: 4},
+				headStyles: {fillColor: [22, 56, 95]},
 				columnStyles: {
-					0: { cellWidth: 55 },
-					1: { cellWidth: 220 },
-					2: { cellWidth: 90 },
-					3: { cellWidth: 90 },
-					4: { cellWidth: 130 },
-					5: { cellWidth: 90 },
+					0: {cellWidth: 55},
+					1: {cellWidth: 220},
+					2: {cellWidth: 90},
+					3: {cellWidth: 90},
+					4: {cellWidth: 130},
+					5: {cellWidth: 90},
 				},
 			});
 
@@ -1153,7 +1153,7 @@ interface DrawerSideContentProps {
 }
 
 function DrawerSideContent(props: DrawerSideContentProps) {
-	const { t } = useTranslation('admin');
+	const {t} = useTranslation('admin');
 	const handleNavClick = () => {
 		if (window.innerWidth < 1024) {
 			props.setIsOpen(false);
@@ -1175,7 +1175,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 					<NavLink
 						to="/admin"
 						end
-						className={({ isActive }) =>
+						className={({isActive}) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 							 ${isActive ? "bg-sky/25" : ""}
 							 focus:bg-sky/50
@@ -1191,7 +1191,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 				<li>
 					<NavLink
 						to="tickets"
-						className={({ isActive }) =>
+						className={({isActive}) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 								${isActive ? "bg-sky/25" : ""}
 								focus:bg-sky/25
@@ -1207,7 +1207,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 				<li>
 					<NavLink
 						to="users"
-						className={({ isActive }) =>
+						className={({isActive}) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 								${isActive ? "bg-sky/25" : ""}
 								focus:bg-sky/25
@@ -1223,7 +1223,7 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 				<li>
 					<NavLink
 						to="stats"
-						className={({ isActive }) =>
+						className={({isActive}) =>
 							`is-drawer-close:tooltip is-drawer-close:tooltip-right font-normal transition
 							${isActive ? "bg-sky/25" : ""}
 							focus:bg-sky/25
@@ -1238,13 +1238,13 @@ function DrawerSideContent(props: DrawerSideContentProps) {
 				</li>
 			</ul>
 			<Separator color="bg-white/25" />
-			<div className="flex items-center gap-3 pb-10">
-				<div className="p-2 bg-sky rounded-full">
-					<span>AD</span>
-				</div>
-				<div className="flex flex-col">
-					<span className="text-sm">{t('adminLabel')}</span>
-					<span className="text-xs">tikeoadmin@tikeo.com</span>
+			<div className="mt-auto pb-10 w-full flex flex-col items-center is-drawer-close:items-center is-drawer-open:items-start">
+				<Avatar src={avatar1} size="md" />
+				<div className="flex flex-col mt-2 is-drawer-close:hidden">
+					<span className="text-sm text-white">{t('adminLabel')}</span>
+					<span className="text-xs text-white/70">
+						tikeoadmin@tikeo.com
+					</span>
 				</div>
 			</div>
 		</div>
