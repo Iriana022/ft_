@@ -166,7 +166,7 @@ export function DrawerSideContent(props: DrawerSideContentProps) {
 			<div
 				className="mt-auto pb-10 w-full flex flex-col items-center is-drawer-close:items-center is-drawer-open:items-start"
 			>
-				<div onClick={() => navigate('profile')}>
+				<div onClick={() => { navigate('profile'); props.setIsOpen(false); }}>
 					<Avatar src={avatar1} size="md" />
 				</div>
 				<div className="flex flex-col mt-2 is-drawer-close:hidden">
