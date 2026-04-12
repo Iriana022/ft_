@@ -1,7 +1,7 @@
 import api from './api';
-import { type ChatMessage, TicketStatus, type Ticket, type User } from '../types';
-import { TicketPriority, type TicketType } from '../types';
-import { type TicketInternalNote } from '../types';
+import {type ChatMessage, TicketStatus, type Ticket, type User} from '../types';
+import {TicketPriority, type TicketType} from '../types';
+import {type TicketInternalNote} from '../types';
 
 export type RawUser = Omit<User, 'createdAt'> & {
 	createdAt: string | Date;
@@ -85,7 +85,7 @@ export const fetchTicketResolutionHistory = async (
 	days = 7
 ): Promise<TicketResolutionHistoryItem[]> => {
 	const response = await api.get('/tickets/stats/resolution-history', {
-		params: { days },
+		params: {days},
 	});
 
 	return (response.data ?? []).map((item: RawTicketResolutionHistoryItem) => ({
@@ -163,12 +163,12 @@ export const createTicketInternalNote = async (
 	ticketId: number,
 	content: string,
 ): Promise<TicketInternalNote> => {
-	const response = await api.post('/tickets/' + ticketId + '/internal-notes', { content });
+	const response = await api.post('/tickets/' + ticketId + '/internal-notes', {content});
 	return normalizeInternalNote(response.data as RawTicketInternalNote);
 };
 
 export const updateTicketStatus = async (ticketId: number, status: TicketStatus): Promise<Ticket> => {
-	const response = await api.patch(`/tickets/${ticketId}/status`, { status });
+	const response = await api.patch(`/tickets/${ticketId}/status`, {status});
 
 	return normalizeTicket(response.data as RawTicket);
 };
