@@ -2,6 +2,7 @@ import {Link} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import ContainerComp from '../../layout/layout_client/Container';
 import {getHomeRouteByRole, getStoredUserRole} from '../../services/auth';
+import LanguageSelector from '../../components/client_components/LanguageSelector';
 
 interface LegalDocumentProps {
 	type: 'privacy' | 'terms';
@@ -38,17 +39,23 @@ function LegalDocument(props: LegalDocumentProps) {
 	const homeRoute = getHomeRouteByRole(getStoredUserRole());
 
 	return (
-		<main className="min-h-screen bg-cream py-8 md:py-12">
+		<main className="min-h-screen py-8 md:py-12">
+			<Link to={homeRoute} className="absolute top-10 left-10 inline-flex w-fit items-center rounded-md border border-gray-300 px-4 py-2 text-xs md:text-sm font-medium text-navy hover:bg-sky/25">
+				{'<'} {t('shared.backToApp')}
+			</Link>
+			<div className="absolute top-10 right-10">
+				<LanguageSelector />
+			</div>
 			<ContainerComp>
 				<article className="mx-auto max-w-4xl rounded-2xl border border-gray-200 bg-white p-6 md:p-10 shadow-sm">
 					<header className="border-b border-gray-200 pb-6 mb-6">
 						<h1 className="text-2xl md:text-3xl font-bold text-navy">
 							{t(`${prefix}.title`)}
 						</h1>
-						<p className="text-gray-700 mt-3">
+						<p className="text-gray-700 text-sm md:text-base mt-3">
 							{t(`${prefix}.intro`)}
 						</p>
-						<p className="text-sm text-gray-500 mt-2">
+						<p className="text-xs md:text-sm text-gray-500 mt-2">
 							{t('shared.lastUpdated', {date: t(`${prefix}.updatedAt`)})}
 						</p>
 					</header>
@@ -61,7 +68,7 @@ function LegalDocument(props: LegalDocumentProps) {
 									<h2 id={headingId} className="text-lg md:text-xl font-semibold text-navy">
 										{t(`${prefix}.sections.${sectionKey}.title`)}
 									</h2>
-									<p className="text-gray-700 mt-2 leading-relaxed">
+									<p className="text-gray-700 text-sm md:text-base mt-2 leading-relaxed">
 										{t(`${prefix}.sections.${sectionKey}.content`)}
 									</p>
 								</section>
@@ -69,13 +76,10 @@ function LegalDocument(props: LegalDocumentProps) {
 						})}
 					</section>
 
-					<footer className="border-t border-gray-200 pt-6 mt-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-						<p className="text-gray-700 text-sm md:text-base">
+					<footer className="border-t border-gray-200 pt-6 mt-8">
+						<p className="text-gray-700 text-xs md:text-sm">
 							{t(`${prefix}.contact`)}
 						</p>
-						<Link to={homeRoute} className="inline-flex w-fit items-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-navy hover:bg-gray-50">
-							{t('shared.backToApp')}
-						</Link>
 					</footer>
 				</article>
 			</ContainerComp>

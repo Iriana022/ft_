@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useState } from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import Separator from '../../components/login_components/Separator';
 import ContainerComp from '../../layout/layout_client/Container';
 import ClientHomeHeroSection from '../../components/client_components/ClientHomeHeroSection';
 import ClientHomeMyTicketsSection from '../../components/client_components/ClientHomeMyTicketsSection';
-import { fetchMyTicketsForClientView } from '../../services/tickets';
-import type { TicketType } from '../../types';
-import { TicketStatus } from '../../types';
-import { getSocket } from '../../services/singleton';
+import {fetchMyTicketsForClientView} from '../../services/tickets';
+import type {TicketType} from '../../types';
+import {TicketStatus} from '../../types';
+import {getSocket} from '../../services/singleton';
 
 function ClientHome() {
 	const [tickets, setTickets] = useState<TicketType[]>([]);
@@ -27,16 +27,16 @@ function ClientHome() {
 		loadTickets();
 		const socket = getSocket();
 
-		const handleticketStatusUpdated = (updatedTicket: { id: number; status: TicketStatus }) => {
+		const handleticketStatusUpdated = (updatedTicket: {id: number; status: TicketStatus}) => {
 			setTickets((prev) =>
 				prev.map((t) =>
 					t.id === updatedTicket.id
-						? { ...t, status: updatedTicket.status }
+						? {...t, status: updatedTicket.status}
 						: t
 				),
 			);
 		};
-		const handleticketUnreadUpdated = (payload: { ticketId: number; clientUnreadCount: number }) => {
+		const handleticketUnreadUpdated = (payload: {ticketId: number; clientUnreadCount: number}) => {
 			setTickets((prev) =>
 				prev.map((t) =>
 					t.id === payload.ticketId
@@ -66,7 +66,7 @@ function ClientHome() {
 			<ContainerComp>
 				<ClientHomeMyTicketsSection tickets={tickets} isLoading={isLoading} />
 			</ContainerComp>
-		</div >
+		</div>
 	);
 }
 
