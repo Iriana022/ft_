@@ -10,7 +10,10 @@ import { unlink } from 'fs/promises';
 import { UserRole } from '@prisma/client';
 import { Roles } from 'src/auth/roles.decorator';
 import { RolesGuard } from 'src/auth/roles.guard';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('user')
+@ApiBearerAuth('bearer')
 @Controller('user')
 export class UserController {
 	constructor(private readonly userService: UserService) { }
@@ -23,12 +26,17 @@ export class UserController {
 	@Get()
 	@UseGuards(JwtAuthGuard, RolesGuard)
 	@Roles(UserRole.ADMIN)
+	@ApiOperation({ summary: 'Lister les utilisateurs (admin)' })
+	@ApiResponse({ status: 200, description: 'Liste récupérée' })
+	@ApiResponse({ status: 403, description: 'Accès refusé' })
 	findAll() {
 		return this.userService.findAll();
 	}
 
 	@Get('me')
 	@UseGuards(JwtAuthGuard)
+	@ApiOperation({ summary: 'Récupérer mon profil' })
+	@ApiResponse({ status: 200, description: 'Profil récupéré' })
 	getMe(
 		@Req() req: any
 	) {
@@ -90,6 +98,9 @@ export class UserController {
 	@UseGuards(JwtAuthGuard, RolesGuard)
 	@Roles(UserRole.ADMIN)
 	@HttpCode(HttpStatus.NO_CONTENT)
+	@ApiOperation({ summary: 'Supprimer un utilisateur (admin)' })
+	@ApiResponse({ status: 204, description: 'Utilisateur supprimé' })
+	@ApiResponse({ status: 403, description: 'Accès refusé' })
 	async deleteUserByAdmin(
 		@Param('id', ParseIntPipe) id: number,
 		@Req() req: { user: { userId: number; role: 'CLIENT' | 'AGENT' | 'ADMIN' } },
@@ -109,6 +120,8 @@ export class UserController {
 
 	@Put('notifications/read-all')
 	@UseGuards(JwtAuthGuard)
+	@ApiOperation({ summary: 'Marquer toutes mes notifications comme lues' })
+	@ApiResponse({ status: 200, description: 'Notifications mises à jour' })
 	readAllMyNotifications(@Req() req: { user: { userId: number } }) {
 		return this.userService.readAllMyNotifications(req.user.userId);
 	}

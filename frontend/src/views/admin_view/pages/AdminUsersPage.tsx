@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/solid';
 import { TrashIcon } from '@heroicons/react/24/outline';
@@ -29,6 +29,7 @@ export function AdminUsers() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
+	const [searchTerm, setSearchTerm] = useState('');
 
 	const handleDeleteUser = async (userId: number) => {
 		const confirmed = window.confirm(t('deleteUserConfirm'));
@@ -72,13 +73,34 @@ export function AdminUsers() {
 		return <div className="p-4 text-red-600">{error}</div>;
 	}
 
-	console.log(users);
+	const filteredUsers = useMemo(() => {
+		const normalizedSearch = searchTerm.trim().toLowerCase();
+		if (!normalizedSearch) return users;
+
+		return users.filter((user) => {
+			const login = (user.login ?? '').toLowerCase();
+			const email = user.email.toLowerCase();
+			const role = getRoleString(user.role, authT, t).toLowerCase();
+
+			return (
+				login.includes(normalizedSearch) ||
+				email.includes(normalizedSearch) ||
+				role.includes(normalizedSearch)
+			);
+		});
+	}, [authT, searchTerm, t, users]);
 
 	return (
 		<div>
 			<label className="hidden md:flex input text-sm bg-white rounded-lg border border-gray-200 max-w-[280px]">
 				<MagnifyingGlassIcon className="w-4 h-4 text-gray-600" />
-				<input type="search" className="text-sm" required placeholder={t('searchUsersPlaceholder')} />
+				<input
+					type="search"
+					className="text-sm"
+					value={searchTerm}
+					onChange={(event) => setSearchTerm(event.target.value)}
+					placeholder={t('searchUsersPlaceholder')}
+				/>
 			</label>
 
 			<div className="bg-white rounded-md shadow mt-8 pt-3">
@@ -96,7 +118,7 @@ export function AdminUsers() {
 
 						<tbody>
 							{
-								users.map((user) => (
+								filteredUsers.map((user) => (
 									<tr
 										key={user.id}
 										className="border-b hover:bg-cream/70 transition"

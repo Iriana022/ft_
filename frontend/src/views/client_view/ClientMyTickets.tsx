@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import ContainerComp from "../../layout/layout_client/Container";
 import Ticket from "../../components/client_components/Ticket";
 import SearchInput from "../../components/client_components/SearchInput";
@@ -30,22 +30,44 @@ function ClientMyTickets() {
 		{label: t('priorityUrgentPlural'), value: TicketPriority.URGENT},
 	];
 
-	const [currentFilterStatus, setCurrentFilterStatus] = useState(status[0].label);
-	const [currentFilterPriority, setCurrentFilterPriority] = useState(priorities[0].label);
+	const [searchTerm, setSearchTerm] = useState('');
+	const [currentFilterStatus, setCurrentFilterStatus] = useState<TicketStatus | null>(null);
+	const [currentFilterPriority, setCurrentFilterPriority] = useState<TicketPriority | null>(null);
 
 	const [tickets, setTickets] = useState<TicketType[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isCreateTicketOpen, setIsCreateTicketOpen] = useState(false);
 
+	const filteredTickets = useMemo(() => {
+		const normalizedSearch = searchTerm.trim().toLowerCase();
+		const hasSearch = normalizedSearch.length > 0;
+
+		return tickets.filter((ticket) => {
+			const matchesSearch =
+				!hasSearch ||
+				ticket.title.toLowerCase().includes(normalizedSearch) ||
+				ticket.description.toLowerCase().includes(normalizedSearch) ||
+				String(ticket.id).includes(normalizedSearch);
+
+			const matchesStatus = currentFilterStatus === null || ticket.status === currentFilterStatus;
+			const matchesPriority = currentFilterPriority === null || ticket.priority === currentFilterPriority;
+
+			return matchesSearch && matchesStatus && matchesPriority;
+		});
+	}, [tickets, searchTerm, currentFilterStatus, currentFilterPriority]);
+
+	const currentFilterStatusLabel = status.find((element) => element.value === currentFilterStatus)?.label ?? t('all');
+	const currentFilterPriorityLabel = priorities.find((element) => element.value === currentFilterPriority)?.label ?? t('all');
+
 
 	const handleSelectStatus = (e: React.MouseEvent, element: TicketFilterOption) => {
 		e.stopPropagation();
-		setCurrentFilterStatus(element.label);
+		setCurrentFilterStatus(element.value as TicketStatus | null);
 	}
 
 	const handleSelectPriority = (e: React.MouseEvent, element: TicketFilterOption) => {
 		e.stopPropagation();
-		setCurrentFilterPriority(element.label);
+		setCurrentFilterPriority(element.value as TicketPriority | null);
 	}
 
 	const loadTickets = async () => {
@@ -112,16 +134,16 @@ function ClientMyTickets() {
 						</button>
 					</div >
 					<div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-10">
-						<SearchInput />
-						<TicketFilter label={t('filterStatus')} list={status} currentFilterElement={currentFilterStatus} handleSelect={handleSelectStatus} />
-						<TicketFilter label={t('filterPriority')} list={priorities} currentFilterElement={currentFilterPriority} handleSelect={handleSelectPriority} />
+						<SearchInput value={searchTerm} onChange={setSearchTerm} />
+						<TicketFilter label={t('filterStatus')} list={status} currentFilterElement={currentFilterStatusLabel} handleSelect={handleSelectStatus} />
+						<TicketFilter label={t('filterPriority')} list={priorities} currentFilterElement={currentFilterPriorityLabel} handleSelect={handleSelectPriority} />
 					</div>
 					{
 						isLoading ? (
 							<p className="text-sm text-gray-500">{t('loadingTickets')}</p>
 						) : (
 							<div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
-								{tickets.length === 0 ? (
+								{filteredTickets.length === 0 ? (
 									<div className="col-span-full flex flex-col items-center mt-14 justify-center py-10 text-gray-400">
 										<img
 											src={noneTickets}
@@ -131,7 +153,7 @@ function ClientMyTickets() {
 										<p>{t('noTickets')}</p>
 									</div>
 								) : (
-									tickets.map((t, i) => <Ticket ticket={t} key={i} />)
+										filteredTickets.map((ticket) => <Ticket ticket={ticket} key={ticket.id} />)
 								)}
 							</div>
 						)

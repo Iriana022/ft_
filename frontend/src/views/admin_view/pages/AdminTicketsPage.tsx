@@ -23,8 +23,8 @@ interface TicketsFooterProps {
 
 function TicketsFooter(props: TicketsFooterProps) {
 	const { t } = useTranslation('admin');
-	const start = (props.currentPage - 1) * 8 + 1;
-	const end = Math.min(props.currentPage * 8, props.totalItems);
+	const start = props.totalItems === 0 ? 0 : (props.currentPage - 1) * 8 + 1;
+	const end = props.totalItems === 0 ? 0 : Math.min(props.currentPage * 8, props.totalItems);
 
 	return (
 		<div className="px-5 pt-3 flex items-center justify-between">
@@ -83,6 +83,7 @@ export function AdminTickets() {
 
 	const [currentFilterStatus, setCurrentFilterStatus] = useState<TicketStatus | null>(null);
 	const [currentFilterPriority, setCurrentFilterPriority] = useState<TicketPriority | null>(null);
+	const [searchTerm, setSearchTerm] = useState('');
 
 	const [tickets, setTickets] = useState<Ticket[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -128,21 +129,41 @@ export function AdminTickets() {
 	const currentFilterElementPriority = priorityFilterElements.find((element) => element.value === currentFilterPriority);
 
 	const filteredTickets = useMemo(() => {
+		const normalizedSearch = searchTerm.trim().toLowerCase();
+		const hasSearch = normalizedSearch.length > 0;
+
 		return tickets.filter((ticket) => {
+			const ticketId = 'tk-' + ticket.id;
+			const authorLogin = (ticket.author.login ?? '').toLowerCase();
+			const authorEmail = (ticket.author.email ?? '').toLowerCase();
+			const matchesSearch =
+				!hasSearch ||
+				ticketId.includes(normalizedSearch) ||
+				ticket.title.toLowerCase().includes(normalizedSearch) ||
+				ticket.description.toLowerCase().includes(normalizedSearch) ||
+				authorLogin.includes(normalizedSearch) ||
+				authorEmail.includes(normalizedSearch);
+
 			const matchStatus =
 				currentFilterStatus === null || ticket.status === currentFilterStatus;
 
 			const matchPriority =
 				currentFilterPriority === null || ticket.priority === currentFilterPriority;
 
-			return matchStatus && matchPriority;
+			return matchesSearch && matchStatus && matchPriority;
 		});
-	}, [tickets, currentFilterStatus, currentFilterPriority]);
+	}, [tickets, currentFilterStatus, currentFilterPriority, searchTerm]);
 
 	const [currentPage, setCurrentPage] = useState(1);
 
 	const totalItems = filteredTickets.length;
-	const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+	const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
+
+	useEffect(() => {
+		if (currentPage > totalPages) {
+			setCurrentPage(totalPages);
+		}
+	}, [currentPage, totalPages]);
 
 	const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
 	const currentTickets = filteredTickets.slice(startIndex, startIndex + ITEMS_PER_PAGE);
@@ -172,7 +193,16 @@ export function AdminTickets() {
 			<div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:justify-between">
 				<label className="input text-sm border rounded-lg border-gray-200 max-w-[280px]">
 					<MagnifyingGlassIcon className="w-4 h-4 text-gray-600" />
-					<input type="search" className="text-sm" required placeholder={t('searchTicketsPlaceholder')} />
+					<input
+						type="search"
+						className="text-sm"
+						value={searchTerm}
+						onChange={(event) => {
+							setSearchTerm(event.target.value);
+							setCurrentPage(1);
+						}}
+						placeholder={t('searchTicketsPlaceholder')}
+					/>
 				</label>
 				<div className="flex items-center gap-4">
 					<TicketFilter label={t('statusLabel')} list={statusFilterElements} currentFilterElement={currentFilterElementStatus?.label ?? t('all')} handleSelect={handleSelectStatus} />
