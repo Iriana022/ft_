@@ -53,7 +53,7 @@
   "registrationColumn": "Registration",
   "actionsColumn": "Actions",
   "searchUsersPlaceholder": "Search users",
-  "deleteUserConfirm": "Delete this user? Tickets will be kept.",
+  "deleteUserConfirm": "Delete this user? Tickets will be deleted.",
   "deleteUserError": "Unable to delete this user",
   "delete": "Delete",
   "loadingUsers": "Loading users...",

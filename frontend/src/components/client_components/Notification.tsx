@@ -1,9 +1,10 @@
-import {BellIcon} from '@heroicons/react/24/outline';
-import NotificationView, {type ClientNotificationItem} from './NotificationView';
+import { BellIcon } from '@heroicons/react/24/outline';
+import NotificationView, { type ClientNotificationItem } from './NotificationView';
 
 interface NotificationProps {
 	hasNotification: boolean,
 	notifications?: ClientNotificationItem[]
+	onOpen?: () => void;
 }
 
 function Notification(props: NotificationProps) {
@@ -12,6 +13,7 @@ function Notification(props: NotificationProps) {
 			<div
 				tabIndex={0}
 				role="button"
+				onClick={props.onOpen}
 				className="
 					relative
 					w-9 h-9
@@ -57,7 +59,7 @@ function Notification(props: NotificationProps) {
 					p-2
 				"
 			>
-				<NotificationView notifications={props.notifications ?? []}/>
+				<NotificationView notifications={props.notifications ?? []} />
 			</div>
 		</div>
 	);

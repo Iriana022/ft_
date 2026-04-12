@@ -1,4 +1,4 @@
-import { Delete, HttpCode, HttpStatus, BadRequestException, UseInterceptors, UploadedFile, Body, Controller, UseGuards, Post, Get, Patch, Req, Param, ParseIntPipe } from '@nestjs/common';
+import { Delete, HttpCode, HttpStatus, BadRequestException, UseInterceptors, UploadedFile, Body, Controller, UseGuards, Post, Get, Put, Patch, Req, Param, ParseIntPipe } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UpdateMeDto } from './dto/update-me.dto';
@@ -101,4 +101,15 @@ export class UserController {
 		);
 	}
 
+	@Get('notifications')
+	@UseGuards(JwtAuthGuard)
+	getMyNotifications(@Req() req: { user: { userId: number } }) {
+		return this.userService.getMyNotifications(req.user.userId);
+	}
+
+	@Put('notifications/read-all')
+	@UseGuards(JwtAuthGuard)
+	readAllMyNotifications(@Req() req: { user: { userId: number } }) {
+		return this.userService.readAllMyNotifications(req.user.userId);
+	}
 }

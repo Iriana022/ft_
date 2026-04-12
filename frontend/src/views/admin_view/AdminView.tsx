@@ -16,7 +16,6 @@ import {
 	ChartBarSquareIcon,
 	ClockIcon,
 	TrashIcon,
-	EyeIcon,
 } from '@heroicons/react/24/outline';
 import TikeoLogo from '../../components/client_components/TikeoLogo';
 import Notification from '../../components/client_components/Notification';
@@ -37,6 +36,10 @@ import { fr, enUS, es } from 'date-fns/locale';
 import { getSocket } from '../../services/singleton';
 import { jsPDF } from 'jspdf';
 import { autoTable } from 'jspdf-autotable';
+import { type ClientNotificationItem } from '../../components/client_components/NotificationView';
+import { fetchMyNotifications, readAllMyNotifications, type RawNotification } from '../../services/tickets';
+
+
 
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
@@ -49,7 +52,74 @@ function VerticalSeparator() {
 
 function AdminHeader() {
 	const { t } = useTranslation('admin');
+	const { t: tn } = useTranslation('notifications');
 	const navigate = useNavigate();
+	const [notifications, setNotifications] = useState<ClientNotificationItem[]>([]);
+
+
+	const hasNotification = useMemo(
+		() => notifications.some((n) => !n.readAt),
+		[notifications],
+	);
+
+	useEffect(() => {
+		let mounted = true;
+		const socket = getSocket();
+
+		const mapFromApi = (row: RawNotification): SystemNotificationEvent => ({
+			id: row.id,
+			code: row.code,
+			createdAt: row.createdAt,
+			readAt: row.readAt,
+			data: row.payload as SystemNotificationEvent['data'],
+		});
+
+		const loadNotifications = async () => {
+			const rows = await fetchMyNotifications();
+			if (!mounted) return;
+			setNotifications(
+				rows.map((row) => {
+					const event = mapFromApi(row);
+					return {
+						id: event.id,
+						text: mapSystemNotificationText(event, tn),
+						createdAt: event.createdAt,
+						readAt: event.readAt ?? null,
+					};
+				}),
+			);
+		};
+
+		void loadNotifications();
+
+		const onSystemNotification = (event: SystemNotificationEvent) => {
+			setNotifications((old) =>
+				[
+					{
+						id: event.id,
+						text: mapSystemNotificationText(event, tn),
+						createdAt: event.createdAt,
+						readAt: event.readAt ?? null,
+					},
+					...old,
+				].slice(0, 50),
+			);
+		};
+
+		socket.on('systemNotification', onSystemNotification);
+
+		return () => {
+			mounted = false;
+			socket.off('systemNotification', onSystemNotification);
+		};
+	}, [tn]);
+
+	const handleOpenNotifications = () => {
+		setNotifications((prev) =>
+			prev.map((n) => (n.readAt ? n : { ...n, readAt: new Date().toISOString() })),
+		);
+		void readAllMyNotifications();
+	};
 
 	const handleLogout = () => {
 		localStorage.removeItem('access_token');
@@ -57,7 +127,7 @@ function AdminHeader() {
 		localStorage.removeItem('user_role');
 		localStorage.removeItem('user_avatar');
 		navigate('/login');
-	}
+	};
 
 	return (
 		<div className="px-4 w-full flex items-center justify-between">
@@ -70,23 +140,22 @@ function AdminHeader() {
 				</span>
 			</div>
 			<div className="flex items-center gap-4">
-				<Notification hasNotification={true} />
+				<Notification hasNotification={hasNotification} notifications={notifications} onOpen={handleOpenNotifications} />
 				<VerticalSeparator />
 				<div className="flex items-center gap-2">
 					<Avatar src={avatar1} size="sm" />
 					<span className="text-sm hidden md:inline">Administrateur</span>
 					<ChevronDownIcon className="w-4 h-4 text-gray-600 hidden md:inline" />
 				</div>
-				<button
-					onClick={handleLogout}
-					className="btn btn-primary"
-				>
+				<button onClick={handleLogout} className="btn btn-primary" >
 					{t('logout')}
 				</button>
 			</div>
 		</div>
 	);
 }
+
+
 
 interface DrawerTogglerProps {
 	isOpen: boolean,
@@ -197,6 +266,88 @@ function CreatedAndResolvedIndicator(props: CreatedAndResolvedIndicatorProps) {
 			<span className="text-xs md:text-sm">{text}</span>
 		</>
 	);
+}
+
+type SystemNotificationCode =
+	| 'NEW_CLIENT_TICKET'
+	| 'USER_PROFILE_UPDATED'
+	| 'USER_LOGGED_IN'
+	| 'TICKET_STATUS_UPDATED';
+
+type SystemNotificationEvent = {
+	id: number;
+	code: SystemNotificationCode;
+	createdAt: string;
+	readAt?: string | null;
+	data?: {
+		ticketId?: number;
+		ticketTitle?: string;
+		userLogin?: string;
+		userRole?: 'CLIENT' | 'AGENT' | 'ADMIN';
+		fromStatus?: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+		toStatus?: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+		clientLogin?: string;
+	};
+};
+
+function mapSystemNotificationText(
+	event: SystemNotificationEvent,
+	tn: (key: string, options?: Record<string, unknown>) => string,
+) {
+	const userLogin = event.data?.userLogin ?? tn('unknownUser');
+	const roleLabel =
+		event.data?.userRole === 'AGENT'
+			? tn('roleAgent')
+			: event.data?.userRole === 'CLIENT'
+				? tn('roleClient')
+				: event.data?.userRole ?? '';
+	if (event.code === 'NEW_CLIENT_TICKET') {
+		return tn('newClientTicketForSupport', {
+			ticketId: event.data?.ticketId ?? '-',
+			ticketTitle: event.data?.ticketTitle ?? '',
+			userLogin,
+		});
+	}
+
+	if (event.code === 'USER_PROFILE_UPDATED') {
+		return tn('userProfileUpdatedForAdmin', {
+			userLogin,
+			userRole: roleLabel,
+		});
+	}
+
+
+	const statusLabel = (status?: string) => {
+		if (status === 'OPEN') return tn('statusOpen');
+		if (status === 'IN_PROGRESS') return tn('statusInProgress');
+		if (status === 'RESOLVED') return tn('statusResolved');
+		if (status === 'CLOSED') return tn('statusClosed');
+		return status ?? '-';
+	};
+
+	if (event.code === 'TICKET_STATUS_UPDATED') {
+		const fromStatus = statusLabel(event.data?.fromStatus);
+		const toStatus = statusLabel(event.data?.toStatus);
+
+		if (event.data?.clientLogin) {
+			return tn('ticketStatusChangedForAdmin', {
+				ticketId: event.data?.ticketId ?? '-',
+				clientLogin: event.data.clientLogin,
+				fromStatus,
+				toStatus,
+			});
+		}
+
+		return tn('ticketStatusChangedForClient', {
+			ticketId: event.data?.ticketId ?? '-',
+			fromStatus,
+			toStatus,
+		});
+	}
+	return tn('userLoggedInForAdmin', {
+		userLogin,
+		userRole: roleLabel,
+	});
 }
 
 const generateDailyTickets = (
@@ -684,18 +835,6 @@ interface PriorityFilter {
 	value: TicketPriority | null,
 }
 
-interface ActionIconProps {
-	icon: HeroIconType,
-	className: string,
-}
-
-function ActionIcon(props: ActionIconProps) {
-	return (
-		<div className="p-2 transition hover:bg-blue-200 rounded-full cursor-pointer">
-			<props.icon className={props.className} />
-		</div>
-	);
-}
 
 export function AdminTickets() {
 	const { t, i18n } = useTranslation('admin');
@@ -972,7 +1111,7 @@ export function AdminUsers() {
 									>
 										<td className="px-5 py-4 text-navy whitespace-nowrap flex items-center gap-2">
 											<div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-												<span className="text-base font-medium uppercase">{user.login.slice(0, 2)}</span>
+												<span className="text-base font-medium uppercase">{(user.login ?? user.email ?? 'NA').slice(0, 2)}</span>
 											</div>
 											<div className="flex flex-col">
 												<span className="text-sm font-semibold">{user.login}</span>
@@ -985,7 +1124,7 @@ export function AdminUsers() {
 											</span>
 										</td>
 										<td className="px-5 py-3 whitespace-nowrap">
-											{user.role == UserRole.CLIENT ? user.ticketsCreated.length : '-'}
+											{user.role == UserRole.CLIENT ? (user.ticketsCreated?.length ?? 0) : '-'}
 										</td>
 										<td className="px-5 py-3 whitespace-nowrap">
 											{user.createdAt.toLocaleDateString("fr-FR").replace(/\//g, "-")}

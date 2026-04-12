@@ -59,6 +59,7 @@ export function LoginCard() {
 			const {access_token} = response.data;
 
 			localStorage.setItem('access_token', access_token);
+			window.dispatchEvent(new Event('auth-token-updated'));
 
 			try {
 				const meResponse = await api.get('/auth/me');

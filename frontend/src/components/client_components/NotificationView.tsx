@@ -1,9 +1,10 @@
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 export interface ClientNotificationItem {
 	id: number;
 	text: string;
 	createdAt: string;
+	readAt?: string | null;
 }
 
 interface NotificationViewProps {
@@ -15,18 +16,18 @@ function formatTimeAgo(isoDate: string, t: (key: string, options?: Record<string
 	const diffMin = Math.floor(diffMs / 60000);
 
 	if (diffMin < 1) return t('justNow');
-	if (diffMin < 60) return t('minutesAgo', {count: diffMin});
+	if (diffMin < 60) return t('minutesAgo', { count: diffMin });
 
 	const diffH = Math.floor(diffMin / 60);
-	if (diffH < 24) return t('hoursAgo', {count: diffH});
+	if (diffH < 24) return t('hoursAgo', { count: diffH });
 
 	const diffD = Math.floor(diffH / 24);
-	return t('daysAgo', {count: diffD});
+	return t('daysAgo', { count: diffD });
 }
 
 function NotificationView(props: NotificationViewProps) {
 	const notifications = props.notifications;
-	const {t} = useTranslation('notifications');
+	const { t } = useTranslation('notifications');
 
 	return (
 		<div className="flex flex-col">
