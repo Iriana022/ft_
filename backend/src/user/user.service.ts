@@ -4,10 +4,12 @@ import { basename, join } from 'path';
 import { UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateMeDto } from './dto/update-me.dto';
+import { TicketsGateway } from 'src/tickets/tickets.gateway';
 
 @Injectable()
 export class UserService {
-    constructor(private prisma: PrismaService) { }
+    constructor(private prisma: PrismaService,
+        private ticketsGateway: TicketsGateway) { }
     private readonly uploadsPrefix = '/api/uploads/';
     private isManagedUploadAvatar(avatar: string | null | undefined) {
         return !!avatar && avatar.startsWith(this.uploadsPrefix);
@@ -19,8 +21,8 @@ export class UserService {
 
     private async hardDeleteUserAndLinkedTickets(userId: number) {
         await this.prisma.user.delete({
-                where: { id: userId },
-            });
+            where: { id: userId },
+        });
     }
 
     async create(data: { login: string, email: string }) {
@@ -76,6 +78,12 @@ export class UserService {
                     createdAt: true,
                 },
             });
+            if (updated.role === UserRole.CLIENT || updated.role === UserRole.AGENT) {
+                this.ticketsGateway.emitAdminNotificationUserProfileUpdated({
+                    userLogin: updated.login ?? updated.email,
+                    userRole: updated.role,
+                });
+            }
             return updated;
         } catch (error: any) {
             if (error?.code === 'P2002') {
@@ -114,6 +122,12 @@ export class UserService {
         if (oldAvatar && oldAvatar !== avatar && this.isManagedUploadAvatar(oldAvatar)) {
             const oldPath = this.toUploadDiskPath(oldAvatar);
             await unlink(oldPath).catch(() => undefined);
+        }
+        if (updatedUser.role === UserRole.CLIENT || updatedUser.role === UserRole.AGENT) {
+            void this.ticketsGateway.emitAdminNotificationUserProfileUpdated({
+                userLogin: updatedUser.login ?? updatedUser.email,
+                userRole: updatedUser.role,
+            });
         }
         return updatedUser;
     }
@@ -167,4 +181,22 @@ export class UserService {
             await unlink(avatarPath).catch(() => undefined);
         }
     }
+
+    async getMyNotifications(userId: number) {
+        return this.prisma.notification.findMany({
+            where: { recipientId: userId },
+            orderBy: { createdAt: 'desc' },
+            take: 50,
+        });
+    }
+
+    async readAllMyNotifications(userId: number) {
+        const result = await this.prisma.notification.updateMany({
+            where: { recipientId: userId, readAt: null },
+            data: { readAt: new Date() },
+        });
+
+        return { updatedCount: result.count };
+    }
+
 }

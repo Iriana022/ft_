@@ -116,6 +116,13 @@ export class TicketsService {
 			include: { author: true }
 		});
 		this.ticketsGateway.emitNewTIcket(ticket);
+		if (ticket.author.role === UserRole.CLIENT) {
+			void this.ticketsGateway.emitSupportNotificationNewClientTicket({
+				ticketId: ticket.id,
+				ticketTitle: ticket.title,
+				userLogin: ticket.author.login ?? ticket.author.email,
+			});
+		}
 		return ticket;
 	}
 
@@ -231,6 +238,16 @@ export class TicketsService {
 		});
 
 		this.ticketsGateway.emitStatusTicket(updatedTicket);
+		if (ticket.status !== status && updatedTicket.author.role === UserRole.CLIENT) {
+			void this.ticketsGateway.emitTicketStatusChangedNotification({
+				clientUserId: updatedTicket.authorId,
+				clientLogin: updatedTicket.author.login ?? updatedTicket.author.email,
+				ticketId: updatedTicket.id,
+				fromStatus: ticket.status,
+				toStatus: status,
+			});
+		}
+
 		if (status === TicketStatus.CLOSED) {
 			this.ticketsGateway.emitTicketUnreadUpdated(ticketId, 0, 0);
 			this.ticketsGateway.emitTicketClosed(ticketId);

@@ -1,6 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
+import { UserRole } from '@prisma/client';
+import { TicketsGateway } from '../../tickets/tickets.gateway';
 
 type GoogleFlow = 'login' | 'register';
 
@@ -13,7 +15,8 @@ type GooglAuthResult =
 export class GoogleService {
   constructor(
     private prisma: PrismaService,
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    private ticketsGateway: TicketsGateway,
   ) { }
   private buildToken(user: { id: number; login: string | null; email: string; role: string }) {
     const payload = {
@@ -28,17 +31,14 @@ export class GoogleService {
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     const redirectUri = process.env.GOOGLE_REDIRECT_URI;
 
-    // Vérification de sécurité locale
     if (!clientId || !clientSecret || !redirectUri) {
       throw new Error("Missing Google configuration in .env");
     }
 
     try {
-      // 1. Échange du code contre les tokens
       const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        // On force le passage en string pour garantir le format x-www-form-urlencoded
         body: new URLSearchParams({
           code: code,
           client_id: clientId,
@@ -55,7 +55,6 @@ export class GoogleService {
         throw new UnauthorizedException(`Google error: ${tokens.error_description || tokens.error}`);
       }
 
-      // 2. Récupération du profil Google
       const userResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
         headers: { Authorization: `Bearer ${tokens.access_token}` },
       });
@@ -134,6 +133,12 @@ export class GoogleService {
 
       if (user.roleSelectionRequired) {
         return { status: 'ROLE_SELECTION_REQUIRED', access_token: token };
+      }
+      if (user.role === UserRole.CLIENT || user.role === UserRole.AGENT) {
+        void this.ticketsGateway.emitAdminNotificationUserLoggedIn({
+          userLogin: user.login ?? user.email,
+          userRole: user.role as UserRole,
+        });
       }
       return { status: 'LOGIN_OK', access_token: token };
 

@@ -1,12 +1,17 @@
 import { Injectable, ConflictException, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt'
+import * as bcrypt from 'bcrypt';
+import { UserRole } from '@prisma/client';
+import { TicketsGateway } from '../tickets/tickets.gateway';
 
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService, private jwt: JwtService) { }
+  constructor(private prisma: PrismaService,
+    private jwt: JwtService,
+    private ticketsGateway: TicketsGateway,
+  ) { }
 
   async login(user: any) {
     const payload = {
@@ -14,6 +19,13 @@ export class AuthService {
       sub: user.id,
       role: user.role || 'CLIENT'
     };
+    const role = user.role as UserRole | undefined;
+    if (role === UserRole.CLIENT || role === UserRole.AGENT) {
+      void this.ticketsGateway.emitAdminNotificationUserLoggedIn({
+        userLogin: user.login || user.email,
+        userRole: role,
+      });
+    }
     return {
       access_token: this.jwt.sign(payload),
     };

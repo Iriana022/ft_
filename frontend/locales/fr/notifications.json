@@ -5,5 +5,17 @@
   "minutesAgo": "Il y a {{count}} min",
   "hoursAgo": "Il y a {{count}} h",
   "daysAgo": "Il y a {{count}} j",
-  "newMessageOnTicket": "Nouveau message sur le ticket #{{ticketId}}"
+  "newMessageOnTicket": "Nouveau message sur le ticket #{{ticketId}}",
+  "newClientTicketForSupport": "Nouveau ticket client #{{ticketId}} : {{ticketTitle}} ({{userLogin}})",
+  "userProfileUpdatedForAdmin": "{{userRole}} {{userLogin}} a mis a jour son profil",
+  "userLoggedInForAdmin": "{{userRole}} {{userLogin}} vient de se connecter",
+  "roleClient": "Client",
+  "roleAgent": "Agent",
+  "unknownUser": "Utilisateur inconnu",
+  "ticketStatusChangedForClient": "Ticket #{{ticketId}} : statut changé de {{fromStatus}} à {{toStatus}}",
+  "ticketStatusChangedForAdmin": "Ticket #{{ticketId}} (client: {{clientLogin}}) : statut changé de {{fromStatus}} à {{toStatus}}",
+  "statusOpen": "Ouvert",
+  "statusInProgress": "En cours",
+  "statusResolved": "Résolu",
+  "statusClosed": "Fermé"
 }

@@ -5,8 +5,29 @@ import {
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma/prisma.service';
-import { UserRole } from '@prisma/client';
+import { NotificationCode, TicketStatus, UserRole } from '@prisma/client';
 
+type SystemNotificationCode =
+    | 'NEW_CLIENT_TICKET'
+    | 'USER_PROFILE_UPDATED'
+    | 'USER_LOGGED_IN'
+    | 'TICKET_STATUS_UPDATED';
+
+type SystemNotificationEvent = {
+    id: number;
+    code: SystemNotificationCode;
+    createdAt: string;
+    readAt: string | null;
+    data: {
+        ticketId?: number;
+        ticketTitle?: string;
+        userLogin?: string;
+        userRole?: UserRole;
+        fromStatus?: TicketStatus;
+        toStatus?: TicketStatus;
+        clientLogin?: string;
+    };
+};
 
 @WebSocketGateway({
     cors: {
@@ -29,6 +50,154 @@ export class TicketsGateway implements OnGatewayConnection, OnGatewayDisconnect 
     }
     handleDisconnect(client: Socket) {
         console.log(`Client disconnected : ${client.id}`);
+    }
+
+    private roleRoom(role: UserRole): string {
+        return 'role-' + String(role).toLowerCase();
+    }
+
+    private userRoom(userId: number): string {
+        return 'user-' + userId;
+    }
+
+    @SubscribeMessage('registerRoleChannel')
+    async handleRegisterRoleChannel(
+        @MessageBody() data: { token?: string },
+        @ConnectedSocket() client: Socket,
+    ) {
+        const user = await this.resolveUserFromToken(data.token);
+
+        for (const room of client.rooms) {
+            if (room.startsWith('role-')) {
+                client.leave(room);
+            }
+        }
+
+        client.join(this.roleRoom(user.role));
+        client.join(this.userRoom(user.userId));
+    }
+
+    private async emitSystemNotificationToUsers(
+        userIds: number[],
+        event: Omit<SystemNotificationEvent, 'id' | 'createdAt' | 'readAt'>,
+    ) {
+        const uniqueIds = [...new Set(userIds)];
+
+        for (const recipientId of uniqueIds) {
+            const created = await this.prisma.notification.create({
+                data: {
+                    recipientId,
+                    code: event.code as NotificationCode,
+                    payload: event.data ?? {},
+                },
+            });
+
+            this.server.to(this.userRoom(recipientId)).emit('systemNotification', {
+                id: created.id,
+                code: created.code,
+                createdAt: created.createdAt.toISOString(),
+                readAt: created.readAt ? created.readAt.toISOString() : null,
+                data: created.payload,
+            } as SystemNotificationEvent);
+        }
+    }
+
+    private async emitSystemNotificationToRoles(
+        roles: UserRole[],
+        event: Omit<SystemNotificationEvent, 'id' | 'createdAt' | 'readAt'>,
+    ) {
+        const recipients = await this.prisma.user.findMany({
+            where: { role: { in: roles } },
+            select: { id: true },
+        });
+
+        await this.emitSystemNotificationToUsers(
+            recipients.map((u) => u.id),
+            event,
+        );
+    }
+
+    async emitSupportNotificationNewClientTicket(data: {
+        ticketId: number;
+        ticketTitle: string;
+        userLogin: string;
+    }) {
+        await this.emitSystemNotificationToRoles(
+            [UserRole.AGENT, UserRole.ADMIN],
+            {
+                code: 'NEW_CLIENT_TICKET',
+                data: {
+                    ticketId: data.ticketId,
+                    ticketTitle: data.ticketTitle,
+                    userLogin: data.userLogin,
+                },
+            },
+        );
+    }
+
+    async emitAdminNotificationUserProfileUpdated(data: {
+        userLogin: string;
+        userRole: UserRole;
+    }) {
+        await this.emitSystemNotificationToRoles(
+            [UserRole.ADMIN],
+            {
+                code: 'USER_PROFILE_UPDATED',
+                data: {
+                    userLogin: data.userLogin,
+                    userRole: data.userRole,
+                },
+            },
+        );
+    }
+
+    async emitAdminNotificationUserLoggedIn(data: {
+        userLogin: string;
+        userRole: UserRole;
+    }) {
+        await this.emitSystemNotificationToRoles(
+            [UserRole.ADMIN],
+            {
+                code: 'USER_LOGGED_IN',
+                data: {
+                    userLogin: data.userLogin,
+                    userRole: data.userRole,
+                },
+            },
+        );
+    }
+
+    async emitTicketStatusChangedNotification(data: {
+        clientUserId: number;
+        clientLogin: string;
+        ticketId: number;
+        fromStatus: TicketStatus;
+        toStatus: TicketStatus;
+    }) {
+        await this.emitSystemNotificationToUsers(
+            [data.clientUserId],
+            {
+                code: 'TICKET_STATUS_UPDATED',
+                data: {
+                    ticketId: data.ticketId,
+                    fromStatus: data.fromStatus,
+                    toStatus: data.toStatus,
+                },
+            },
+        );
+
+        await this.emitSystemNotificationToRoles(
+            [UserRole.ADMIN],
+            {
+                code: 'TICKET_STATUS_UPDATED',
+                data: {
+                    ticketId: data.ticketId,
+                    clientLogin: data.clientLogin,
+                    fromStatus: data.fromStatus,
+                    toStatus: data.toStatus,
+                },
+            },
+        );
     }
 
     private async resolveUserFromToken(token?: string): Promise<{ userId: number; role: UserRole }> {
