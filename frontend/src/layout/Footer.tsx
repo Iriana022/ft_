@@ -42,7 +42,7 @@ function Footer() {
 	}
 
 	return (
-		<footer className="bg-white">
+		<footer className="bg-cream">
 			<ContainerComp>
 				<section className="flex flex-col md:flex-row md:justify-between py-3">
 					<div className="flex gap-4 items-center md:block">
@@ -53,16 +53,16 @@ function Footer() {
 					</div>
 					{quickLinks.length > 0 && (
 						<div>
-						<h3 className="text-navy font-semibold hidden md:block">
-							{t_client("quickLinks")}
-						</h3>
-						<div className="text-xs md:text-sm flex md:flex-col justify-center md:justify-start gap-4 md:gap-1 mt-6 md:mt-0 text-gray-700">
-							{quickLinks.map((link) => (
-								<Link key={link.to} to={link.to} className="transition hover:text-navy hover:underline">
-									{link.label}
-								</Link>
-							))}
-						</div>
+							<h3 className="text-navy font-semibold hidden md:block">
+								{t_client("quickLinks")}
+							</h3>
+							<div className="text-xs md:text-sm flex md:flex-col justify-center md:justify-start gap-4 md:gap-1 mt-6 md:mt-0 text-gray-700">
+								{quickLinks.map((link) => (
+									<Link key={link.to} to={link.to} className="transition hover:text-navy hover:underline">
+										{link.label}
+									</Link>
+								))}
+							</div>
 						</div>
 					)}
 				</section >

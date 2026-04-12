@@ -1,17 +1,18 @@
-import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
-import { AdminHeader } from './components/AdminHeader';
+import {useState} from 'react';
+import {Outlet} from 'react-router-dom';
+import {AdminHeader} from './components/AdminHeader';
 import {
 	AdminHamburgerMenu,
 	DrawerSideContent,
 	DrawerToggler,
 } from './components/AdminShell';
 import Footer from '../../layout/Footer';
+import Separator from '../../components/client_components/Separator';
 
-export { AdminDashboard } from './pages/AdminDashboardPage';
-export { AdminTickets } from './pages/AdminTicketsPage';
-export { AdminUsers } from './pages/AdminUsersPage';
-export { AdminStats } from './pages/AdminStatsPage';
+export {AdminDashboard} from './pages/AdminDashboardPage';
+export {AdminTickets} from './pages/AdminTicketsPage';
+export {AdminUsers} from './pages/AdminUsersPage';
+export {AdminStats} from './pages/AdminStatsPage';
 
 export function AdminView() {
 	const [isOpen, setIsOpen] = useState(false);
@@ -35,6 +36,7 @@ export function AdminView() {
 					<div className="p-4 flex-1">
 						<Outlet />
 					</div>
+					<Separator />
 					<Footer />
 				</div>
 

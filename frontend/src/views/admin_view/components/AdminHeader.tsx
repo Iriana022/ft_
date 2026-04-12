@@ -1,7 +1,6 @@
 import {useEffect, useMemo, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
-import {ChevronDownIcon} from '@heroicons/react/24/solid';
 import Notification from '../../../components/client_components/Notification';
 import Avatar from '../../../components/client_components/Avatar';
 import {type ClientNotificationItem} from '../../../components/client_components/NotificationView';
@@ -20,8 +19,9 @@ function VerticalSeparator() {
 export function AdminHeader() {
 	const {t} = useTranslation('admin');
 	const {t: tn} = useTranslation('notifications');
-	const navigate = useNavigate();
 	const [notifications, setNotifications] = useState<ClientNotificationItem[]>([]);
+
+	const navigate = useNavigate();
 
 	const hasNotification = useMemo(
 		() => notifications.some((n) => !n.readAt),
@@ -87,14 +87,6 @@ export function AdminHeader() {
 		void readAllMyNotifications();
 	};
 
-	const handleLogout = () => {
-		localStorage.removeItem('access_token');
-		localStorage.removeItem('username');
-		localStorage.removeItem('user_role');
-		localStorage.removeItem('user_avatar');
-		navigate('/login');
-	};
-
 	return (
 		<div className="px-4 w-full flex items-center justify-between">
 			<div>
@@ -108,15 +100,10 @@ export function AdminHeader() {
 			<div className="flex items-center gap-4">
 				<Notification hasNotification={hasNotification} notifications={notifications} onOpen={handleOpenNotifications} />
 				<VerticalSeparator />
-				<div className="flex items-center gap-2">
+				<div onClick={() => navigate("profile")}>
 					<Avatar src={avatar1} size="sm" />
-					<span className="text-sm hidden md:inline">Administrateur</span>
-					<ChevronDownIcon className="w-4 h-4 text-gray-600 hidden md:inline" />
 				</div>
-				<button onClick={handleLogout} className="btn btn-primary" >
-					{t('logout')}
-				</button>
 			</div>
-		</div>
+		</div >
 	);
 }

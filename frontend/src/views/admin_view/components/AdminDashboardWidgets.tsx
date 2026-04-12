@@ -149,7 +149,7 @@ export function TicketsActivities() {
 	const dailyTickets = generateDailyTickets(tickets, resolutionHistory, i18n.language);
 
 	return (
-		<div className="w-full md:w-[60%] bg-white shadow rounded-md p-5">
+		<div className="w-full md:w-[60%] bg-white shadow rounded-md p-5 min-h-[300px]">
 			<div className="flex items-center justify-between">
 				<div>
 					<h3 className="text-base font-medium text-navy">{t('ticketsActivity')}</h3>
@@ -164,16 +164,15 @@ export function TicketsActivities() {
 					</div>
 				</div>
 			</div>
-			<div className="mt-8 w-full aspect-[5/3] md:aspect-[3/1]">
-				<ResponsiveContainer>
-					<LineChart responsive data={dailyTickets}>
+			<div className="mt-8 w-full min-h-[200px]">
+				<ResponsiveContainer width="100%" height={200}>
+					<LineChart data={dailyTickets}>
 						<CartesianGrid stroke="#aaa" strokeDasharray="5 5" />
-						<Line type="monotone" dataKey="created" stroke="var(--color-navy)" strokeWidth={2} name={t('created')} dot={false} activeDot={{r: 5}} />
-						<Line type="monotone" dataKey="resolved" stroke="var(--color-status-resolved)" strokeWidth={2} name={t('resolved')} dot={false} activeDot={{r: 5}} />
-						<XAxis dataKey="name" tick={{fontSize: 12}} />
-						<YAxis tick={{fontSize: 12}} />
+						<Line type="monotone" dataKey="created" stroke="var(--color-navy)" />
+						<Line type="monotone" dataKey="resolved" stroke="var(--color-status-resolved)" />
+						<XAxis dataKey="name" />
+						<YAxis />
 						<Tooltip />
-						<RechartsDevtools />
 					</LineChart>
 				</ResponsiveContainer>
 			</div>

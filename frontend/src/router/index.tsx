@@ -17,6 +17,7 @@ import ChatTicketView from '../views/chat_ticket/ChatTicketView';
 import ChatTicketViewClient from '../views/chat_ticket/ChatTicketViewClient';
 import SelectRole from "../views/Login_Page/SelectRole";
 import {AdminView, AdminDashboard, AdminTickets, AdminUsers, AdminStats} from "../views/admin_view/AdminView";
+import AdminProfilePage from "../views/admin_view/pages/AdminProfilePage";
 import {GoogleCallback} from '../views/Login_Page/GoogleCallback';
 import ErrorPage from "../views/errors/ErrorPage";
 import NotFound from "../views/errors/NotFound";
@@ -76,6 +77,10 @@ export const router = createBrowserRouter([
 			{
 				path: 'stats',
 				element: <AdminStats />,
+			},
+			{
+				path: 'profile',
+				element: <AdminProfilePage />,
 			},
 		],
 	},

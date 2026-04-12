@@ -10,11 +10,13 @@ import {
 	TicketIcon,
 	UsersIcon,
 	ChartBarSquareIcon,
+	ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/outline';
 import {NavLink} from 'react-router-dom';
 import TikeoLogo from '../../../components/client_components/TikeoLogo';
 import Avatar from '../../../components/client_components/Avatar';
 import Separator from '../../../components/login_components/Separator';
+import {useNavigate} from 'react-router-dom';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -25,6 +27,7 @@ interface DrawerTogglerProps {
 
 export function DrawerToggler(props: DrawerTogglerProps) {
 	const {t} = useTranslation('admin');
+
 	return (
 		<button
 			type="button"
@@ -66,10 +69,20 @@ interface DrawerSideContentProps {
 
 export function DrawerSideContent(props: DrawerSideContentProps) {
 	const {t} = useTranslation('admin');
+	const navigate = useNavigate();
+
 	const handleNavClick = () => {
 		if (window.innerWidth < 1024) {
 			props.setIsOpen(false);
 		}
+	};
+
+	const handleLogout = () => {
+		localStorage.removeItem('access_token');
+		localStorage.removeItem('username');
+		localStorage.removeItem('user_role');
+		localStorage.removeItem('user_avatar');
+		navigate('/login');
 	};
 
 	return (
@@ -150,15 +163,26 @@ export function DrawerSideContent(props: DrawerSideContentProps) {
 				</li>
 			</ul>
 			<Separator color="bg-white/25" />
-			<div className="mt-auto pb-10 w-full flex flex-col items-center is-drawer-close:items-center is-drawer-open:items-start">
-				<Avatar src={avatar1} size="md" />
+			<div
+				className="mt-auto pb-10 w-full flex flex-col items-center is-drawer-close:items-center is-drawer-open:items-start"
+			>
+				<div onClick={() => navigate('profile')}>
+					<Avatar src={avatar1} size="md" />
+				</div>
 				<div className="flex flex-col mt-2 is-drawer-close:hidden">
 					<span className="text-sm text-white">{t('adminLabel')}</span>
 					<span className="text-xs text-white/70">
 						tikeoadmin@tikeo.com
 					</span>
 				</div>
+				<button
+					onClick={handleLogout}
+					className="mt-4 w-full flex items-center gap-3 px-3 py-2 text-white/80 hover:bg-white/10 rounded-lg transition-colors is-drawer-close:justify-center"
+				>
+					<ArrowRightOnRectangleIcon className="w-5 h-5" />
+					<span className="is-drawer-close:hidden text-sm">{t('logout')}</span>
+				</button>
 			</div>
-		</div>
+		</div >
 	);
 }
