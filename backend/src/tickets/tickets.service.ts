@@ -1,18 +1,18 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
-import { CreateTicketDto } from './dto/create-ticket.dto';
-import { UpdateTicketStatusDto } from './dto/update-ticket-status.dto';
-import { TicketsGateway } from './tickets.gateway';
-import { CreateChatMessageDto } from './dto/create-chat-message.dto';
-import { TicketStatus, UserRole } from '@prisma/client';
-import { CreateInternalNoteDto } from './dto/create-internal-note.dto';
+import {Injectable, NotFoundException, ForbiddenException} from '@nestjs/common';
+import {PrismaService} from '../../prisma/prisma.service';
+import {CreateTicketDto} from './dto/create-ticket.dto';
+import {UpdateTicketStatusDto} from './dto/update-ticket-status.dto';
+import {TicketsGateway} from './tickets.gateway';
+import {CreateChatMessageDto} from './dto/create-chat-message.dto';
+import {TicketStatus, UserRole} from '@prisma/client';
+import {CreateInternalNoteDto} from './dto/create-internal-note.dto';
 
 @Injectable()
 export class TicketsService {
-	constructor(private prisma: PrismaService, private ticketsGateway: TicketsGateway) { }
+	constructor(private prisma: PrismaService, private ticketsGateway: TicketsGateway) {}
 
 	private assertTicketMessageAccess(
-		ticket: { authorId: number; AssignedToId: number | null },
+		ticket: {authorId: number; AssignedToId: number | null},
 		userId: number,
 		role: UserRole,
 	) {
@@ -37,7 +37,7 @@ export class TicketsService {
 	}
 
 	private assertInternalNoteAccess(
-		ticket: { AssignedToId: number | null; status: TicketStatus },
+		ticket: {AssignedToId: number | null; status: TicketStatus},
 		userId: number,
 		role: UserRole,
 	) {
@@ -61,8 +61,8 @@ export class TicketsService {
 
 	async getInternalNotes(ticketId: number, userId: number, role: UserRole) {
 		const ticket = await this.prisma.ticket.findUnique({
-			where: { id: ticketId },
-			select: { id: true, AssignedToId: true, status: true },
+			where: {id: ticketId},
+			select: {id: true, AssignedToId: true, status: true},
 		});
 
 		if (!ticket) throw new NotFoundException('Ticket not found');
@@ -70,9 +70,9 @@ export class TicketsService {
 		this.assertInternalNoteAccess(ticket, userId, role);
 
 		return this.prisma.ticketInternalNote.findMany({
-			where: { ticketId },
-			include: { author: true },
-			orderBy: { createdAt: 'asc' },
+			where: {ticketId},
+			include: {author: true},
+			orderBy: {createdAt: 'asc'},
 		});
 	}
 
@@ -83,8 +83,8 @@ export class TicketsService {
 		role: UserRole,
 	) {
 		const ticket = await this.prisma.ticket.findUnique({
-			where: { id: ticketId },
-			select: { id: true, AssignedToId: true, status: true },
+			where: {id: ticketId},
+			select: {id: true, AssignedToId: true, status: true},
 		});
 
 		if (!ticket) throw new NotFoundException('Ticket not found');
@@ -97,7 +97,7 @@ export class TicketsService {
 				ticketId,
 				authorId: userId,
 			},
-			include: { author: true },
+			include: {author: true},
 		});
 
 		this.ticketsGateway.emitInternalNoteCreated(ticketId, note);
@@ -113,7 +113,7 @@ export class TicketsService {
 				priority: dto.priority,
 				authorId
 			},
-			include: { author: true }
+			include: {author: true}
 		});
 		this.ticketsGateway.emitNewTIcket(ticket);
 		return ticket;
@@ -121,15 +121,15 @@ export class TicketsService {
 
 	async getAllTickets() {
 		return this.prisma.ticket.findMany({
-			include: { author: true, AssignedTo: true }
+			include: {author: true, AssignedTo: true}
 		})
 	}
 
 	async getMyTickets(authorId: number) {
 		return this.prisma.ticket.findMany({
-			where: { authorId },
-			include: { author: true, AssignedTo: true },
-			orderBy: { createdAt: 'desc' },
+			where: {authorId},
+			include: {author: true, AssignedTo: true},
+			orderBy: {createdAt: 'desc'},
 		});
 	}
 
@@ -146,20 +146,20 @@ export class TicketsService {
 		return this.prisma.ticketStatusHistory.findMany({
 			where: {
 				toStatus: TicketStatus.RESOLVED,
-				changedAt: { gte: since },
+				changedAt: {gte: since},
 			},
 			select: {
 				ticketId: true,
 				toStatus: true,
 				changedAt: true,
 			},
-			orderBy: { changedAt: 'asc' },
+			orderBy: {changedAt: 'asc'},
 		});
 	}
 
 	async updateTicketStatus(ticketId: number, dto: UpdateTicketStatusDto, agentId: number) {
 		const ticket = await this.prisma.ticket.findUnique({
-			where: { id: ticketId },
+			where: {id: ticketId},
 		});
 
 		if (!ticket)
@@ -169,8 +169,8 @@ export class TicketsService {
 			throw new ForbiddenException('This ticket is definitively closed');
 
 		const actor = await this.prisma.user.findUnique({
-			where: { id: agentId },
-			select: { id: true, role: true },
+			where: {id: agentId},
+			select: {id: true, role: true},
 		});
 
 		if (!actor || (actor.role !== UserRole.AGENT && actor.role !== UserRole.ADMIN)) {
@@ -193,7 +193,7 @@ export class TicketsService {
 
 		const updatedTicket = await this.prisma.$transaction(async (t) => {
 			const updated = await t.ticket.update({
-				where: { id: ticketId },
+				where: {id: ticketId},
 				data: {
 					status: dto.status as never,
 					...(shouldUnlockChat ? {
@@ -210,7 +210,7 @@ export class TicketsService {
 						agentUnreadCount: 0
 					} : {}),
 				},
-				include: { author: true, AssignedTo: true }
+				include: {author: true, AssignedTo: true}
 			});
 			if (ticket.status !== status) {
 				await t.ticketStatusHistory.create({
@@ -224,7 +224,7 @@ export class TicketsService {
 			}
 			if (shouldCloseChat) {
 				await t.chatMessage.deleteMany({
-					where: { ticketId },
+					where: {ticketId},
 				});
 			}
 			return updated;
@@ -240,7 +240,7 @@ export class TicketsService {
 
 	async getMessage(ticketId: number, userId: number, role: UserRole) {
 		const ticket = await this.prisma.ticket.findUnique({
-			where: { id: ticketId },
+			where: {id: ticketId},
 			select: {
 				id: true,
 				authorId: true,
@@ -248,20 +248,20 @@ export class TicketsService {
 			},
 		});
 		if (!ticket)
-			throw new NotFoundException('TIcket not found');
+			throw new NotFoundException('Ticket not found');
 		this.assertTicketMessageAccess(ticket, userId, role);
 
 		return this.prisma.chatMessage.findMany({
-			where: { ticketId },
-			include: { author: true },
-			orderBy: { createdAt: 'asc' },
+			where: {ticketId},
+			include: {author: true},
+			orderBy: {createdAt: 'asc'},
 		});
 	}
 
 
 	async createMessage(ticketId: number, dto: CreateChatMessageDto, authorId: number) {
 		const ticket = await this.prisma.ticket.findUnique({
-			where: { id: ticketId },
+			where: {id: ticketId},
 		});
 
 		if (!ticket) throw new NotFoundException('Ticket not found');
@@ -270,7 +270,7 @@ export class TicketsService {
 		}
 
 		const author = await this.prisma.user.findUnique({
-			where: { id: authorId },
+			where: {id: authorId},
 		});
 
 		if (!author) {
@@ -297,14 +297,14 @@ export class TicketsService {
 					ticketId,
 					authorId,
 				},
-				include: { author: true },
+				include: {author: true},
 			});
 
 			const unread = await tx.ticket.update({
-				where: { id: ticketId },
+				where: {id: ticketId},
 				data: isSupportAuthor
-					? { clientUnreadCount: { increment: 1 } }
-					: { agentUnreadCount: { increment: 1 } },
+					? {clientUnreadCount: {increment: 1}}
+					: {agentUnreadCount: {increment: 1}},
 				select: {
 					id: true,
 					clientUnreadCount: true,
@@ -312,7 +312,7 @@ export class TicketsService {
 				},
 			});
 
-			return { message, unread };
+			return {message, unread};
 		});
 
 		this.ticketsGateway.emitNewMessage(ticketId, result.message);
@@ -327,7 +327,7 @@ export class TicketsService {
 
 	async markTicketMessagesAsRead(ticketId: number, userId: number, role: UserRole) {
 		const ticket = await this.prisma.ticket.findUnique({
-			where: { id: ticketId },
+			where: {id: ticketId},
 			select: {
 				id: true,
 				authorId: true,
@@ -341,11 +341,11 @@ export class TicketsService {
 
 		const data =
 			role === UserRole.CLIENT
-				? { clientUnreadCount: 0 }
-				: { agentUnreadCount: 0 };
+				? {clientUnreadCount: 0}
+				: {agentUnreadCount: 0};
 
 		const updated = await this.prisma.ticket.update({
-			where: { id: ticketId },
+			where: {id: ticketId},
 			data,
 			select: {
 				id: true,
