@@ -18,54 +18,9 @@ export class UserService {
     }
 
     private async hardDeleteUserAndLinkedTickets(userId: number) {
-        await this.prisma.$transaction(async (tx) => {
-            // Tickets liés à l'utilisateur (client auteur OU agent assigné)
-            const linkedTickets = await tx.ticket.findMany({
-                where: {
-                    OR: [
-                        { authorId: userId },
-                        { AssignedToId: userId },
-                    ],
-                },
-                select: { id: true },
-            });
-
-            const linkedTicketIds = linkedTickets.map((t) => t.id);
-
-            if (linkedTicketIds.length > 0) {
-                await tx.ticketStatusHistory.deleteMany({
-                    where: { ticketId: { in: linkedTicketIds } },
-                });
-
-                await tx.ticketInternalNote.deleteMany({
-                    where: { ticketId: { in: linkedTicketIds } },
-                });
-
-                await tx.chatMessage.deleteMany({
-                    where: { ticketId: { in: linkedTicketIds } },
-                });
-
-                await tx.ticket.deleteMany({
-                    where: { id: { in: linkedTicketIds } },
-                });
-            }
-
-            await tx.ticketStatusHistory.deleteMany({
-                where: { changedById: userId },
-            });
-
-            await tx.ticketInternalNote.deleteMany({
-                where: { authorId: userId },
-            });
-
-            await tx.chatMessage.deleteMany({
-                where: { authorId: userId },
-            });
-
-            await tx.user.delete({
+        await this.prisma.user.delete({
                 where: { id: userId },
             });
-        });
     }
 
     async create(data: { login: string, email: string }) {

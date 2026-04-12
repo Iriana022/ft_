@@ -34,10 +34,10 @@ model ChatMessage {
     isFromSupport Boolean  @default(false)
 
     ticketId  Int
-    ticket    Ticket @relation(fields: [ticketId], references: [id])
+    ticket    Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
     authorId  Int
-    author    User   @relation(fields: [authorId], references: [id])
+    author    User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
 }
 
 
@@ -63,25 +63,26 @@ model User {
 }
 
 model Ticket {
-	id 				Int 			@id @default(autoincrement())
-	title 			String
-	description 	String
-	status			TicketStatus	@default(OPEN)
-	priority		Priority		@default(MEDIUM)
-	createdAt		DateTime		@default(now())
-	updatedAt		DateTime		@updatedAt
-	chatUnlocked	Boolean   		@default(false)
-  clientUnreadCount  Int  @default(0)
-  agentUnreadCount   Int  @default(0)
+	id 				          Int 			    @id @default(autoincrement())
+	title 			        String
+	description     	  String
+	status			        TicketStatus	@default(OPEN)
+	priority		        Priority		  @default(MEDIUM)
+	createdAt		        DateTime		  @default(now())
+	updatedAt		        DateTime		  @updatedAt
+	chatUnlocked	      Boolean   		@default(false)
+  clientUnreadCount   Int           @default(0)
+  agentUnreadCount    Int           @default(0)
 
-	author			User			@relation("CreatedBy", fields: [authorId], references: [id])
-	authorId		Int
+	author			        User			    @relation("CreatedBy", fields: [authorId], references: [id], onDelete: Cascade)
+	authorId		        Int
 
-	AssignedTo		User?			@relation("AssignedTo", fields: [AssignedToId], references: [id])
-	AssignedToId	Int?
-	messages ChatMessage[]
-  internalNotes  TicketInternalNote[]
-  statusHistory TicketStatusHistory[]
+	AssignedTo		      User?			    @relation("AssignedTo", fields: [AssignedToId], references: [id], onDelete: Cascade)
+	AssignedToId	      Int?
+
+	messages            ChatMessage[]
+  internalNotes       TicketInternalNote[]
+  statusHistory       TicketStatusHistory[]
 }
 
 model TicketInternalNote {
@@ -90,10 +91,10 @@ model TicketInternalNote {
   createdAt DateTime @default(now())
 
   ticketId  Int
-  ticket    Ticket   @relation(fields: [ticketId], references: [id])
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
   authorId  Int
-  author    User     @relation(fields: [authorId], references: [id])
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   @@index([ticketId, createdAt])
 }
@@ -105,10 +106,10 @@ model TicketStatusHistory {
   changedAt  DateTime     @default(now())
 
   ticketId   Int
-  ticket     Ticket       @relation(fields: [ticketId], references: [id])
+  ticket     Ticket       @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
   changedById Int
-  changedBy   User        @relation("TicketStatusChangedBy", fields: [changedById], references: [id])
+  changedBy   User        @relation("TicketStatusChangedBy", fields: [changedById], references: [id], onDelete: Cascade)
 
   @@index([ticketId, changedAt])
   @@index([toStatus, changedAt])
