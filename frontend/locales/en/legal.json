@@ -1,0 +1,94 @@
+{
+  "shared": {
+    "backToApp": "Back to application",
+    "lastUpdated": "Last updated: {{date}}"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "updatedAt": "April 12, 2026",
+    "intro": "This Privacy Policy explains how Tikeo processes personal data when you use our ticketing and support platform.",
+    "sections": {
+      "collection": {
+        "title": "1. Data We Collect",
+        "content": "We collect account and support information such as email, login, role, avatar, ticket content, attachments, and technical logs needed to secure and operate the service."
+      },
+      "usage": {
+        "title": "2. How We Use Your Data",
+        "content": "We use this data to authenticate users, manage support tickets, notify users about ticket events, improve service quality, and protect the platform against abuse."
+      },
+      "legalBasis": {
+        "title": "3. Legal Basis",
+        "content": "Processing is based on service delivery, platform security, legitimate interests in support operations, and legal obligations when applicable."
+      },
+      "retention": {
+        "title": "4. Data Retention",
+        "content": "Account and ticket data are retained while the account is active and for a limited period afterward for compliance, dispute handling, and audit needs."
+      },
+      "security": {
+        "title": "5. Security Measures",
+        "content": "We apply access controls, role-based permissions, and technical safeguards to protect data against unauthorized access, loss, or alteration."
+      },
+      "rights": {
+        "title": "6. Your Rights",
+        "content": "Depending on your jurisdiction, you may request access, correction, deletion, or export of your personal data, and object to certain processing activities."
+      },
+      "transfers": {
+        "title": "7. Data Sharing and Transfers",
+        "content": "Data is shared only with authorized administrators and support agents who need it to process tickets. We do not sell personal data."
+      },
+      "children": {
+        "title": "8. Age Requirement",
+        "content": "The service is intended for users who can lawfully use an internal support platform. If you believe data was provided in error, contact an administrator."
+      }
+    },
+    "contact": "For privacy requests, contact your platform administrator through an authenticated support ticket."
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "updatedAt": "April 12, 2026",
+    "intro": "These Terms of Service govern your access to and use of Tikeo as an internal support and ticket management platform.",
+    "sections": {
+      "eligibility": {
+        "title": "1. Eligibility and Access",
+        "content": "You must use an authorized account and respect your assigned role permissions (client, agent, admin)."
+      },
+      "accounts": {
+        "title": "2. Account Responsibility",
+        "content": "You are responsible for the confidentiality of your credentials and for all actions performed through your account."
+      },
+      "acceptableUse": {
+        "title": "3. Acceptable Use",
+        "content": "You must not submit unlawful, abusive, malicious, or misleading content, and must not attempt to disrupt or bypass platform security."
+      },
+      "userContent": {
+        "title": "4. Ticket Content and Attachments",
+        "content": "You remain responsible for information submitted in tickets. Submit only data necessary for support handling and avoid sensitive unrelated personal data."
+      },
+      "serviceAvailability": {
+        "title": "5. Service Availability",
+        "content": "We aim to keep the platform available but may perform maintenance, updates, or temporary restrictions for operational and security reasons."
+      },
+      "intellectualProperty": {
+        "title": "6. Intellectual Property",
+        "content": "Platform code, branding, and interfaces are protected. You may use the service only as permitted by your organization and these terms."
+      },
+      "liability": {
+        "title": "7. Limitation of Liability",
+        "content": "To the extent permitted by law, the service is provided as-is for internal support workflows, and indirect damages are excluded."
+      },
+      "termination": {
+        "title": "8. Suspension and Termination",
+        "content": "Accounts may be suspended or revoked if terms are violated, security is at risk, or organizational access rights change."
+      },
+      "changes": {
+        "title": "9. Changes to Terms",
+        "content": "We may update these terms to reflect legal, technical, or operational changes. Continued use after updates means acceptance."
+      },
+      "governingLaw": {
+        "title": "10. Governing Rules",
+        "content": "These terms are interpreted according to applicable internal policies and the mandatory laws applicable to your organization."
+      }
+    },
+    "contact": "For questions about these terms, contact your administrator through the platform."
+  }
+}

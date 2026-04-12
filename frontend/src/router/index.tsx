@@ -21,6 +21,7 @@ import {GoogleCallback} from '../views/Login_Page/GoogleCallback';
 import ErrorPage from "../views/errors/ErrorPage";
 import NotFound from "../views/errors/NotFound";
 import Unauthorized from "../views/errors/Unauthorized";
+import LegalDocument from '../views/legal/LegalDocument';
 
 export const router = createBrowserRouter([
 	{
@@ -35,6 +36,22 @@ export const router = createBrowserRouter([
 	{
 		path: '/unauthorized',
 		element: <Unauthorized />
+	},
+	{
+		path: '/privacy-policy',
+		element: (
+			<ProtectedRoute allowedRoles={[UserRole.CLIENT, UserRole.AGENT, UserRole.ADMIN]}>
+				<LegalDocument type="privacy" />
+			</ProtectedRoute>
+		)
+	},
+	{
+		path: '/terms-of-service',
+		element: (
+			<ProtectedRoute allowedRoles={[UserRole.CLIENT, UserRole.AGENT, UserRole.ADMIN]}>
+				<LegalDocument type="terms" />
+			</ProtectedRoute>
+		)
 	},
 	{
 		path: 'admin',

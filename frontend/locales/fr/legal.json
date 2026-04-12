@@ -1,0 +1,94 @@
+{
+  "shared": {
+    "backToApp": "Retour a l'application",
+    "lastUpdated": "Derniere mise a jour: {{date}}"
+  },
+  "privacy": {
+    "title": "Politique de confidentialite",
+    "updatedAt": "12 avril 2026",
+    "intro": "Cette Politique de confidentialite explique comment Tikeo traite les donnees personnelles lorsque vous utilisez notre plateforme de tickets et de support.",
+    "sections": {
+      "collection": {
+        "title": "1. Donnees collectees",
+        "content": "Nous collectons des informations de compte et de support: email, identifiant, role, avatar, contenu des tickets, pieces jointes, et journaux techniques necessaires au fonctionnement et a la securite du service."
+      },
+      "usage": {
+        "title": "2. Utilisation des donnees",
+        "content": "Ces donnees sont utilisees pour authentifier les utilisateurs, gerer les tickets, notifier les evenements de ticket, ameliorer la qualite du service et proteger la plateforme contre les abus."
+      },
+      "legalBasis": {
+        "title": "3. Base legale",
+        "content": "Le traitement repose sur la fourniture du service, la securite de la plateforme, l'interet legitime lie aux operations de support, et les obligations legales applicables."
+      },
+      "retention": {
+        "title": "4. Duree de conservation",
+        "content": "Les donnees de compte et de ticket sont conservees pendant l'activite du compte puis pendant une periode limitee pour la conformite, la gestion des litiges et l'audit."
+      },
+      "security": {
+        "title": "5. Mesures de securite",
+        "content": "Nous appliquons des controles d'acces, des permissions par role et des mesures techniques pour proteger les donnees contre les acces non autorises, la perte ou l'alteration."
+      },
+      "rights": {
+        "title": "6. Vos droits",
+        "content": "Selon votre juridiction, vous pouvez demander l'acces, la rectification, la suppression ou l'export de vos donnees personnelles, et vous opposer a certains traitements."
+      },
+      "transfers": {
+        "title": "7. Partage et transferts",
+        "content": "Les donnees sont partagees uniquement avec les administrateurs et agents autorises qui en ont besoin pour traiter les tickets. Nous ne vendons pas vos donnees personnelles."
+      },
+      "children": {
+        "title": "8. Condition d'age",
+        "content": "Le service est destine aux utilisateurs pouvant legalement utiliser une plateforme de support interne. Si des donnees ont ete fournies par erreur, contactez un administrateur."
+      }
+    },
+    "contact": "Pour toute demande relative a la vie privee, contactez votre administrateur via un ticket authentifie."
+  },
+  "terms": {
+    "title": "Conditions generales d'utilisation",
+    "updatedAt": "12 avril 2026",
+    "intro": "Ces Conditions generales d'utilisation regissent l'acces et l'utilisation de Tikeo en tant que plateforme interne de support et de gestion des tickets.",
+    "sections": {
+      "eligibility": {
+        "title": "1. Eligibilite et acces",
+        "content": "Vous devez utiliser un compte autorise et respecter les permissions de votre role (client, agent, admin)."
+      },
+      "accounts": {
+        "title": "2. Responsabilite du compte",
+        "content": "Vous etes responsable de la confidentialite de vos identifiants et de toutes les actions effectuees via votre compte."
+      },
+      "acceptableUse": {
+        "title": "3. Utilisation acceptable",
+        "content": "Vous ne devez pas soumettre de contenu illicite, abusif, malveillant ou trompeur, ni tenter de perturber le service ou de contourner la securite."
+      },
+      "userContent": {
+        "title": "4. Contenu des tickets et pieces jointes",
+        "content": "Vous restez responsable des informations transmises dans les tickets. N'ajoutez que les donnees necessaires au support et evitez les donnees personnelles sensibles non pertinentes."
+      },
+      "serviceAvailability": {
+        "title": "5. Disponibilite du service",
+        "content": "Nous faisons le maximum pour garder la plateforme disponible, mais des maintenances, mises a jour ou restrictions temporaires peuvent etre appliquees pour des raisons techniques et de securite."
+      },
+      "intellectualProperty": {
+        "title": "6. Propriete intellectuelle",
+        "content": "Le code, la marque et les interfaces de la plateforme sont proteges. Vous pouvez utiliser le service uniquement selon les autorisations de votre organisation et ces conditions."
+      },
+      "liability": {
+        "title": "7. Limitation de responsabilite",
+        "content": "Dans les limites autorisees par la loi, le service est fourni en l'etat pour des usages internes de support, et les dommages indirects sont exclus."
+      },
+      "termination": {
+        "title": "8. Suspension et cloture",
+        "content": "Un compte peut etre suspendu ou revoque en cas de violation des conditions, de risque de securite, ou de changement des droits d'acces internes."
+      },
+      "changes": {
+        "title": "9. Evolution des conditions",
+        "content": "Nous pouvons mettre a jour ces conditions pour refleter des evolutions legales, techniques ou operationnelles. L'utilisation continue vaut acceptation."
+      },
+      "governingLaw": {
+        "title": "10. Regles applicables",
+        "content": "Ces conditions sont interpretees selon les politiques internes applicables et les regles legales obligatoires de votre organisation."
+      }
+    },
+    "contact": "Pour toute question sur ces conditions, contactez votre administrateur via la plateforme."
+  }
+}

@@ -30,6 +30,9 @@ import esNotifications from '../locales/es/notifications.json';
 import frAdmin from '../locales/fr/admin.json';
 import enAdmin from '../locales/en/admin.json';
 import esAdmin from '../locales/es/admin.json';
+import frLegal from '../locales/fr/legal.json';
+import enLegal from '../locales/en/legal.json';
+import esLegal from '../locales/es/legal.json';
 
 i18n
 	.use(initReactI18next)
@@ -46,6 +49,7 @@ i18n
 				profile: frProfile,
 				notifications: frNotifications,
 				admin: frAdmin,
+				legal: frLegal,
 			},
 			en: {
 				auth: enAuth,
@@ -58,6 +62,7 @@ i18n
 				profile: enProfile,
 				notifications: enNotifications,
 				admin: enAdmin,
+				legal: enLegal,
 			},
 			es: {
 				auth: esAuth,
@@ -70,11 +75,12 @@ i18n
 				profile: esProfile,
 				notifications: esNotifications,
 				admin: esAdmin,
+				legal: esLegal,
 			},
 		},
 		lng: localStorage.getItem("lang") || 'fr',
 		fallbackLng: 'en',
-		ns: ['common', 'auth', 'nav', 'client_home', 'tickets', 'chat', 'agent', 'profile', 'notifications', 'admin'],
+		ns: ['common', 'auth', 'nav', 'client_home', 'tickets', 'chat', 'agent', 'profile', 'notifications', 'admin', 'legal'],
 		defaultNS: 'common',
 		interpolation: {
 			escapeValue: false,
