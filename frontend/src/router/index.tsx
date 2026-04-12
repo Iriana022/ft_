@@ -18,8 +18,24 @@ import ChatTicketViewClient from '../views/chat_ticket/ChatTicketViewClient';
 import SelectRole from "../views/Login_Page/SelectRole";
 import {AdminView, AdminDashboard, AdminTickets, AdminUsers, AdminStats} from "../views/admin_view/AdminView";
 import {GoogleCallback} from '../views/Login_Page/GoogleCallback';
+import ErrorPage from "../views/errors/ErrorPage";
+import NotFound from "../views/errors/NotFound";
+import Unauthorized from "../views/errors/Unauthorized";
 
 export const router = createBrowserRouter([
+	{
+		path: '/',
+		element: <PublicRoute><Login /></PublicRoute>,
+		errorElement: <ErrorPage />
+	},
+	{
+		path: '*',
+		element: <NotFound />
+	},
+	{
+		path: '/unauthorized',
+		element: <Unauthorized />
+	},
 	{
 		path: 'admin',
 		element: (
@@ -45,10 +61,6 @@ export const router = createBrowserRouter([
 				element: <AdminStats />,
 			},
 		],
-	},
-	{
-		path: '/',
-		element: <PublicRoute><Login /></PublicRoute>,
 	},
 	{
 		path: 'login',
