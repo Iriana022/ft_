@@ -5,13 +5,19 @@ import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketStatusDto } from './dto/update-ticket-status.dto';
 import { CreateChatMessageDto } from './dto/create-chat-message.dto';
 import { CreateInternalNoteDto } from './dto/create-internal-note.dto';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('tickets')
+@ApiBearerAuth('bearer')
 @Controller('tickets')
 export class TicketsController {
     constructor(private readonly ticketsService: TicketsService) { }
 
     @Post()
     @UseGuards(JwtAuthGuard)
+    @ApiOperation({ summary: 'Créer un ticket' })
+    @ApiResponse({ status: 201, description: 'Ticket créé' })
+    @ApiResponse({ status: 401, description: 'Non authentifié' })
     async create(
         @Body() dto: CreateTicketDto,
         @Req() req: { user: { userId: number } },
@@ -20,12 +26,17 @@ export class TicketsController {
     }
 
     @Get()
+    @ApiOperation({ summary: 'Lister tous les tickets' })
+    @ApiResponse({ status: 200, description: 'Liste récupérée' })
     async findAll() {
         return this.ticketsService.getAllTickets()
     }
 
     @Get('my')
     @UseGuards(JwtAuthGuard)
+    @ApiOperation({ summary: 'Lister mes tickets' })
+    @ApiResponse({ status: 200, description: 'Liste récupérée' })
+    @ApiResponse({ status: 401, description: 'Non authentifié' })
     async findMine(
         @Req() req: { user: { userId: number } },
     ) {
@@ -34,6 +45,10 @@ export class TicketsController {
 
     @Patch(':id/status')
     @UseGuards(JwtAuthGuard)
+    @ApiOperation({ summary: 'Mettre à jour le statut d un ticket' })
+    @ApiResponse({ status: 200, description: 'Statut mis à jour' })
+    @ApiResponse({ status: 401, description: 'Non authentifié' })
+    @ApiResponse({ status: 404, description: 'Ticket introuvable' })
     async updateStatus(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: UpdateTicketStatusDto,
@@ -53,6 +68,9 @@ export class TicketsController {
 
     @Post(':id/messages')
     @UseGuards(JwtAuthGuard)
+    @ApiOperation({ summary: 'Envoyer un message dans un ticket' })
+    @ApiResponse({ status: 201, description: 'Message envoyé' })
+    @ApiResponse({ status: 401, description: 'Non authentifié' })
     async createMessages(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: CreateChatMessageDto,
@@ -112,5 +130,5 @@ export class TicketsController {
         const parsedDays = days ? Number(days) : 7;
         return this.ticketsService.getTicketResolutionHistory(parsedDays, req.user.role as any);
     }
-    
+
 }
