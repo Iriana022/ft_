@@ -1,9 +1,9 @@
-import { RouterProvider } from 'react-router-dom'
-import { router } from './router';
-import { useEffect } from 'react';
-import { getSocket } from './services/singleton';
+import {RouterProvider} from 'react-router-dom'
+import {router} from './router';
+import {useEffect} from 'react';
+import {getSocket} from './services/singleton';
 
-function SocketBootstrap({ children }: { children: React.ReactNode }) {
+function SocketBootstrap({children}: {children: React.ReactNode}) {
 
 	useEffect(() => {
 		const socket = getSocket();
@@ -12,7 +12,7 @@ function SocketBootstrap({ children }: { children: React.ReactNode }) {
 			const token = localStorage.getItem('access_token');
 			if (!token)
 				return;
-			socket.emit('registerRoleChannel', { token });
+			socket.emit('registerRoleChannel', {token});
 		};
 
 		const onConnect = () => {
