@@ -1,7 +1,7 @@
-import { format, subDays, isSameDay } from 'date-fns';
-import { enUS, es, fr } from 'date-fns/locale';
-import { TicketPriority, TicketStatus, type Ticket } from '../../types';
-import { normalizeTicket, type RawTicket, type TicketResolutionHistoryItem } from '../../services/tickets';
+import {format, subDays, isSameDay} from 'date-fns';
+import {enUS, es, fr} from 'date-fns/locale';
+import {TicketPriority, TicketStatus, type Ticket} from '../../types';
+import {normalizeTicket, type RawTicket, type TicketResolutionHistoryItem} from '../../services/tickets';
 
 export type SystemNotificationCode =
 	| 'NEW_CLIENT_TICKET'
@@ -95,7 +95,7 @@ export const generateDailyTickets = (
 	const last7Days = [...Array(7)].map((_, i) => subDays(new Date(), i)).reverse();
 
 	return last7Days.map((date) => {
-		const name = format(date, 'eee', { locale });
+		const name = format(date, 'eee', {locale});
 
 		const created = tickets.filter((t) =>
 			isSameDay(new Date(t.createdAt), date)
@@ -218,5 +218,5 @@ export function upsertTicketFromSocket(prev: Ticket[], payload: RawTicket): Tick
 		return [nextTicket, ...prev];
 	}
 
-	return prev.map((t) => (t.id === nextTicket.id ? { ...t, ...nextTicket } : t));
+	return prev.map((t) => (t.id === nextTicket.id ? {...t, ...nextTicket} : t));
 }

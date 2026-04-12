@@ -1,15 +1,15 @@
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
-import { RechartsDevtools } from '@recharts/devtools';
+import {useEffect, useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {Link} from 'react-router-dom';
+import {RechartsDevtools} from '@recharts/devtools';
 import {
 	LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
 	ResponsiveContainer
 } from 'recharts';
 import Separator from '../../../components/login_components/Separator';
-import { type HeroIconType, type Ticket, StatCardType } from '../../../types';
-import { fetchTickets, fetchTicketResolutionHistory, type RawTicket, type TicketResolutionHistoryItem } from '../../../services/tickets';
-import { getSocket } from '../../../services/singleton';
+import {type HeroIconType, type Ticket, StatCardType} from '../../../types';
+import {fetchTickets, fetchTicketResolutionHistory, type RawTicket, type TicketResolutionHistoryItem} from '../../../services/tickets';
+import {getSocket} from '../../../services/singleton';
 import {
 	generateDailyTickets,
 	getPriorityColor,
@@ -78,7 +78,7 @@ interface CreatedAndResolvedIndicatorProps {
 }
 
 function CreatedAndResolvedIndicator(props: CreatedAndResolvedIndicatorProps) {
-	const { t } = useTranslation('admin');
+	const {t} = useTranslation('admin');
 	const text = props.type === 'created' ? t('created') : t('resolved');
 	const bg = props.type === 'created' ? 'bg-navy' : 'bg-status-resolved';
 	return (
@@ -90,7 +90,7 @@ function CreatedAndResolvedIndicator(props: CreatedAndResolvedIndicatorProps) {
 }
 
 export function TicketsActivities() {
-	const { t, i18n } = useTranslation('admin');
+	const {t, i18n} = useTranslation('admin');
 	const [tickets, setTickets] = useState<Ticket[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -168,10 +168,10 @@ export function TicketsActivities() {
 				<ResponsiveContainer>
 					<LineChart responsive data={dailyTickets}>
 						<CartesianGrid stroke="#aaa" strokeDasharray="5 5" />
-						<Line type="monotone" dataKey="created" stroke="var(--color-navy)" strokeWidth={2} name={t('created')} dot={false} activeDot={{ r: 5 }} />
-						<Line type="monotone" dataKey="resolved" stroke="var(--color-status-resolved)" strokeWidth={2} name={t('resolved')} dot={false} activeDot={{ r: 5 }} />
-						<XAxis dataKey="name" tick={{ fontSize: 12 }} />
-						<YAxis tick={{ fontSize: 12 }} />
+						<Line type="monotone" dataKey="created" stroke="var(--color-navy)" strokeWidth={2} name={t('created')} dot={false} activeDot={{r: 5}} />
+						<Line type="monotone" dataKey="resolved" stroke="var(--color-status-resolved)" strokeWidth={2} name={t('resolved')} dot={false} activeDot={{r: 5}} />
+						<XAxis dataKey="name" tick={{fontSize: 12}} />
+						<YAxis tick={{fontSize: 12}} />
 						<Tooltip />
 						<RechartsDevtools />
 					</LineChart>
@@ -182,7 +182,7 @@ export function TicketsActivities() {
 }
 
 function RecentTicketsHeader() {
-	const { t } = useTranslation('admin');
+	const {t} = useTranslation('admin');
 	return (
 		<div className="flex items-center justify-between px-5 pt-3">
 			<div>
@@ -199,7 +199,7 @@ function RecentTicketsHeader() {
 }
 
 export function RecentTickets() {
-	const { t, i18n } = useTranslation('admin');
+	const {t, i18n} = useTranslation('admin');
 	const [tickets, setTickets] = useState<Ticket[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);

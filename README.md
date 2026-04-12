@@ -141,7 +141,7 @@ limiting, documentation, and at least 5 endpoints: -> **2 points**
 Total: 12 points
 
 ### Accessibility and Internationalization
-* **Minor:** Support for multiple languages (at least 3 languages). -> **1 point** (mihangy)
+* **Minor:** Support for multiple languages (at least 3 languages). -> **1 point**
   - Implement i18n (internationalization) system.
   - At least 3 complete language translations.
   - Language swicther in the UI.

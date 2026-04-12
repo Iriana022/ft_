@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { ChevronDownIcon } from '@heroicons/react/24/solid';
+import {useEffect, useMemo, useState} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
+import {ChevronDownIcon} from '@heroicons/react/24/solid';
 import Notification from '../../../components/client_components/Notification';
 import Avatar from '../../../components/client_components/Avatar';
-import { type ClientNotificationItem } from '../../../components/client_components/NotificationView';
-import { fetchMyNotifications, readAllMyNotifications, type RawNotification } from '../../../services/tickets';
-import { getSocket } from '../../../services/singleton';
-import { mapSystemNotificationText, type SystemNotificationEvent } from '../adminHelpers';
+import {type ClientNotificationItem} from '../../../components/client_components/NotificationView';
+import {fetchMyNotifications, readAllMyNotifications, type RawNotification} from '../../../services/tickets';
+import {getSocket} from '../../../services/singleton';
+import {mapSystemNotificationText, type SystemNotificationEvent} from '../adminHelpers';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -18,8 +18,8 @@ function VerticalSeparator() {
 }
 
 export function AdminHeader() {
-	const { t } = useTranslation('admin');
-	const { t: tn } = useTranslation('notifications');
+	const {t} = useTranslation('admin');
+	const {t: tn} = useTranslation('notifications');
 	const navigate = useNavigate();
 	const [notifications, setNotifications] = useState<ClientNotificationItem[]>([]);
 
@@ -82,7 +82,7 @@ export function AdminHeader() {
 
 	const handleOpenNotifications = () => {
 		setNotifications((prev) =>
-			prev.map((n) => (n.readAt ? n : { ...n, readAt: new Date().toISOString() })),
+			prev.map((n) => (n.readAt ? n : {...n, readAt: new Date().toISOString()})),
 		);
 		void readAllMyNotifications();
 	};
