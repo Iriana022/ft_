@@ -6,6 +6,7 @@ import {
 	DrawerSideContent,
 	DrawerToggler,
 } from './components/AdminShell';
+import Footer from '../../layout/Footer';
 
 export { AdminDashboard } from './pages/AdminDashboardPage';
 export { AdminTickets } from './pages/AdminTicketsPage';
@@ -20,20 +21,21 @@ export function AdminView() {
 	};
 
 	return (
-		<>
-			<div className="drawer lg:drawer-open">
+		<div className="min-h-screen flex flex-col">
+			<div className="drawer lg:drawer-open flex-1">
 				<input id="my-drawer-4" type="checkbox" className="drawer-toggle"
 					checked={isOpen} onChange={() => setIsOpen((state) => !state)}
 				/>
-				<div className="drawer-content">
+				<div className="drawer-content flex flex-col">
 					<nav className="navbar w-full py-4 bg-white">
 						<AdminHamburgerMenu isOpen={isOpen} onClick={handleClick} />
 						<DrawerToggler isOpen={isOpen} onClick={handleClick} />
 						<AdminHeader />
 					</nav>
-					<div className="p-4">
+					<div className="p-4 flex-1">
 						<Outlet />
 					</div>
+					<Footer />
 				</div>
 
 				<div className="drawer-side is-drawer-close:overflow-visible text-white">
@@ -42,6 +44,6 @@ export function AdminView() {
 					<DrawerSideContent isOpen={isOpen} setIsOpen={setIsOpen} />
 				</div>
 			</div>
-		</>
+		</div>
 	);
 }

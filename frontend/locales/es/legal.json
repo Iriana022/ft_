@@ -1,0 +1,94 @@
+{
+  "shared": {
+    "backToApp": "Volver a la aplicacion",
+    "lastUpdated": "Ultima actualizacion: {{date}}"
+  },
+  "privacy": {
+    "title": "Politica de privacidad",
+    "updatedAt": "12 de abril de 2026",
+    "intro": "Esta Politica de privacidad explica como Tikeo procesa los datos personales cuando usas nuestra plataforma de tickets y soporte.",
+    "sections": {
+      "collection": {
+        "title": "1. Datos que recopilamos",
+        "content": "Recopilamos informacion de cuenta y soporte: correo, usuario, rol, avatar, contenido de tickets, adjuntos y registros tecnicos necesarios para operar y asegurar el servicio."
+      },
+      "usage": {
+        "title": "2. Como usamos tus datos",
+        "content": "Usamos estos datos para autenticar usuarios, gestionar tickets, notificar eventos de tickets, mejorar la calidad del servicio y proteger la plataforma contra abusos."
+      },
+      "legalBasis": {
+        "title": "3. Base legal",
+        "content": "El tratamiento se basa en la prestacion del servicio, la seguridad de la plataforma, intereses legitimos de soporte y obligaciones legales cuando corresponda."
+      },
+      "retention": {
+        "title": "4. Conservacion de datos",
+        "content": "Los datos de cuenta y tickets se conservan mientras la cuenta este activa y por un periodo limitado despues para cumplimiento, auditoria y gestion de disputas."
+      },
+      "security": {
+        "title": "5. Medidas de seguridad",
+        "content": "Aplicamos controles de acceso, permisos por rol y salvaguardas tecnicas para proteger los datos frente a accesos no autorizados, perdida o alteracion."
+      },
+      "rights": {
+        "title": "6. Tus derechos",
+        "content": "Segun tu jurisdiccion, puedes solicitar acceso, correccion, eliminacion o exportacion de tus datos personales y oponerte a ciertos tratamientos."
+      },
+      "transfers": {
+        "title": "7. Comparticion y transferencias",
+        "content": "Los datos solo se comparten con administradores y agentes autorizados que los necesitan para procesar tickets. No vendemos datos personales."
+      },
+      "children": {
+        "title": "8. Requisito de edad",
+        "content": "El servicio esta destinado a usuarios que pueden usar legalmente una plataforma interna de soporte. Si crees que se enviaron datos por error, contacta a un administrador."
+      }
+    },
+    "contact": "Para solicitudes de privacidad, contacta a tu administrador mediante un ticket autenticado."
+  },
+  "terms": {
+    "title": "Terminos del servicio",
+    "updatedAt": "12 de abril de 2026",
+    "intro": "Estos Terminos del servicio regulan el acceso y uso de Tikeo como plataforma interna de soporte y gestion de tickets.",
+    "sections": {
+      "eligibility": {
+        "title": "1. Elegibilidad y acceso",
+        "content": "Debes usar una cuenta autorizada y respetar los permisos de tu rol asignado (cliente, agente, admin)."
+      },
+      "accounts": {
+        "title": "2. Responsabilidad de la cuenta",
+        "content": "Eres responsable de la confidencialidad de tus credenciales y de todas las acciones realizadas con tu cuenta."
+      },
+      "acceptableUse": {
+        "title": "3. Uso aceptable",
+        "content": "No debes enviar contenido ilegal, abusivo, malicioso o enganoso, ni intentar interrumpir el servicio o evadir la seguridad de la plataforma."
+      },
+      "userContent": {
+        "title": "4. Contenido de tickets y adjuntos",
+        "content": "Sigues siendo responsable de la informacion enviada en tickets. Incluye solo datos necesarios para soporte y evita datos sensibles no relacionados."
+      },
+      "serviceAvailability": {
+        "title": "5. Disponibilidad del servicio",
+        "content": "Buscamos mantener la plataforma disponible, pero pueden existir mantenimientos, actualizaciones o restricciones temporales por motivos operativos y de seguridad."
+      },
+      "intellectualProperty": {
+        "title": "6. Propiedad intelectual",
+        "content": "El codigo, la marca y las interfaces de la plataforma estan protegidos. Solo puedes usar el servicio segun lo permitido por tu organizacion y estos terminos."
+      },
+      "liability": {
+        "title": "7. Limitacion de responsabilidad",
+        "content": "En la medida permitida por la ley, el servicio se ofrece tal cual para flujos internos de soporte y se excluyen danos indirectos."
+      },
+      "termination": {
+        "title": "8. Suspension y terminacion",
+        "content": "Las cuentas pueden suspenderse o revocarse si se violan estos terminos, existe riesgo de seguridad o cambian los permisos internos de acceso."
+      },
+      "changes": {
+        "title": "9. Cambios en los terminos",
+        "content": "Podemos actualizar estos terminos para reflejar cambios legales, tecnicos u operativos. El uso continuado implica aceptacion."
+      },
+      "governingLaw": {
+        "title": "10. Reglas aplicables",
+        "content": "Estos terminos se interpretan segun las politicas internas aplicables y las leyes obligatorias vigentes para tu organizacion."
+      }
+    },
+    "contact": "Si tienes preguntas sobre estos terminos, contacta a tu administrador mediante la plataforma."
+  }
+}
