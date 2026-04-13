@@ -5,6 +5,11 @@ import {TicketList} from './TicketList';
 import {TicketStatus, UserRole, type Ticket as TicketType} from '../../types';
 import {fetchMyNotifications, fetchTickets, getTicketStats, normalizeTicket, readAllMyNotifications, sortTicketsForAgent, type RawNotification, type RawTicket} from '../../services/tickets';
 import {getSocket} from '../../services/singleton';
+import {
+	emitNotificationsMarkedAsRead,
+	markNotificationsAsReadLocally,
+	subscribeNotificationsMarkedAsRead,
+} from '../../services/notification-sync';
 import {useTranslation} from 'react-i18next';
 import Notification from '../../components/client_components/Notification';
 import {type ClientNotificationItem} from '../../components/client_components/NotificationView';
@@ -165,10 +170,15 @@ export function Dashboard() {
 		};
 	}, [tn]);
 
+	useEffect(() => {
+		return subscribeNotificationsMarkedAsRead(() => {
+			setNotifications((prev) => markNotificationsAsReadLocally(prev));
+		});
+	}, []);
+
 	const handleOpenNotifications = () => {
-		setNotifications((prev) =>
-			prev.map((n) => (n.readAt ? n : {...n, readAt: new Date().toISOString()})),
-		);
+		setNotifications((prev) => markNotificationsAsReadLocally(prev));
+		emitNotificationsMarkedAsRead();
 		void readAllMyNotifications();
 	};
 

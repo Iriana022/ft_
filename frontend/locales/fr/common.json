@@ -3,5 +3,11 @@
 	"open": "Ouvert",
 	"inProgress": "En cours",
 	"resolved": "Résolus",
-	"closed": "Fermés"
+	"closed": "Fermés",
+	"comingSoon": "Bientôt disponible",
+	"pageNotFound": "Page non trouvée",
+	"goBack": "Retour",
+	"notifications": "Notifications",
+	"userAvatar": "Avatar utilisateur",
+	"user": "Utilisateur"
 }

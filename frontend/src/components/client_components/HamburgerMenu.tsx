@@ -8,13 +8,18 @@ interface HamburgerMenuProps {
 
 function HamburgerMenu(props: HamburgerMenuProps) {
 	return (
-		<div className="block md:hidden z-30" onClick={props.onClick}>
+		<button
+			type="button"
+			className="block md:hidden z-50 p-2 -ml-2 transition-transform duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-navy/50 rounded-lg"
+			onClick={props.onClick}
+			aria-label={props.isMenuOpened ? 'Close menu' : 'Open menu'}
+		>
 			{
 				!props.isMenuOpened ?
-					<Bars2Icon className="w-10 h-10 text-gray-600" /> :
-					<XMarkIcon className="w-10 h-10 text-cream fixed" />
+					<Bars2Icon className="w-8 h-8 text-navy" /> :
+					<XMarkIcon className="w-8 h-8 text-navy animate-pulse-once" />
 			}
-		</div>
+		</button>
 	);
 }
 

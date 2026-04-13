@@ -1,4 +1,5 @@
 import {createBrowserRouter, Navigate} from "react-router-dom";
+import {useTranslation} from "react-i18next";
 import Login from '../views/Login_Page/Login';
 import {Dashboard} from "../views/view_agent/Dashboard";
 import {TicketsPage} from "../views/view_agent/TicketsPage";
@@ -23,6 +24,11 @@ import ErrorPage from "../views/errors/ErrorPage";
 import NotFound from "../views/errors/NotFound";
 import Unauthorized from "../views/errors/Unauthorized";
 import LegalDocument from '../views/legal/LegalDocument';
+
+function NotificationsComingSoon() {
+	const {t} = useTranslation('common');
+	return <div>{t('notifications')} — {t('comingSoon')}</div>;
+}
 
 export const router = createBrowserRouter([
 	{
@@ -122,7 +128,7 @@ export const router = createBrowserRouter([
 			},
 			{
 				path: 'notifications',
-				element: <div>Notifications — coming soon</div>,
+				element: <NotificationsComingSoon />,
 			},
 			{
 				path: 'settings',

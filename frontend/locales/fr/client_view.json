@@ -14,5 +14,8 @@
 	"copyright": "Copyright",
 	"privacyPolicy": "Politique de confidentialité",
 	"termsOfUse": "Conditions générales d’utilisation",
-	"noTickets": "Aucun ticket disponible"
+	"noTickets": "Aucun ticket disponible",
+	"loadingTickets": "Chargement des tickets...",
+	"noTicketsImageAlt": "Aucun ticket",
+	"heroImageAlt": "Image d'accueil"
 }

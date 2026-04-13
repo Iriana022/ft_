@@ -16,7 +16,7 @@ console.warn = noop;
 if (!window.__tikeoUnhandledRejectionSilencerInstalled) {
 	window.addEventListener('unhandledrejection', (event) => {
 		const reason = event.reason as {
-			response?: { status?: number };
+			response?: {status?: number};
 			code?: string;
 		} | undefined;
 

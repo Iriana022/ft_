@@ -46,7 +46,7 @@ function ClientHomeHeroSection(props: ClientHomeHeroSectionProps) {
 				</div>
 			</div>
 			<div className="w-[50%] ps-30 hidden md:block">
-				<img alt="Hero image" src={heroImage} />
+				<img alt={t("heroImageAlt")} src={heroImage} />
 			</div>
 		</section>
 	);

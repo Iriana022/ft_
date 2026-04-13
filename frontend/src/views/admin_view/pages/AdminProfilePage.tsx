@@ -24,6 +24,7 @@ const profileDefaults: ProfileForm = {
 
 function AdminProfilePage() {
 	const {t} = useTranslation('profile');
+	const {t: tc} = useTranslation('common');
 	const [profile, setProfile] = useState<ProfileForm>(profileDefaults);
 	const [loadingProfile, setLoadingProfile] = useState(true);
 	const [savingProfile, setSavingProfile] = useState(false);
@@ -145,7 +146,7 @@ function AdminProfilePage() {
 						<div className="relative">
 							<img
 								src={avatarUrl}
-								alt="Avatar"
+								alt={tc('userAvatar')}
 								className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-gray-100"
 							/>
 							<button

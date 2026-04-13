@@ -8,8 +8,11 @@ import Notification from '../client_components/Notification';
 import {type ClientNotificationItem} from '../client_components/NotificationView';
 import {getSocket} from '../../services/singleton';
 import {fetchMyNotifications, readAllMyNotifications, type RawNotification} from '../../services/tickets';
-import ConfirmModal from '../client_components/ConfirmModal';
-import {clearAuthStorage} from '../../services/auth';
+import {
+	emitNotificationsMarkedAsRead,
+	markNotificationsAsReadLocally,
+	subscribeNotificationsMarkedAsRead,
+} from '../../services/notification-sync';
 
 type SectionId = 'profile' | 'account' | 'language';
 
@@ -117,6 +120,7 @@ const DEFAULT_AGENT_AVATAR = '/assets/avatars/avatar2.png';
 function Settings() {
 	const {t, i18n} = useTranslation('profile');
 	const {t: tn} = useTranslation('notifications');
+	const {t: tc} = useTranslation('common');
 	const [activeSection, setActiveSection] = useState<SectionId>('profile');
 	const navigate = useNavigate();
 	const {section} = useParams<{section?: string}>();
@@ -137,9 +141,8 @@ function Settings() {
 	);
 
 	const handleOpenNotifications = () => {
-		setNotifications((prev) =>
-			prev.map((n) => (n.readAt ? n : {...n, readAt: new Date().toISOString()})),
-		);
+		setNotifications((prev) => markNotificationsAsReadLocally(prev));
+		emitNotificationsMarkedAsRead();
 		void readAllMyNotifications();
 	};
 
@@ -153,7 +156,10 @@ function Settings() {
 	useEffect(() => {
 		if (!section || !validSections.includes(section as SectionId)) {
 			navigate('/agent/settings/profile', {replace: true});
+			return;
 		}
+
+		setActiveSection(section as SectionId);
 	}, [section, navigate]);
 
 	const goToSection = (id: SectionId) => {
@@ -187,6 +193,12 @@ function Settings() {
 
 		loadProfile();
 	}, [t]);
+
+	useEffect(() => {
+		return subscribeNotificationsMarkedAsRead(() => {
+			setNotifications((prev) => markNotificationsAsReadLocally(prev));
+		});
+	}, []);
 
 	useEffect(() => {
 		let mounted = true;
@@ -358,7 +370,7 @@ function Settings() {
 							return (
 								<button
 									key={section.id}
-									onClick={() => setActiveSection(section.id)}
+									onClick={() => goToSection(section.id)}
 									className={`flex-1 flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-all duration-200 ${isActive ? 'bg-sky/25 text-navy' : 'text-gray-500 hover:text-navy hover:bg-sky/10'
 										}`}
 									title={section.label}
@@ -376,7 +388,7 @@ function Settings() {
 							return (
 								<button
 									key={section.id}
-									onClick={() => setActiveSection(section.id)}
+									onClick={() => goToSection(section.id)}
 									className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive ? 'bg-sky/25 text-navy' : 'text-gray-700 hover:bg-sky/10'
 										}`}
 								>
@@ -407,7 +419,7 @@ function Settings() {
 										<div className="w-20 h-20 overflow-hidden rounded-full bg-gray-100 shrink-0">
 											<img
 												src={avatarUrl}
-												alt="Avatar"
+												alt={tc('userAvatar')}
 												className="w-full h-full object-cover object-center"
 												onError={(e) => {
 													e.currentTarget.src = DEFAULT_AGENT_AVATAR;

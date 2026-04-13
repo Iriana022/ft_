@@ -13,6 +13,11 @@ import {
 	readAllMyNotifications,
 	type RawNotification
 } from '../../services/tickets';
+import {
+	emitNotificationsMarkedAsRead,
+	markNotificationsAsReadLocally,
+	subscribeNotificationsMarkedAsRead,
+} from '../../services/notification-sync';
 
 
 const DEFAULT_AGENT_AVATAR = '/assets/avatars/avatar2.png';
@@ -106,6 +111,7 @@ function mapSystemNotificationText(
 
 export function Sidebar({currentRole}: SidebarProps) {
 	const {t} = useTranslation('agent');
+	const {t: tc} = useTranslation('common');
 	const navigate = useNavigate();
 	const location = useLocation()
 	const username = localStorage.getItem('username') || t('defaultUser');
@@ -179,6 +185,12 @@ export function Sidebar({currentRole}: SidebarProps) {
 	}, [tn]);
 
 	useEffect(() => {
+		return subscribeNotificationsMarkedAsRead(() => {
+			setNotifications((prev) => markNotificationsAsReadLocally(prev));
+		});
+	}, []);
+
+	useEffect(() => {
 		let mounted = true;
 
 		const loadAvatar = async () => {
@@ -230,9 +242,8 @@ export function Sidebar({currentRole}: SidebarProps) {
 	};
 
 	const handleOpenNotifications = () => {
-		setNotifications((prev) =>
-			prev.map((n) => (n.readAt ? n : {...n, readAt: new Date().toISOString()})),
-		);
+		setNotifications((prev) => markNotificationsAsReadLocally(prev));
+		emitNotificationsMarkedAsRead();
 		void readAllMyNotifications();
 	};
 	const menuItems = [
@@ -287,7 +298,7 @@ export function Sidebar({currentRole}: SidebarProps) {
 				<div className="flex items-center gap-3 mb-3">
 					<img
 						src={avatar}
-						alt="User"
+						alt={tc('userAvatar')}
 						className="w-10 h-10 rounded-full"
 						onError={(e) => {
 							e.currentTarget.src = DEFAULT_AGENT_AVATAR;
