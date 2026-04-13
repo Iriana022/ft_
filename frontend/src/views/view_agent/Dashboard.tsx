@@ -97,6 +97,7 @@ export function Dashboard() {
 	const {t: tn} = useTranslation('notifications');
 	const [tickets, setTickets] = useState<TicketType[]>([]);
 	const [notification, setNotification] = useState<string | null>(null);
+	const [showAllTickets, setShowAllTickets] = useState(false);
 	const [notifications, setNotifications] = useState<ClientNotificationItem[]>([]);
 	const hasNotification = useMemo(
 		() => notifications.some((n) => !n.readAt),
@@ -312,7 +313,11 @@ export function Dashboard() {
 				</div>
 
 				{/* Recent Tickets */}
-				<TicketList tickets={tickets} maxItems={4} />
+				<TicketList
+					tickets={tickets}
+					maxItems={showAllTickets ? undefined : 4}
+					onViewAll={() => setShowAllTickets(true)}
+				/>
 			</div>
 		</div>
 	);
