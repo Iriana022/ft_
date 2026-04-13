@@ -113,12 +113,23 @@ const profileDefaults: ProfileForm = {
 const DEFAULT_AGENT_AVATAR = '/assets/avatars/avatar2.png';
 
 function Settings() {
+<<<<<<< HEAD
 	const {t, i18n} = useTranslation('profile');
 	const {t: tn} = useTranslation('notifications');
 	const [activeSection, setActiveSection] = useState<SectionId>('profile');
 	const navigate = useNavigate();
 	const {section} = useParams<{section?: string}>();
 	const validSections: SectionId[] = ['profile', 'account', 'language'];
+=======
+	const {t} = useTranslation('profile');
+	const navigate = useNavigate();
+	const {section} = useParams<{section?: string}>();
+	const validSections: SectionId[] = ['profile', 'account', 'language'];
+	const activeSection: SectionId =
+		section && validSections.includes(section as SectionId)
+			? (section as SectionId)
+			: 'profile';
+>>>>>>> c6750ce (modify route parameters)
 	const [profile, setProfile] = useState<ProfileForm>(profileDefaults);
 	const [loadingProfile, setLoadingProfile] = useState(true);
 	const [savingProfile, setSavingProfile] = useState(false);
@@ -335,6 +346,7 @@ function Settings() {
 							const Icon = section.icon;
 							const isActive = activeSection === section.id;
 
+<<<<<<< HEAD
 							return (
 								<button
 									key={section.id}
@@ -366,6 +378,20 @@ function Settings() {
 							);
 						})}
 					</div>
+=======
+						return (
+							<button
+								key={section.id}
+								onClick={() => goToSection(section.id)}
+								className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive ? 'bg-sky/25 text-navy' : 'text-gray-700 hover:bg-sky/10'
+									}`}
+							>
+								<Icon className="w-5 h-5" />
+								<span className="font-medium">{section.label}</span>
+							</button>
+						);
+					})}
+>>>>>>> c6750ce (modify route parameters)
 				</div>
 
 				<div className="flex-1 max-w-3xl">
