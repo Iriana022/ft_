@@ -24,6 +24,7 @@ function ClientSettings() {
 			localStorage.removeItem('username');
 			localStorage.removeItem('user_role');
 			localStorage.removeItem('user_avatar');
+			window.dispatchEvent(new Event('auth-token-updated'));
 
 			navigate('/login');
 		} catch (e) {

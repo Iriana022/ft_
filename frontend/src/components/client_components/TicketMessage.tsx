@@ -18,7 +18,6 @@ interface TicketMessageBodyProps {
 	messages: Message[]
 }
 
-// Make this dynamic later
 const fakeMessages: Message[] = [
 	{client: "Bonjour, j'ai besoin d'aide pour ma commande.", agent: "Bonjour ! Bien sûr, pouvez-vous me donner votre numéro de commande ?"},
 	{client: "Je n'arrive pas à me connecter à mon compte.", agent: "Nous allons réinitialiser votre mot de passe. Pouvez-vous confirmer votre email ?"},

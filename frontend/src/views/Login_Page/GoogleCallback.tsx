@@ -2,8 +2,6 @@ import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import { clearAuthStorage, getHomeRouteByRole, getRoleFromToken } from '../../services/auth';
-// import { getHomeRouteByRole, getRoleFromToken } from '../../services/auth';
-// import { UserRole } from '../../types';
 
 export function GoogleCallback() {
     const [searchParams] = useSearchParams();
@@ -20,7 +18,6 @@ export function GoogleCallback() {
             return;
         }
         if (token) {
-            // --- ON SUIT TA LOGIQUE EXACTE DU LOGIN CARD ---
             localStorage.setItem('access_token', token);
             window.dispatchEvent(new Event('auth-token-updated'));
             localStorage.removeItem('user_avatar');
@@ -32,12 +29,8 @@ export function GoogleCallback() {
             const handleProfileSync = async () => {
                 try {
                     const meResponse = await api.get('/auth/me');
-                    // console.log("meResponse:", meResponse)
                     const username = meResponse.data?.username;
-                    console.log("username:", username);
-                    // const role = UserRole.CLIENT;
                     const role = meResponse.data?.role ?? getRoleFromToken(token);
-                    console.log("role:", role);
                     
                     if (username) localStorage.setItem('username', username);
                     if (role) localStorage.setItem('user_role', role);
@@ -51,9 +44,6 @@ export function GoogleCallback() {
                         return;
                     }
                     clearAuthStorage();
-                    // localStorage.removeItem('access_token');
-                    // localStorage.removeItem('user_role');
-                    // localStorage.removeItem('username');
                     navigate('/login?error=google_failed', { replace: true });
                 }
             };

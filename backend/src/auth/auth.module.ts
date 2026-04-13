@@ -3,7 +3,6 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { PrismaService } from '../../prisma/prisma.service';
 import { JwtStrategy } from './jwt.strategy';
 import { RolesGuard } from './roles.guard';
 import { GoogleModule } from './google/google.module';
@@ -20,7 +19,7 @@ import { TicketsModule } from 'src/tickets/tickets.module';
     TicketsModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, PrismaService, JwtStrategy, RolesGuard],
+  providers: [AuthService, JwtStrategy, RolesGuard],
   exports: [AuthService]
 })
 export class AuthModule {}

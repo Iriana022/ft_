@@ -18,6 +18,7 @@ function MobileMenu() {
 		localStorage.removeItem('access_token');
 		localStorage.removeItem('username');
 		localStorage.removeItem('user_role');
+		window.dispatchEvent(new Event('auth-token-updated'));
 		navigate('/login');
 	};
 

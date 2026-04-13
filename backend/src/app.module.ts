@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { PrismaService } from './prisma.service';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
@@ -14,8 +13,8 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, // Rend les variables accessibles partout
-      envFilePath: '.env', // Précise bien le chemin
+      isGlobal: true,
+      envFilePath: '.env', 
     }),
     ThrottlerModule.forRoot([
       {
@@ -25,12 +24,11 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
       },
      ]), AuthModule, UserModule, TicketsModule, PrismaModule, GoogleModule],
       controllers: [AppController],
-      providers: [AppService, PrismaService,
+      providers: [AppService,
         {
           provide: APP_GUARD,
           useClass: ThrottlerGuard,
         },
       ],
-      exports: [PrismaService],
 })
 export class AppModule { }

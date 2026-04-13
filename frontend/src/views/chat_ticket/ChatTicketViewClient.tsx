@@ -62,7 +62,6 @@ function ChatTicketViewClient() {
 		(ticketStatus ?? TicketStatus.OPEN) === TicketStatus.IN_PROGRESS
 	);
 
-	// Scroll automatique vers le bas
 	const scrollToBottom = () => {
 		messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
 	};
@@ -83,7 +82,6 @@ function ChatTicketViewClient() {
 		})
 	}, [ticketId]);
 
-	// Charger les messages au démarrage
 	useEffect(() => {
 		if (!ticketId) {
 			setIsLoading(false);

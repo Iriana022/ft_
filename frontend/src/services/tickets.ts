@@ -36,27 +36,20 @@ const normalizeAvatarUrl = (avatar?: string | null) => {
 	if (value.startsWith('/uploads/')) return '/api' + value;
 	if (value.startsWith('/')) return value;
 
-	// cas ancien: juste "avatar-xxx.png"
 	return uploadsApiPrefix + value;
 };
 
 const normalizeUser = (user: RawUser): User => {
-	// 1. Sécurité de base
 	if (!user) return user;
 
 	return {
 		...user,
 		avatar: normalizeAvatarUrl(user.avatar),
 		createdAt: new Date(user.createdAt),
-		// 2. On vérifie que c'est bien un tableau avant de mapper
 		ticketsCreated: Array.isArray(user.ticketsCreated)
 			? user.ticketsCreated.map((ticket) => {
-				// 3. On normalise le ticket mais on gère l'absence d'author
-				// pour éviter la boucle infinie ou le crash
 				return {
 					...normalizeTicket(ticket),
-					// On peut forcer l'author à être l'utilisateur actuel 
-					// ou rester indéfini pour stopper la récursion
 					author: user as unknown as User,
 				};
 			})

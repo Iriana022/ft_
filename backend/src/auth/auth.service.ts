@@ -32,7 +32,6 @@ export class AuthService {
   }
 
   async register(dto: any) {
-    // 1. If user exists (email or login)
     const userByEmail = await this.prisma.user.findUnique({
       where: { email: dto.email }
     });
@@ -43,20 +42,23 @@ export class AuthService {
     });
     if (userByLogin) throw new ConflictException('Login déjà utilisé');
 
-    // 2. Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(dto.password, salt);
     const selectedRole = dto.role === 'AGENT' ? 'AGENT' : 'CLIENT';
 
-    // 3. Base create
     try {
-      await this.prisma.user.create({//modif srasolom
+      const createdUser = await this.prisma.user.create({
         data: {
           email: dto.email,
           password: hashedPassword,
           login: dto.login,
           role: selectedRole,
         },
+      });
+
+      this.ticketsGateway.emitAdminUsersChanged({
+        userId: createdUser.id,
+        action: 'created',
       });
     } catch (error: any) {
       if (error?.code === 'P2002') {

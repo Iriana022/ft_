@@ -60,6 +60,33 @@ export class TicketsGateway implements OnGatewayConnection, OnGatewayDisconnect 
         return 'user-' + userId;
     }
 
+    private toFiniteUserId(value: unknown): number | null {
+        const id = Number(value);
+        if (!Number.isInteger(id) || id <= 0) return null;
+        return id;
+    }
+
+    private emitTicketEvent(eventName: 'newTicket' | 'ticketStatusUpdated', ticket: any) {
+        const targetRooms = new Set<string>([
+            this.roleRoom(UserRole.AGENT),
+            this.roleRoom(UserRole.ADMIN),
+        ]);
+
+        const authorId = this.toFiniteUserId(ticket?.authorId);
+        if (authorId !== null) {
+            targetRooms.add(this.userRoom(authorId));
+        }
+
+        const assignedToId = this.toFiniteUserId(ticket?.AssignedToId ?? ticket?.assignedToId);
+        if (assignedToId !== null) {
+            targetRooms.add(this.userRoom(assignedToId));
+        }
+
+        for (const room of targetRooms) {
+            this.server.to(room).emit(eventName, ticket);
+        }
+    }
+
     @SubscribeMessage('registerRoleChannel')
     async handleRegisterRoleChannel(
         @MessageBody() data: { token?: string },
@@ -200,6 +227,19 @@ export class TicketsGateway implements OnGatewayConnection, OnGatewayDisconnect 
         );
     }
 
+    emitUserDeleted(userId: number) {
+        this.server.to(this.userRoom(userId)).emit('accountDeleted', { userId });
+        this.server.to(this.roleRoom(UserRole.ADMIN)).emit('adminUserDeleted', { userId });
+        this.server.to(this.roleRoom(UserRole.ADMIN)).emit('adminUsersChanged', {
+            userId,
+            action: 'deleted',
+        });
+    }
+
+    emitAdminUsersChanged(payload?: { userId?: number; action?: 'created' | 'updated' | 'deleted' }) {
+        this.server.to(this.roleRoom(UserRole.ADMIN)).emit('adminUsersChanged', payload ?? {});
+    }
+
     private async resolveUserFromToken(token?: string): Promise<{ userId: number; role: UserRole }> {
         if (!token) {
             throw new WsException('Unauthorized');
@@ -224,10 +264,10 @@ export class TicketsGateway implements OnGatewayConnection, OnGatewayDisconnect 
     }
 
     emitNewTIcket(ticket: any) {
-        this.server.emit('newTicket', ticket);
+        this.emitTicketEvent('newTicket', ticket);
     }
     emitStatusTicket(ticket: any) {
-        this.server.emit('ticketStatusUpdated', ticket);
+        this.emitTicketEvent('ticketStatusUpdated', ticket);
     }
 
     @SubscribeMessage('joinTicket')
@@ -336,12 +376,35 @@ export class TicketsGateway implements OnGatewayConnection, OnGatewayDisconnect 
         this.server.to(`ticket-${ticketId}`).emit('ticketClosed', { ticketId });
     }
 
-    emitTicketUnreadUpdated(ticketId: number, clientUnreadCount: number,
-        agentUnreadCount: number) {
-        this.server.emit('ticketUnreadUpdated', {
+    emitTicketUnreadUpdated(
+        ticketId: number,
+        clientUnreadCount: number,
+        agentUnreadCount: number,
+        participants?: { authorId?: number | null; assignedToId?: number | null },
+    ) {
+        const payload = {
             ticketId,
             clientUnreadCount,
             agentUnreadCount
-        });
+        };
+
+        const targetRooms = new Set<string>([
+            this.roleRoom(UserRole.AGENT),
+            this.roleRoom(UserRole.ADMIN),
+        ]);
+
+        const authorId = this.toFiniteUserId(participants?.authorId);
+        if (authorId !== null) {
+            targetRooms.add(this.userRoom(authorId));
+        }
+
+        const assignedToId = this.toFiniteUserId(participants?.assignedToId);
+        if (assignedToId !== null) {
+            targetRooms.add(this.userRoom(assignedToId));
+        }
+
+        for (const room of targetRooms) {
+            this.server.to(room).emit('ticketUnreadUpdated', payload);
+        }
     }
 }
