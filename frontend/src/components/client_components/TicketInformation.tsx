@@ -18,6 +18,7 @@ function TicketInformation(props: TicketInformationProps) {
 	const [title, setTitle] = useState(props.ticket.title);
 	const [description, setDescription] = useState(props.ticket.description);
 	const navigate = useNavigate();
+	const titleInputId = 'ticket-title-' + props.ticket.id;
 
 	return (
 		<div
@@ -56,13 +57,13 @@ function TicketInformation(props: TicketInformationProps) {
 				</div>
 
 				<div className="my-4">
-					<label className="text-base block" htmlFor="title">
+					<label className="text-base block" htmlFor={titleInputId}>
 						{t('title')}
 					</label>
 
 					<input
 						type="text"
-						id="title"
+						id={titleInputId}
 						placeholder={t('titlePlaceholder')}
 						className="border py-3 px-3 text-sm w-full rounded mt-2"
 						value={title}

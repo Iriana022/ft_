@@ -112,13 +112,13 @@ function CreateTicketView(props: CreateTicketViewProps) {
 				<Separator />
 
 				<div className="my-4">
-					<label className="text-base block" htmlFor="title">
+					<label className="text-base block" htmlFor="create-ticket-title">
 						{tTickets('title')}
 					</label>
 
 					<input
 						type="text"
-						id="title"
+						id="create-ticket-title"
 						placeholder={tTickets('titlePlaceholder')}
 						className="border py-3 px-3 text-sm w-full rounded mt-2"
 						value={title}
