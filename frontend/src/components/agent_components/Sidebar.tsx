@@ -1,4 +1,4 @@
-import { LayoutDashboard, Ticket, Users, Settings, LogOut, Bell } from 'lucide-react';
+import { LayoutDashboard, Ticket, Users, Settings, LogOut } from 'lucide-react';
 import { useEffect, useState, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { UserRole } from '../../types';
@@ -235,7 +235,6 @@ export function Sidebar({ currentRole }: SidebarProps) {
 		{ id: 'dashboard', label: t('sidebarDashboard'), icon: LayoutDashboard, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT] },
 		{ id: 'tickets', label: t('sidebarTickets'), icon: Ticket, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT] },
 		{ id: 'users', label: t('sidebarUsers'), icon: Users, roles: [UserRole.ADMIN] },
-		{ id: 'notifications', label: t('sidebarNotifications'), icon: Bell, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT] },
 		{ id: 'settings', label: t('sidebarSettings'), icon: Settings, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT] }
 	];
 
@@ -245,12 +244,14 @@ export function Sidebar({ currentRole }: SidebarProps) {
 	return (
 		<aside className="w-full lg:w-64 border-b lg:border-b-0 lg:border-r lg:h-screen flex flex-col bg-navy border-gray-200">
 			<div
-				className="p-4 flex items-center justify-between">
+				className="p-4 flex items-center justify-start">
 				<TikeoLogo href={dashboardPath} color="text-white" size="text-4xl" />
-				<Notification hasNotification={hasNotification} notifications={notifications} onOpen={handleOpenNotifications} />
 			</div>
 			{/* Navigation */}
 			<nav className="flex-1 p-3 lg:p-4 overflow-x-auto">
+				<div className="hidden">
+					<Notification hasNotification={hasNotification} notifications={notifications} onOpen={handleOpenNotifications} />
+				</div>
 				<div className="flex lg:flex-col gap-2 min-w-max lg:min-w-0">
 					{
 						filteredItems.map((item) => {

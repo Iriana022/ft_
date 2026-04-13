@@ -3,14 +3,169 @@ import { useEffect, useMemo, useState } from 'react';
 import { StatCard } from '../../components/agent_components/StatCard';
 import { TicketList } from './TicketList';
 import { TicketStatus, UserRole, type Ticket as TicketType } from '../../types';
-import { fetchTickets, getTicketStats, normalizeTicket, sortTicketsForAgent, type RawTicket } from '../../services/tickets';
+import { fetchMyNotifications, fetchTickets, getTicketStats, normalizeTicket, readAllMyNotifications, sortTicketsForAgent, type RawNotification, type RawTicket } from '../../services/tickets';
 import { getSocket } from '../../services/singleton';
 import {useTranslation} from 'react-i18next';
+import Notification from '../../components/client_components/Notification';
+import { type ClientNotificationItem } from '../../components/client_components/NotificationView';
+
+type SystemNotificationCode =
+	| 'NEW_CLIENT_TICKET'
+	| 'USER_PROFILE_UPDATED'
+	| 'USER_LOGGED_IN'
+	| 'TICKET_STATUS_UPDATED';
+
+type SystemNotificationEvent = {
+	id: number;
+	code: SystemNotificationCode;
+	createdAt: string;
+	readAt?: string | null;
+	data?: {
+		ticketId?: number;
+		ticketTitle?: string;
+		userLogin?: string;
+		userRole?: 'CLIENT' | 'AGENT' | 'ADMIN';
+		fromStatus?: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+		toStatus?: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+		clientLogin?: string;
+	};
+};
+
+function mapSystemNotificationText(
+	event: SystemNotificationEvent,
+	tn: (key: string, options?: Record<string, unknown>) => string,
+) {
+	const userLogin = event.data?.userLogin ?? tn('unknownUser');
+	const roleLabel =
+		event.data?.userRole === 'AGENT'
+			? tn('roleAgent')
+			: event.data?.userRole === 'CLIENT'
+				? tn('roleClient')
+				: event.data?.userRole ?? '';
+
+	if (event.code === 'NEW_CLIENT_TICKET') {
+		return tn('newClientTicketForSupport', {
+			ticketId: event.data?.ticketId ?? '-',
+			ticketTitle: event.data?.ticketTitle ?? '',
+			userLogin,
+		});
+	}
+
+	if (event.code === 'USER_PROFILE_UPDATED') {
+		return tn('userProfileUpdatedForAdmin', {
+			userLogin,
+			userRole: roleLabel,
+		});
+	}
+
+	const statusLabel = (status?: string) => {
+		if (status === 'OPEN') return tn('statusOpen');
+		if (status === 'IN_PROGRESS') return tn('statusInProgress');
+		if (status === 'RESOLVED') return tn('statusResolved');
+		if (status === 'CLOSED') return tn('statusClosed');
+		return status ?? '-';
+	};
+
+	if (event.code === 'TICKET_STATUS_UPDATED') {
+		const fromStatus = statusLabel(event.data?.fromStatus);
+		const toStatus = statusLabel(event.data?.toStatus);
+
+		if (event.data?.clientLogin) {
+			return tn('ticketStatusChangedForAdmin', {
+				ticketId: event.data?.ticketId ?? '-',
+				clientLogin: event.data.clientLogin,
+				fromStatus,
+				toStatus,
+			});
+		}
+
+		return tn('ticketStatusChangedForClient', {
+			ticketId: event.data?.ticketId ?? '-',
+			fromStatus,
+			toStatus,
+		});
+	}
+
+	return tn('userLoggedInForAdmin', {
+		userLogin,
+		userRole: roleLabel,
+	});
+}
 
 export function Dashboard() {
 	const {t} = useTranslation('agent');
+	const {t: tn} = useTranslation('notifications');
 	const [tickets, setTickets] = useState<TicketType[]>([]);
 	const [notification, setNotification] = useState<string | null>(null);
+	const [notifications, setNotifications] = useState<ClientNotificationItem[]>([]);
+	const hasNotification = useMemo(
+		() => notifications.some((n) => !n.readAt),
+		[notifications],
+	);
+
+	useEffect(() => {
+		let mounted = true;
+		const socket = getSocket();
+
+		const mapFromApi = (row: RawNotification): SystemNotificationEvent => ({
+			id: row.id,
+			code: row.code,
+			createdAt: row.createdAt,
+			readAt: row.readAt,
+			data: row.payload as SystemNotificationEvent['data'],
+		});
+
+		const loadNotifications = async () => {
+			try {
+				const rows = await fetchMyNotifications();
+				if (!mounted) return;
+
+				setNotifications(
+					rows.map((row) => {
+						const event = mapFromApi(row);
+						return {
+							id: event.id,
+							text: mapSystemNotificationText(event, tn),
+							createdAt: event.createdAt,
+							readAt: event.readAt ?? null,
+						};
+					}),
+				);
+			} catch (error) {
+				console.error('Erreur chargement notifications dashboard:', error);
+			}
+		};
+
+		void loadNotifications();
+
+		const onSystemNotification = (event: SystemNotificationEvent) => {
+			const text = mapSystemNotificationText(event, tn);
+			setNotifications((old) =>
+				[
+					{
+						id: event.id,
+						text,
+						createdAt: event.createdAt,
+						readAt: event.readAt ?? null,
+					},
+					...old,
+				].slice(0, 50),
+			);
+		};
+
+		socket.on('systemNotification', onSystemNotification);
+		return () => {
+			mounted = false;
+			socket.off('systemNotification', onSystemNotification);
+		};
+	}, [tn]);
+
+	const handleOpenNotifications = () => {
+		setNotifications((prev) =>
+			prev.map((n) => (n.readAt ? n : { ...n, readAt: new Date().toISOString() })),
+		);
+		void readAllMyNotifications();
+	};
 
 	useEffect(() => {
 		let notificationTimer: ReturnType<typeof setTimeout> | null = null;
@@ -117,7 +272,11 @@ export function Dashboard() {
 						<p className="text-gray-600 mt-1">{t('dashboardSubtitle')}</p>
 					</div>
 					<div className="flex items-center gap-3">
-						{/* ThemeToggle removed since dark mode not used */}
+						<Notification
+							hasNotification={hasNotification}
+							notifications={notifications}
+							onOpen={handleOpenNotifications}
+						/>
 					</div>
 				</div>
 			</div>
