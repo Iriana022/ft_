@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Req, Body, Post } from '@nestjs/common';
+import { Controller, Get, UseGuards, Req, Body, Post, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto'
@@ -19,7 +19,18 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'Compte créé' })
   @ApiResponse({ status: 409, description: 'Email déjà utilisé' })
   async register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
+    try {
+      await this.authService.register(dto);
+      return { ok: true };
+    } catch (error) {
+      if (error instanceof ConflictException) {
+        return {
+          ok: false,
+          message: (error.getResponse() as any)?.message ?? 'Données déjà utilisées',
+        };
+      }
+      throw error;
+    }
   }
 
   @Get('me')
@@ -38,8 +49,19 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Connexion réussie (JWT renvoyé)' })
   @ApiResponse({ status: 401, description: 'Identifiants invalides' })
   async login(@Body() dto: any) {
-    const user = await this.authService.validateLocalUser(dto.email, dto.password);
-    return this.authService.login(user);
+    try {
+      const user = await this.authService.validateLocalUser(dto.email, dto.password);
+      const result = await this.authService.login(user);
+      return { ok: true, ...result };
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        return {
+          ok: false,
+          message: 'Identifiants invalides',
+        };
+      }
+      throw error;
+    }
   }
 
   @Post('select-role')

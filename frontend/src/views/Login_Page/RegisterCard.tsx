@@ -21,7 +21,7 @@ export function RegisterCard() {
 
 	const navigate = useNavigate();
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+	const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		await handleCreateAccount();
 	};
@@ -35,12 +35,22 @@ export function RegisterCard() {
 		setLoading(true);
 
 		try {
-			await api.post('/auth/register', {
+			const response = await api.post('/auth/register', {
 				email,
 				password,
 				login: username,
 				role: selectedRole,
 			});
+
+			if (response.data?.ok === false) {
+				const backendMessage = response.data?.message;
+				if (Array.isArray(backendMessage)) {
+					setError(backendMessage[0]);
+				} else {
+					setError(backendMessage || "Erreur lors de l'inscription");
+				}
+				return;
+			}
 
 			navigate('/login', {
 				state: {message: 'Inscription réussie, veuillez vous connecter !'}

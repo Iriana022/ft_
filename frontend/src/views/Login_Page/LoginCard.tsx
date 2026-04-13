@@ -49,14 +49,23 @@ export function LoginCard() {
 		window.location.href = 'https://localhost:8443/api/auth/google/login?flow=login';
 	};
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+	const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setError('');
 		setLoading(true);
 
 		try {
 			const response = await api.post('/auth/login', {email, password});
+			if (response.data?.ok === false) {
+				setError(response.data?.message || "Identifiants incorrects");
+				return;
+			}
+
 			const {access_token} = response.data;
+			if (!access_token) {
+				setError("Identifiants incorrects");
+				return;
+			}
 
 			localStorage.setItem('access_token', access_token);
 			window.dispatchEvent(new Event('auth-token-updated'));
