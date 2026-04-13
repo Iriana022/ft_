@@ -19,12 +19,21 @@ const decodeJwtPayload = (token: string): Record<string, unknown> | null => {
   }
 };
 
-export const clearAuthStorage = (): void => {
+export const clearAuthStorage = (notify: boolean = true): void => {
+  const hadSessionData =
+    !!localStorage.getItem('access_token') ||
+    !!localStorage.getItem('user_role') ||
+    !!localStorage.getItem('username') ||
+    !!localStorage.getItem('user_avatar');
+
   localStorage.removeItem('access_token');
   localStorage.removeItem('user_role');
   localStorage.removeItem('username');
   localStorage.removeItem('user_avatar');
-  window.dispatchEvent(new Event('auth-token-updated'));
+
+  if (notify && hadSessionData) {
+    window.dispatchEvent(new Event('auth-token-updated'));
+  }
 };
 
 export const isTokenExpired = (token: string | null): boolean => {
@@ -42,7 +51,13 @@ export const isTokenExpired = (token: string | null): boolean => {
 
 export const hasValidSession = (): boolean => {
   const token = localStorage.getItem('access_token');
-  if (!token || isTokenExpired(token)) {
+  if (!token) {
+    // Do not emit auth lifecycle events on public routes when no session exists.
+    clearAuthStorage(false);
+    return false;
+  }
+
+  if (isTokenExpired(token)) {
     clearAuthStorage();
     return false;
   }
