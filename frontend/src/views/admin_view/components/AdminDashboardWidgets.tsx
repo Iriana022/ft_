@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Link} from 'react-router-dom';
 import {RechartsDevtools} from '@recharts/devtools';
@@ -10,6 +10,7 @@ import Separator from '../../../components/login_components/Separator';
 import {type HeroIconType, type Ticket, StatCardType} from '../../../types';
 import {fetchTickets, fetchTicketResolutionHistory, type RawTicket, type TicketResolutionHistoryItem} from '../../../services/tickets';
 import {getSocket} from '../../../services/singleton';
+import {isWithinDateRange} from '../../../services/dateRange';
 import {
 	generateDailyTickets,
 	getPriorityColor,
@@ -89,7 +90,12 @@ function CreatedAndResolvedIndicator(props: CreatedAndResolvedIndicatorProps) {
 	);
 }
 
-export function TicketsActivities() {
+type DateRangeProps = {
+	fromDate?: string;
+	toDate?: string;
+};
+
+export function TicketsActivities({fromDate = '', toDate = ''}: DateRangeProps) {
 	const {t, i18n} = useTranslation('admin');
 	const [tickets, setTickets] = useState<Ticket[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -138,6 +144,18 @@ export function TicketsActivities() {
 		};
 	}, [t]);
 
+	const filteredTickets = useMemo(
+		() => tickets.filter((ticket) => isWithinDateRange(ticket.createdAt, fromDate, toDate)),
+		[tickets, fromDate, toDate],
+	);
+
+	const filteredHistory = useMemo(
+		() => resolutionHistory.filter((item) => isWithinDateRange(item.changedAt, fromDate, toDate)),
+		[resolutionHistory, fromDate, toDate],
+	);
+
+	const dailyTickets = generateDailyTickets(filteredTickets, filteredHistory, i18n.language);
+
 	if (loading) {
 		return <div className="p-4">{t('loadingTickets')}</div>;
 	}
@@ -145,8 +163,6 @@ export function TicketsActivities() {
 	if (error) {
 		return <div className="p-4 text-red-600">{error}</div>;
 	}
-
-	const dailyTickets = generateDailyTickets(tickets, resolutionHistory, i18n.language);
 
 	return (
 		<div className="w-full md:w-[60%] bg-white shadow rounded-md p-5 min-h-[300px]">
@@ -197,7 +213,7 @@ function RecentTicketsHeader() {
 	);
 }
 
-export function RecentTickets() {
+export function RecentTickets({fromDate = '', toDate = ''}: DateRangeProps) {
 	const {t, i18n} = useTranslation('admin');
 	const [tickets, setTickets] = useState<Ticket[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -264,12 +280,13 @@ export function RecentTickets() {
 							<tr>
 								<td colSpan={6} className="text-center py-6 text-red-400">{error}</td>
 							</tr>
-						) : tickets.length === 0 ? (
+						) : tickets.filter((ticket) => isWithinDateRange(ticket.createdAt, fromDate, toDate)).length === 0 ? (
 							<tr>
 								<td colSpan={6} className="text-center py-6 text-gray-400">{t('noTickets')}</td>
 							</tr>
 						) : (
 							[...tickets]
+								.filter((ticket) => isWithinDateRange(ticket.createdAt, fromDate, toDate))
 								.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
 								.slice(0, 5)
 								.map((ticket) => (
