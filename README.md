@@ -2,6 +2,8 @@
 
 # Tikeo - ft_transcendence
 
+![Kermit](kermit.png)
+
 ## Description
 
 **Project name:** Tikeo
@@ -149,75 +151,8 @@ Example redirect URI used by Docker config:
 
 ### Visual Representation
 
-```mermaid
-  USER {
-    int id PK
-    string email UK
-    string login UK
-    string role
-    string googleId UK
-    datetime createdAt
-  }
+![Prisma ERD](prisma-erd.svg)
 
-  TICKET {
-    int id PK
-    string title
-    string description
-    string status
-    string priority
-    int authorId FK
-    int AssignedToId FK
-    int clientUnreadCount
-    int agentUnreadCount
-    datetime createdAt
-    datetime updatedAt
-  }
-
-  CHAT_MESSAGE {
-    int id PK
-    string content
-    bool isFromSupport
-    int ticketId FK
-    int authorId FK
-    datetime createdAt
-  }
-
-  TICKET_INTERNAL_NOTE {
-    int id PK
-    string content
-    int ticketId FK
-    int authorId FK
-    datetime createdAt
-  }
-
-  TICKET_STATUS_HISTORY {
-    int id PK
-    string fromStatus
-    string toStatus
-    int ticketId FK
-    int changedById FK
-    datetime changedAt
-  }
-
-  NOTIFICATION {
-    int id PK
-    string code
-    json payload
-    int recipientId FK
-    datetime createdAt
-    datetime readAt
-  }
-
-  USER ||--o{ TICKET : creates
-  USER o|--o{ TICKET : assigned_to
-  TICKET ||--o{ CHAT_MESSAGE : has_messages
-  USER ||--o{ CHAT_MESSAGE : writes
-  TICKET ||--o{ TICKET_INTERNAL_NOTE : has_internal_notes
-  USER ||--o{ TICKET_INTERNAL_NOTE : writes
-  TICKET ||--o{ TICKET_STATUS_HISTORY : has_status_history
-  USER ||--o{ TICKET_STATUS_HISTORY : changed_by
-  USER ||--o{ NOTIFICATION : receives
-```
 
 ### Tables and Relationships
 
