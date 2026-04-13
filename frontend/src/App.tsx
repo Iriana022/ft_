@@ -2,11 +2,36 @@ import {RouterProvider} from 'react-router-dom'
 import {router} from './router';
 import {useEffect} from 'react';
 import {getSocket} from './services/singleton';
+import api from './services/api';
+import {clearAuthStorage} from './services/auth';
 
 function SocketBootstrap({children}: {children: React.ReactNode}) {
 
 	useEffect(() => {
 		const socket = getSocket();
+		let sessionCheckIntervalId: number | null = null;
+
+		const redirectToLoginIfSignedOut = () => {
+			if (localStorage.getItem('access_token')) {
+				return;
+			}
+
+			if (window.location.pathname !== '/login') {
+				window.location.replace('/login');
+			}
+		};
+
+		const verifySessionAgainstServer = async () => {
+			if (!localStorage.getItem('access_token')) {
+				return;
+			}
+
+			try {
+				await api.get('auth/me');
+			} catch {
+				// 401 is handled by api interceptor, which clears auth storage.
+			}
+		};
 
 		const registerRoleChannel = () => {
 			const token = localStorage.getItem('access_token');
@@ -25,6 +50,7 @@ function SocketBootstrap({children}: {children: React.ReactNode}) {
 				if (socket.connected) {
 					socket.disconnect();
 				}
+				redirectToLoginIfSignedOut();
 				return;
 			}
 
@@ -36,13 +62,15 @@ function SocketBootstrap({children}: {children: React.ReactNode}) {
 			registerRoleChannel();
 		};
 
-		const onAccountDeleted = (payload?: { userId?: number }) => {
-			localStorage.removeItem('access_token');
-			localStorage.removeItem('username');
-			localStorage.removeItem('user_role');
-			localStorage.removeItem('user_avatar');
-			window.dispatchEvent(new Event('auth-token-updated'));
-			window.location.replace('/login');
+		const onAccountDeleted = () => {
+			clearAuthStorage();
+			redirectToLoginIfSignedOut();
+		};
+
+		const onVisibilityChange = () => {
+			if (document.visibilityState === 'visible') {
+				void verifySessionAgainstServer();
+			}
 		};
 		const onConnectError = (err: Error) => console.error('[socket] connect_error:', err.message);
 
@@ -50,14 +78,24 @@ function SocketBootstrap({children}: {children: React.ReactNode}) {
 		socket.on('connect_error', onConnectError);
 		socket.on('accountDeleted', onAccountDeleted);
 		window.addEventListener('auth-token-updated', onAuthTokenUpdated);
+		document.addEventListener('visibilitychange', onVisibilityChange);
+
+		sessionCheckIntervalId = window.setInterval(() => {
+			void verifySessionAgainstServer();
+		}, 15000);
 
 		if (!socket.connected && !!localStorage.getItem('access_token'))
 			socket.connect();
+		void verifySessionAgainstServer();
 		return () => {
 			socket.off('connect', onConnect);
 			socket.off('connect_error', onConnectError);
 			socket.off('accountDeleted', onAccountDeleted);
 			window.removeEventListener('auth-token-updated', onAuthTokenUpdated);
+			document.removeEventListener('visibilitychange', onVisibilityChange);
+			if (sessionCheckIntervalId !== null) {
+				window.clearInterval(sessionCheckIntervalId);
+			}
 		};
 	}, []);
 

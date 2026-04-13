@@ -251,13 +251,23 @@ export class TicketsGateway implements OnGatewayConnection, OnGatewayDisconnect 
             });
 
             const userId = Number(payload?.sub);
-            const role = payload?.role as UserRole | undefined;
-
-            if (!Number.isFinite(userId) || !role) {
+            if (!Number.isFinite(userId)) {
                 throw new WsException('Unauthorized');
             }
 
-            return { userId, role };
+            const user = await this.prisma.user.findUnique({
+                where: { id: userId },
+                select: {
+                    id: true,
+                    role: true,
+                },
+            });
+
+            if (!user) {
+                throw new WsException('Unauthorized');
+            }
+
+            return { userId: user.id, role: user.role };
         } catch {
             throw new WsException('Unauthorized');
         }
