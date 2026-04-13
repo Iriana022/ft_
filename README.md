@@ -4,6 +4,20 @@
 
 ![Kermit](kermit.png)
 
+## Table of Contents
+
+- [Description](#description)
+- [Instructions](#instructions)
+- [Team Information](#team-information)
+- [Project Management](#project-management)
+- [Technical Stack](#technical-stack)
+- [Database Schema](#database-schema)
+- [Features List](#features-list)
+- [Modules](#modules)
+- [Individual Contributions](#individual-contributions)
+- [Resources](#resources)
+- [Additional Notes](#additional-notes)
+
 ## Description
 
 **Project name:** Tikeo
