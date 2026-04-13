@@ -1,5 +1,6 @@
 import {Camera, Globe, Mail, Save, User} from 'lucide-react';
 import {useEffect, useMemo, useRef, useState, type ChangeEvent} from 'react';
+import {useNavigate, useParams} from 'react-router-dom';
 import {getMyProfile, updateMyProfile, uploadMyAvatar} from '../../services/profile';
 import LanguageSelector from '../client_components/LanguageSelector';
 import {useTranslation} from 'react-i18next';
@@ -28,7 +29,13 @@ const DEFAULT_AGENT_AVATAR = '/assets/avatars/avatar2.png';
 
 function Settings() {
 	const {t} = useTranslation('profile');
-	const [activeSection, setActiveSection] = useState<SectionId>('profile');
+	const navigate = useNavigate();
+	const {section} = useParams<{section?: string}>();
+	const validSections: SectionId[] = ['profile', 'account', 'language'];
+	const activeSection: SectionId =
+		section && validSections.includes(section as SectionId)
+			? (section as SectionId)
+			: 'profile';
 	const [profile, setProfile] = useState<ProfileForm>(profileDefaults);
 	const [loadingProfile, setLoadingProfile] = useState(true);
 	const [savingProfile, setSavingProfile] = useState(false);
@@ -41,6 +48,16 @@ function Settings() {
 		{id: 'account', label: t('sectionAccount'), icon: Mail},
 		{id: 'language', label: t('sectionLanguage'), icon: Globe},
 	];
+
+	useEffect(() => {
+		if (!section || !validSections.includes(section as SectionId)) {
+			navigate('/agent/settings/profile', {replace: true});
+		}
+	}, [section, navigate]);
+
+	const goToSection = (id: SectionId) => {
+		navigate(`/agent/settings/${id}`);
+	};
 
 	const avatarUrl = useMemo(() => {
 		if (profile.avatar && profile.avatar.length > 0) return profile.avatar;
@@ -157,7 +174,7 @@ function Settings() {
 						return (
 							<button
 								key={section.id}
-								onClick={() => setActiveSection(section.id)}
+								onClick={() => goToSection(section.id)}
 								className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive ? 'bg-sky/25 text-navy' : 'text-gray-700 hover:bg-sky/10'
 									}`}
 							>
