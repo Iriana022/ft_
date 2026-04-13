@@ -243,7 +243,7 @@ export function Sidebar({currentRole}: SidebarProps) {
 	const dashboardPath = currentRole === UserRole.ADMIN ? '/admin' : '/agent/dashboard';
 
 	return (
-		<aside className="hidden lg:flex w-64 border-r h-screen flex-col bg-navy border-gray-200">
+		<aside className="hidden sticky top-0 left-0 lg:flex w-64 border-r h-screen flex-col bg-navy border-gray-200">
 			<div
 				className="p-4 flex items-center justify-start">
 				<TikeoLogo href={dashboardPath} color="text-white" size="text-4xl" />
