@@ -1,5 +1,5 @@
-import {LayoutDashboard, Ticket, Users, Settings, LogOut} from 'lucide-react';
-import {useEffect, useState, useMemo} from 'react';
+import {LayoutDashboard, Ticket, Users, Settings, LogOut, X} from 'lucide-react';
+import {useState, useEffect, useMemo} from 'react';
 import {useLocation, useNavigate} from 'react-router-dom';
 import {UserRole} from '../../types';
 import TikeoLogo from '../client_components/TikeoLogo';
@@ -17,8 +17,10 @@ import {
 
 const DEFAULT_AGENT_AVATAR = '/assets/avatars/avatar2.png';
 
-interface SidebarProps {
+interface HamburgerMenuProps {
 	currentRole: UserRole;
+	isOpen: boolean;
+	onClose: () => void;
 }
 
 type SystemNotificationCode =
@@ -103,8 +105,7 @@ function mapSystemNotificationText(
 }
 
 
-
-export function Sidebar({currentRole}: SidebarProps) {
+export function HamburgerMenu({currentRole, isOpen, onClose}: HamburgerMenuProps) {
 	const {t} = useTranslation('agent');
 	const navigate = useNavigate();
 	const location = useLocation()
@@ -232,6 +233,7 @@ export function Sidebar({currentRole}: SidebarProps) {
 		);
 		void readAllMyNotifications();
 	};
+
 	const menuItems = [
 		{id: 'dashboard', label: t('sidebarDashboard'), icon: LayoutDashboard, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT]},
 		{id: 'tickets', label: t('sidebarTickets'), icon: Ticket, roles: [UserRole.ADMIN, UserRole.AGENT, UserRole.CLIENT]},
@@ -242,66 +244,85 @@ export function Sidebar({currentRole}: SidebarProps) {
 	const filteredItems = menuItems.filter(item => item.roles.includes(currentRole));
 	const dashboardPath = currentRole === UserRole.ADMIN ? '/admin' : '/agent/dashboard';
 
+	const handleNavClick = (targetPath: string) => {
+		navigate(targetPath);
+		onClose();
+	};
+
 	return (
-		<aside className="hidden lg:flex w-64 border-r h-screen flex-col bg-navy border-gray-200">
+		<>
 			<div
-				className="p-4 flex items-center justify-start">
-				<TikeoLogo href={dashboardPath} color="text-white" size="text-4xl" />
-			</div>
-			{/* Navigation */}
-			<nav className="flex-1 p-3 lg:p-4 overflow-x-auto">
-				<div className="hidden">
-					<Notification hasNotification={hasNotification} notifications={notifications} onOpen={handleOpenNotifications} />
-				</div>
-				<div className="flex lg:flex-col gap-2 min-w-max lg:min-w-0">
-					{
-						filteredItems.map((item) => {
-							const Icon = item.icon;
-							const targetPath = `/agent/${item.id}`;
-							const isActive = location.pathname === targetPath;
+				className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+				onClick={onClose}
+			/>
+			<div
+				className={`fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-navy z-50 transform transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+			>
+				<div className="flex flex-col h-full">
+					<div className="p-4 flex items-center justify-between border-b border-white/10">
+						<TikeoLogo href={dashboardPath} color="text-white" size="text-4xl" />
+						<button
+							onClick={onClose}
+							className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+						>
+							<X className="w-6 h-6" />
+						</button>
+					</div>
 
-							return (
-								<button
-									key={item.id}
-									onClick={() => navigate(targetPath)}
-									className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors whitespace-nowrap
-									${isActive
-											? 'bg-sky/30 text-white'
-											: 'text-white hover:bg-dark/15'
-										}
-									`}
-								>
-									<Icon className="w-5 h-5" />
-									<span className="font-medium">{item.label}</span>
-								</button>
-							);
-						})
-					}
-				</div>
-			</nav >
+					<nav className="flex-1 p-4 overflow-y-auto">
+						<div className="hidden">
+							<Notification hasNotification={hasNotification} notifications={notifications} onOpen={handleOpenNotifications} />
+						</div>
+						<div className="space-y-1">
+							{filteredItems.map((item) => {
+								const Icon = item.icon;
+								const targetPath = `/agent/${item.id}`;
+								const isActive = location.pathname === targetPath;
 
-			<div className="p-4 border-t border-gray-100/25">
-				<div className="flex items-center gap-3 mb-3">
-					<img
-						src={avatar}
-						alt="User"
-						className="w-10 h-10 rounded-full"
-						onError={(e) => {
-							e.currentTarget.src = DEFAULT_AGENT_AVATAR;
-						}}
-					/>
-					<div className="flex-1">
-						<p className="font-medium text-sm text-white">{username}</p>
-						<p className="text-xs capitalize text-white/60">{currentRole.toLowerCase()}</p>
+								return (
+									<button
+										key={item.id}
+										onClick={() => handleNavClick(targetPath)}
+										className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 whitespace-nowrap
+										${isActive
+												? 'bg-sky/30 text-white shadow-sm'
+												: 'text-white/70 hover:text-white hover:bg-white/10'
+											}
+										`}
+									>
+										<Icon className="w-5 h-5" />
+										<span className="font-medium">{item.label}</span>
+									</button>
+								);
+							})}
+						</div>
+					</nav>
+
+					<div className="p-4 border-t border-white/10">
+						<div className="flex items-center gap-3 mb-4">
+							<img
+								src={avatar}
+								alt="User"
+								className="w-10 h-10 rounded-full border-2 border-white/20"
+								onError={(e) => {
+									e.currentTarget.src = DEFAULT_AGENT_AVATAR;
+								}}
+							/>
+							<div className="flex-1 min-w-0">
+								<p className="font-medium text-sm text-white truncate">{username}</p>
+								<p className="text-xs capitalize text-white/50 truncate">{currentRole.toLowerCase()}</p>
+							</div>
+						</div>
+						<button
+							onClick={handleLogout}
+							className="w-full flex items-center gap-2 px-4 py-2.5 text-sm rounded-lg transition-all duration-200 text-white/70 hover:text-white hover:bg-red-500/20"
+						>
+							<LogOut className="w-4 h-4" />
+							<span>{t('logout')}</span>
+						</button>
 					</div>
 				</div>
-				<button
-					onClick={handleLogout}
-					className="w-full flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors text-white hover:bg-sky/50">
-					<LogOut className="w-4 h-4" />
-					<span>{t('logout')}</span>
-				</button>
-			</div >
-		</aside >
+			</div>
+		</>
 	);
 }
