@@ -29,7 +29,6 @@ function SocketBootstrap({children}: {children: React.ReactNode}) {
 			try {
 				await api.get('auth/me');
 			} catch {
-				// 401 is handled by api interceptor, which clears auth storage.
 			}
 		};
 

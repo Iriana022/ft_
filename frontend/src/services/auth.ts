@@ -52,7 +52,6 @@ export const isTokenExpired = (token: string | null): boolean => {
 export const hasValidSession = (): boolean => {
   const token = localStorage.getItem('access_token');
   if (!token) {
-    // Do not emit auth lifecycle events on public routes when no session exists.
     clearAuthStorage(false);
     return false;
   }

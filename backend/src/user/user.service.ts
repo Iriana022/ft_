@@ -30,7 +30,6 @@ export class UserService {
             pathname.startsWith('/api/uploads/') ||
             pathname.startsWith('/uploads/');
 
-        // Legacy values can be bare filenames in DB.
         const filename = basename(pathname);
         const isManagedByName = filename.startsWith('avatar-');
 
