@@ -1,5 +1,6 @@
-import {Camera, Eye, EyeOff, Globe, Lock, Mail, Save, Shield, User} from 'lucide-react';
+import {Camera, Globe, Mail, Save, User} from 'lucide-react';
 import {useEffect, useMemo, useRef, useState, type ChangeEvent} from 'react';
+import {useNavigate, useParams} from 'react-router-dom';
 import {getMyProfile, updateMyProfile, uploadMyAvatar} from '../../services/profile';
 import LanguageSelector from '../client_components/LanguageSelector';
 import {useTranslation} from 'react-i18next';
@@ -8,7 +9,7 @@ import {type ClientNotificationItem} from '../client_components/NotificationView
 import {getSocket} from '../../services/singleton';
 import {fetchMyNotifications, readAllMyNotifications, type RawNotification} from '../../services/tickets';
 
-type SectionId = 'profile' | 'account' | 'security' | 'language';
+type SectionId = 'profile' | 'account' | 'language';
 
 type SystemNotificationCode =
 	| 'NEW_CLIENT_TICKET'
@@ -109,17 +110,20 @@ const profileDefaults: ProfileForm = {
 	role: '',
 };
 
+const DEFAULT_AGENT_AVATAR = '/assets/avatars/avatar2.png';
+
 function Settings() {
 	const {t, i18n} = useTranslation('profile');
 	const {t: tn} = useTranslation('notifications');
 	const [activeSection, setActiveSection] = useState<SectionId>('profile');
+	const navigate = useNavigate();
+	const {section} = useParams<{section?: string}>();
+	const validSections: SectionId[] = ['profile', 'account', 'language'];
 	const [profile, setProfile] = useState<ProfileForm>(profileDefaults);
 	const [loadingProfile, setLoadingProfile] = useState(true);
 	const [savingProfile, setSavingProfile] = useState(false);
 	const [feedback, setFeedback] = useState<string>('');
 	const [error, setError] = useState<string>('');
-	const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-	const [showNewPassword, setShowNewPassword] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const [notifications, setNotifications] = useState<ClientNotificationItem[]>([]);
@@ -139,21 +143,22 @@ function Settings() {
 	const sections: Array<{id: SectionId; label: string; icon: typeof User}> = [
 		{id: 'profile', label: t('sectionProfile'), icon: User},
 		{id: 'account', label: t('sectionAccount'), icon: Mail},
-		{id: 'security', label: t('sectionSecurity'), icon: Shield},
 		{id: 'language', label: t('sectionLanguage'), icon: Globe},
 	];
 
+	useEffect(() => {
+		if (!section || !validSections.includes(section as SectionId)) {
+			navigate('/agent/settings/profile', {replace: true});
+		}
+	}, [section, navigate]);
 
-	const [securityForm, setSecurityForm] = useState({
-		currentPassword: '',
-		newPassword: '',
-		confirmPassword: '',
-		twoFactorEnabled: false,
-	});
+	const goToSection = (id: SectionId) => {
+		navigate(`/agent/settings/${id}`);
+	};
 
 	const avatarUrl = useMemo(() => {
 		if (profile.avatar && profile.avatar.length > 0) return profile.avatar;
-		return 'https://api.dicebear.com/7.x/avataaars/svg?seed=current';
+		return DEFAULT_AGENT_AVATAR;
 	}, [profile.avatar]);
 
 	useEffect(() => {
@@ -380,7 +385,14 @@ function Settings() {
 								<>
 									<div className="mb-6 flex items-center gap-4">
 										<div className="w-20 h-20 overflow-hidden rounded-full bg-gray-100 shrink-0">
-											<img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover object-center" />
+											<img
+												src={avatarUrl}
+												alt="Avatar"
+												className="w-full h-full object-cover object-center"
+												onError={(e) => {
+													e.currentTarget.src = DEFAULT_AGENT_AVATAR;
+												}}
+											/>
 										</div>
 										<button
 											type="button"
@@ -487,71 +499,6 @@ function Settings() {
 								>
 									<Save className="w-4 h-4" />
 									{savingProfile ? t('saving') : t('saveChanges')}
-								</button>
-							</div>
-						</div>
-					)}
-
-					{activeSection === 'security' && (
-						<div className="rounded-xl border p-6 bg-white border-gray-200 space-y-6">
-							<h2 className="text-xl font-bold text-gray-900">{t('securityTitle')}</h2>
-
-							<div>
-								<label className="block text-sm font-medium mb-2 text-gray-700">{t('currentPassword')}</label>
-								<div className="relative">
-									<input
-										type={showCurrentPassword ? 'text' : 'password'}
-										value={securityForm.currentPassword}
-										onChange={(e) => setSecurityForm((prev) => ({...prev, currentPassword: e.target.value}))}
-										className="w-full px-4 py-2 rounded-lg border bg-white border-gray-300 text-gray-900 focus:border-[#355872] focus:outline-none focus:ring-2 focus:ring-[#355872]/20"
-									/>
-									<button
-										type="button"
-										onClick={() => setShowCurrentPassword((prev) => !prev)}
-										className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-									>
-										{showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-									</button>
-								</div>
-							</div>
-
-							<div>
-								<label className="block text-sm font-medium mb-2 text-gray-700">{t('newPassword')}</label>
-								<div className="relative">
-									<input
-										type={showNewPassword ? 'text' : 'password'}
-										value={securityForm.newPassword}
-										onChange={(e) => setSecurityForm((prev) => ({...prev, newPassword: e.target.value}))}
-										className="w-full px-4 py-2 rounded-lg border bg-white border-gray-300 text-gray-900 focus:border-[#355872] focus:outline-none focus:ring-2 focus:ring-[#355872]/20"
-									/>
-									<button
-										type="button"
-										onClick={() => setShowNewPassword((prev) => !prev)}
-										className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-									>
-										{showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-									</button>
-								</div>
-							</div>
-
-							<div>
-								<label className="block text-sm font-medium mb-2 text-gray-700">{t('confirmNewPassword')}</label>
-								<input
-									type="password"
-									value={securityForm.confirmPassword}
-									onChange={(e) => setSecurityForm((prev) => ({...prev, confirmPassword: e.target.value}))}
-									className="w-full px-4 py-2 rounded-lg border bg-white border-gray-300 text-gray-900 focus:border-[#355872] focus:outline-none focus:ring-2 focus:ring-[#355872]/20"
-								/>
-							</div>
-
-							<div className="flex justify-end">
-								<button
-									type="button"
-									onClick={() => handleSaveLocalSection(t('sectionSecurity'))}
-									className="px-6 py-2 bg-navy text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium flex items-center gap-2"
-								>
-									<Lock className="w-4 h-4" />
-									{t('updatePassword')}
 								</button>
 							</div>
 						</div>

@@ -10,13 +10,47 @@ import { TicketsGateway } from 'src/tickets/tickets.gateway';
 export class UserService {
     constructor(private prisma: PrismaService,
         private ticketsGateway: TicketsGateway) { }
-    private readonly uploadsPrefix = '/api/uploads/';
-    private isManagedUploadAvatar(avatar: string | null | undefined) {
-        return !!avatar && avatar.startsWith(this.uploadsPrefix);
+
+    private extractManagedUploadFilename(avatar: string | null | undefined): string | null {
+        if (!avatar) return null;
+
+        const raw = avatar.trim();
+        if (!raw) return null;
+
+        let pathname = raw;
+        if (/^https?:\/\//i.test(raw)) {
+            try {
+                pathname = new URL(raw).pathname;
+            } catch {
+                return null;
+            }
+        }
+
+        const isManagedByPrefix =
+            pathname.startsWith('/api/uploads/') ||
+            pathname.startsWith('/uploads/');
+
+        // Legacy values can be bare filenames in DB.
+        const filename = basename(pathname);
+        const isManagedByName = filename.startsWith('avatar-');
+
+        if (!isManagedByPrefix && !isManagedByName) {
+            return null;
+        }
+
+        return filename || null;
     }
 
-    private toUploadDiskPath(avatarUrl: string) {
-        return join(process.cwd(), 'uploads', basename(avatarUrl));
+    private toUploadDiskPath(filename: string) {
+        return join(process.cwd(), 'uploads', filename);
+    }
+
+    private async deleteManagedAvatarFile(avatar: string | null | undefined) {
+        const filename = this.extractManagedUploadFilename(avatar);
+        if (!filename) return;
+
+        const avatarPath = this.toUploadDiskPath(filename);
+        await unlink(avatarPath).catch(() => undefined);
     }
 
     private async hardDeleteUserAndLinkedTickets(userId: number) {
@@ -124,9 +158,8 @@ export class UserService {
             },
         });
 
-        if (oldAvatar && oldAvatar !== avatar && this.isManagedUploadAvatar(oldAvatar)) {
-            const oldPath = this.toUploadDiskPath(oldAvatar);
-            await unlink(oldPath).catch(() => undefined);
+        if (oldAvatar && oldAvatar !== avatar) {
+            await this.deleteManagedAvatarFile(oldAvatar);
         }
         if (updatedUser.role === UserRole.CLIENT || updatedUser.role === UserRole.AGENT) {
             void this.ticketsGateway.emitAdminNotificationUserProfileUpdated({
@@ -150,10 +183,7 @@ export class UserService {
         await this.hardDeleteUserAndLinkedTickets(userId);
         this.ticketsGateway.emitUserDeleted(userId);
 
-        if (avatarToDelete && this.isManagedUploadAvatar(avatarToDelete)) {
-            const avatarPath = this.toUploadDiskPath(avatarToDelete);
-            await unlink(avatarPath).catch(() => undefined);
-        }
+        await this.deleteManagedAvatarFile(avatarToDelete);
     }
 
     async deleteUserByAdmin(adminId: number, targetUserId: number, adminRole: UserRole) {
@@ -183,10 +213,7 @@ export class UserService {
         await this.hardDeleteUserAndLinkedTickets(targetUserId);
         this.ticketsGateway.emitUserDeleted(targetUserId);
 
-        if (avatarToDelete && this.isManagedUploadAvatar(avatarToDelete)) {
-            const avatarPath = this.toUploadDiskPath(avatarToDelete);
-            await unlink(avatarPath).catch(() => undefined);
-        }
+        await this.deleteManagedAvatarFile(avatarToDelete);
     }
 
     async getMyNotifications(userId: number) {
