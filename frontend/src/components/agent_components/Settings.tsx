@@ -194,7 +194,9 @@ function Settings() {
 							) : (
 								<>
 									<div className="mb-6 flex items-center gap-4">
-										<img src={avatarUrl} alt="Avatar" className="w-20 h-20 rounded-full" />
+										<div className="w-20 h-20 overflow-hidden rounded-full bg-gray-100 shrink-0">
+											<img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover object-center" />
+										</div>
 										<button
 											type="button"
 											onClick={handleAvatarClick}
