@@ -69,6 +69,7 @@ export interface TicketType {
 	description: string,
 	status: TicketStatus,
 	priority: TicketPriority,
+	createdAt: Date,
 	hasMessage: boolean,
 	clientUnreadCount: number
 }

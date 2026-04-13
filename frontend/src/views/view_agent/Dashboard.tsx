@@ -13,6 +13,8 @@ import {
 import {useTranslation} from 'react-i18next';
 import Notification from '../../components/client_components/Notification';
 import {type ClientNotificationItem} from '../../components/client_components/NotificationView';
+import DateRangeFilter from '../../components/common/DateRangeFilter';
+import {isWithinDateRange} from '../../services/dateRange';
 
 type SystemNotificationCode =
 	| 'NEW_CLIENT_TICKET'
@@ -104,6 +106,8 @@ export function Dashboard() {
 	const [notification, setNotification] = useState<string | null>(null);
 	const [showAllTickets, setShowAllTickets] = useState(false);
 	const [notifications, setNotifications] = useState<ClientNotificationItem[]>([]);
+	const [fromDate, setFromDate] = useState('');
+	const [toDate, setToDate] = useState('');
 	const hasNotification = useMemo(
 		() => notifications.some((n) => !n.readAt),
 		[notifications],
@@ -257,7 +261,12 @@ export function Dashboard() {
 		};
 	}, []);
 
-	const stats = useMemo(() => getTicketStats(tickets), [tickets]);
+	const filteredTickets = useMemo(
+		() => tickets.filter((ticket) => isWithinDateRange(ticket.createdAt, fromDate, toDate)),
+		[tickets, fromDate, toDate],
+	);
+
+	const stats = useMemo(() => getTicketStats(filteredTickets), [filteredTickets]);
 
 	return (
 		<div className="flex-1 overflow-auto bg-cream">
@@ -294,6 +303,17 @@ export function Dashboard() {
 
 			{/* Content */}
 			<div className="p-4 sm:p-6 lg:p-8 space-y-6">
+				<DateRangeFilter
+					fromDate={fromDate}
+					toDate={toDate}
+					onFromDateChange={setFromDate}
+					onToDateChange={setToDate}
+					onClear={() => {
+						setFromDate('');
+						setToDate('');
+					}}
+				/>
+
 				{/* Stats Cards */}
 				<div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
 					<StatCard
@@ -324,7 +344,7 @@ export function Dashboard() {
 
 				{/* Recent Tickets */}
 				<TicketList
-					tickets={tickets}
+					tickets={filteredTickets}
 					maxItems={showAllTickets ? undefined : 4}
 					onViewAll={() => setShowAllTickets(true)}
 				/>

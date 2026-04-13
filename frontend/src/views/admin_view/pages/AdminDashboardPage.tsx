@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TicketIcon, UsersIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { type Ticket, type User, TicketStatus, StatCardType } from '../../../types';
@@ -6,11 +6,15 @@ import { fetchTickets, fetchUsers, type RawTicket } from '../../../services/tick
 import { getSocket } from '../../../services/singleton';
 import { upsertTicketFromSocket } from '../adminHelpers';
 import { StatCard, TicketsActivities, RecentTickets } from '../components/AdminDashboardWidgets';
+import DateRangeFilter from '../../../components/common/DateRangeFilter';
+import { isWithinDateRange } from '../../../services/dateRange';
 
 export function AdminDashboard() {
 	const { t } = useTranslation('admin');
 	const [tickets, setTickets] = useState<Ticket[]>([]);
 	const [users, setUsers] = useState<User[]>([]);
+	const [fromDate, setFromDate] = useState('');
+	const [toDate, setToDate] = useState('');
 
 	const loadTickets = async () => {
 		try {
@@ -83,15 +87,37 @@ export function AdminDashboard() {
 		};
 	}, []);
 
-	const openTickets = tickets.filter((ticket) => ticket.status === TicketStatus.OPEN);
-	const closedTickets = tickets.filter((ticket) => ticket.status === TicketStatus.CLOSED);
+	const filteredTickets = useMemo(
+		() => tickets.filter((ticket) => isWithinDateRange(ticket.createdAt, fromDate, toDate)),
+		[tickets, fromDate, toDate],
+	);
+
+	const filteredUsers = useMemo(
+		() => users.filter((user) => isWithinDateRange(user.createdAt, fromDate, toDate)),
+		[users, fromDate, toDate],
+	);
+
+	const openTickets = filteredTickets.filter((ticket) => ticket.status === TicketStatus.OPEN);
+	const closedTickets = filteredTickets.filter((ticket) => ticket.status === TicketStatus.CLOSED);
 
 	return (
 		<div className="p-4">
+			<div className="mb-4">
+				<DateRangeFilter
+					fromDate={fromDate}
+					toDate={toDate}
+					onFromDateChange={setFromDate}
+					onToDateChange={setToDate}
+					onClear={() => {
+						setFromDate('');
+						setToDate('');
+					}}
+				/>
+			</div>
 			<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 				<StatCard
 					title={t('totalTickets')}
-					count={tickets.length}
+					count={filteredTickets.length}
 					icon={TicketIcon}
 					type={StatCardType.TOTAL_TICKET}
 				/>
@@ -109,15 +135,15 @@ export function AdminDashboard() {
 				/>
 				<StatCard
 					title={t('users')}
-					count={users.length}
+					count={filteredUsers.length}
 					icon={UsersIcon}
 					type={StatCardType.USERS}
 				/>
 			</div>
 			<div className="flex flex-col md:flex-row items-center mt-6 gap-4">
-				<TicketsActivities />
+				<TicketsActivities fromDate={fromDate} toDate={toDate} />
 			</div>
-			<RecentTickets />
+			<RecentTickets fromDate={fromDate} toDate={toDate} />
 		</div>
 	);
 }

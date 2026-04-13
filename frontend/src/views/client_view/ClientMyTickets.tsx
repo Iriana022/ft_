@@ -4,10 +4,12 @@ import Ticket from "../../components/client_components/Ticket";
 import SearchInput from "../../components/client_components/SearchInput";
 import TicketFilter, {type TicketFilterOption} from "../../components/client_components/TicketFilter";
 import CreateTicketView from '../../components/client_components/CreateTicketView';
+import DateRangeFilter from '../../components/common/DateRangeFilter';
 import {fetchMyTicketsForClientView} from '../../services/tickets';
 import {type TicketType, TicketPriority, TicketStatus} from '../../types';
 import {getSocket} from '../../services/singleton';
 import {useTranslation} from 'react-i18next';
+import {isWithinDateRange} from '../../services/dateRange';
 
 const noneTickets = '/assets/none_tickets.png';
 
@@ -33,6 +35,8 @@ function ClientMyTickets() {
 	const [searchTerm, setSearchTerm] = useState('');
 	const [currentFilterStatus, setCurrentFilterStatus] = useState<TicketStatus | null>(null);
 	const [currentFilterPriority, setCurrentFilterPriority] = useState<TicketPriority | null>(null);
+	const [fromDate, setFromDate] = useState('');
+	const [toDate, setToDate] = useState('');
 
 	const [tickets, setTickets] = useState<TicketType[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
@@ -51,10 +55,11 @@ function ClientMyTickets() {
 
 			const matchesStatus = currentFilterStatus === null || ticket.status === currentFilterStatus;
 			const matchesPriority = currentFilterPriority === null || ticket.priority === currentFilterPriority;
+			const matchesDate = isWithinDateRange(ticket.createdAt, fromDate, toDate);
 
-			return matchesSearch && matchesStatus && matchesPriority;
+			return matchesSearch && matchesStatus && matchesPriority && matchesDate;
 		});
-	}, [tickets, searchTerm, currentFilterStatus, currentFilterPriority]);
+	}, [tickets, searchTerm, currentFilterStatus, currentFilterPriority, fromDate, toDate]);
 
 	const currentFilterStatusLabel = status.find((element) => element.value === currentFilterStatus)?.label ?? t('all');
 	const currentFilterPriorityLabel = priorities.find((element) => element.value === currentFilterPriority)?.label ?? t('all');
@@ -137,6 +142,18 @@ function ClientMyTickets() {
 						<SearchInput value={searchTerm} onChange={setSearchTerm} />
 						<TicketFilter label={t('filterStatus')} list={status} currentFilterElement={currentFilterStatusLabel} handleSelect={handleSelectStatus} />
 						<TicketFilter label={t('filterPriority')} list={priorities} currentFilterElement={currentFilterPriorityLabel} handleSelect={handleSelectPriority} />
+					</div>
+					<div className="mt-3">
+						<DateRangeFilter
+							fromDate={fromDate}
+							toDate={toDate}
+							onFromDateChange={setFromDate}
+							onToDateChange={setToDate}
+							onClear={() => {
+								setFromDate('');
+								setToDate('');
+							}}
+						/>
 					</div>
 					{
 						isLoading ? (

@@ -172,6 +172,7 @@ const mapTicketToClientTicket = (ticket: Ticket): TicketType => ({
 	description: ticket.description,
 	status: ticket.status,
 	priority: ticket.priority,
+	createdAt: ticket.createdAt,
 	clientUnreadCount: ticket.clientUnreadCount,
 	hasMessage: ticket.clientUnreadCount > 0,
 });

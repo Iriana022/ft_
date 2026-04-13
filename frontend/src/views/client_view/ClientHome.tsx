@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import Separator from '../../components/login_components/Separator';
 import ContainerComp from '../../layout/layout_client/Container';
 import ClientHomeHeroSection from '../../components/client_components/ClientHomeHeroSection';
@@ -7,10 +7,14 @@ import {fetchMyTicketsForClientView} from '../../services/tickets';
 import type {TicketType} from '../../types';
 import {TicketStatus} from '../../types';
 import {getSocket} from '../../services/singleton';
+import DateRangeFilter from '../../components/common/DateRangeFilter';
+import {isWithinDateRange} from '../../services/dateRange';
 
 function ClientHome() {
 	const [tickets, setTickets] = useState<TicketType[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
+	const [fromDate, setFromDate] = useState('');
+	const [toDate, setToDate] = useState('');
 
 	const loadTickets = useCallback(async () => {
 		try {
@@ -57,6 +61,11 @@ function ClientHome() {
 		};
 	}, [loadTickets]);
 
+	const filteredTickets = useMemo(
+		() => tickets.filter((ticket) => isWithinDateRange(ticket.createdAt, fromDate, toDate)),
+		[tickets, fromDate, toDate],
+	);
+
 	return (
 		<div>
 			<ContainerComp>
@@ -64,7 +73,19 @@ function ClientHome() {
 			</ContainerComp>
 			<Separator />
 			<ContainerComp>
-				<ClientHomeMyTicketsSection tickets={tickets} isLoading={isLoading} />
+				<div className="py-4">
+					<DateRangeFilter
+						fromDate={fromDate}
+						toDate={toDate}
+						onFromDateChange={setFromDate}
+						onToDateChange={setToDate}
+						onClear={() => {
+							setFromDate('');
+							setToDate('');
+						}}
+					/>
+				</div>
+				<ClientHomeMyTicketsSection tickets={filteredTickets} isLoading={isLoading} />
 			</ContainerComp>
 		</div>
 	);
