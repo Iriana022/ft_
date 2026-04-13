@@ -24,6 +24,8 @@ const profileDefaults: ProfileForm = {
 	role: '',
 };
 
+const DEFAULT_AGENT_AVATAR = '/assets/avatars/avatar2.png';
+
 function Settings() {
 	const {t} = useTranslation('profile');
 	const [activeSection, setActiveSection] = useState<SectionId>('profile');
@@ -42,7 +44,7 @@ function Settings() {
 
 	const avatarUrl = useMemo(() => {
 		if (profile.avatar && profile.avatar.length > 0) return profile.avatar;
-		return 'https://api.dicebear.com/7.x/avataaars/svg?seed=current';
+		return DEFAULT_AGENT_AVATAR;
 	}, [profile.avatar]);
 
 	useEffect(() => {
@@ -183,7 +185,14 @@ function Settings() {
 								<>
 									<div className="mb-6 flex items-center gap-4">
 										<div className="w-20 h-20 overflow-hidden rounded-full bg-gray-100 shrink-0">
-											<img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover object-center" />
+											<img
+												src={avatarUrl}
+												alt="Avatar"
+												className="w-full h-full object-cover object-center"
+												onError={(e) => {
+													e.currentTarget.src = DEFAULT_AGENT_AVATAR;
+												}}
+											/>
 										</div>
 										<button
 											type="button"
