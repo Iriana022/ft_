@@ -107,6 +107,7 @@ function mapSystemNotificationText(
 
 export function HamburgerMenu({currentRole, isOpen, onClose}: HamburgerMenuProps) {
 	const {t} = useTranslation('agent');
+	const {t: tc} = useTranslation('common');
 	const navigate = useNavigate();
 	const location = useLocation()
 	const username = localStorage.getItem('username') || t('defaultUser');
@@ -302,7 +303,7 @@ export function HamburgerMenu({currentRole, isOpen, onClose}: HamburgerMenuProps
 						<div className="flex items-center gap-3 mb-4">
 							<img
 								src={avatar}
-								alt="User"
+								alt={tc('userAvatar')}
 								className="w-10 h-10 rounded-full border-2 border-white/20"
 								onError={(e) => {
 									e.currentTarget.src = DEFAULT_AGENT_AVATAR;

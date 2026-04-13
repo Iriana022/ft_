@@ -39,7 +39,7 @@ function LegalDocument(props: LegalDocumentProps) {
 	const homeRoute = getHomeRouteByRole(getStoredUserRole());
 
 	return (
-		<main className="min-h-screen py-8 md:py-12">
+		<main className="min-h-screen pt-25 pb-8 md:py-12">
 			<Link to={homeRoute} className="absolute top-10 left-10 inline-flex w-fit items-center rounded-md border border-gray-300 px-4 py-2 text-xs md:text-sm font-medium text-navy hover:bg-sky/25">
 				{'<'} {t('shared.backToApp')}
 			</Link>

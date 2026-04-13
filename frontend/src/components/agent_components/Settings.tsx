@@ -115,6 +115,7 @@ const DEFAULT_AGENT_AVATAR = '/assets/avatars/avatar2.png';
 function Settings() {
 	const {t, i18n} = useTranslation('profile');
 	const {t: tn} = useTranslation('notifications');
+	const {t: tc} = useTranslation('common');
 	const [activeSection, setActiveSection] = useState<SectionId>('profile');
 	const navigate = useNavigate();
 	const {section} = useParams<{section?: string}>();
@@ -387,7 +388,7 @@ function Settings() {
 										<div className="w-20 h-20 overflow-hidden rounded-full bg-gray-100 shrink-0">
 											<img
 												src={avatarUrl}
-												alt="Avatar"
+												alt={tc('userAvatar')}
 												className="w-full h-full object-cover object-center"
 												onError={(e) => {
 													e.currentTarget.src = DEFAULT_AGENT_AVATAR;

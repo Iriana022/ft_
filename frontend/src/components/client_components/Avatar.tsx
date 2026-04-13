@@ -1,3 +1,5 @@
+import {useTranslation} from 'react-i18next';
+
 interface AvatarProps {
 	src: string,
 	size?: "xs" | "sm" | "md" | "lg" | "xl",
@@ -12,6 +14,8 @@ const sizes = {
 };
 
 function Avatar({src, size = "md"}: AvatarProps) {
+	const {t: tc} = useTranslation('common');
+
 	return (
 		<div
 			className={`${sizes[size]} border border-2 border-sky
@@ -19,7 +23,7 @@ function Avatar({src, size = "md"}: AvatarProps) {
 			block rounded-full overflow-hidden group`}
 		>
 			<img
-				alt="User avatar"
+				alt={tc('userAvatar')}
 				src={src}
 				className="w-full h-full object-cover transition hover:scale-108"
 			/>

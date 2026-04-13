@@ -25,12 +25,12 @@ function ClientHomeMyTicketsSection(props: ClientHomeMyTicketsSectionProps) {
 			<div className="flex flex-col gap-10 md:gap-0 md:flex-row items-center">
 				<div className="md:w-[60%] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5">
 					{isLoading ? (
-						<p className="text-sm text-gray-500">Chargement des tickets...</p>
+						<p className="text-sm text-gray-500">{t_client("loadingTickets")}</p>
 					) : tickets.length === 0 ? (
 						<div className="flex flex-col items-center justify-center col-span-full py-10 text-gray-400">
 							<img
 								src={noneTicket}
-								alt="Aucun ticket"
+								alt={t_client("noTicketsImageAlt")}
 								className="w-42 h-42 mb-4"
 							/>
 							<p>{t_client("noTickets")}</p>
