@@ -4,6 +4,8 @@ import {MagnifyingGlassIcon} from '@heroicons/react/24/solid';
 import {TrashIcon} from '@heroicons/react/24/outline';
 import {type User, UserRole} from '../../../types';
 import {deleteUserByAdmin, fetchUsers} from '../../../services/tickets';
+import {getSocket} from '../../../services/singleton';
+import {type SystemNotificationEvent} from '../adminHelpers';
 
 function getRoleString(role: UserRole, authT: (key: string) => string, adminT: (key: string) => string): string {
 	let roleString = '';
@@ -68,20 +70,63 @@ export function AdminUsers() {
 	}, [authT, searchTerm, t, users]);
 
 	useEffect(() => {
+		let mounted = true;
+
 		const loadUsers = async () => {
 			try {
 				setLoading(true);
 				const data = await fetchUsers();
+				if (!mounted) return;
 				setUsers(data);
 				setError(null);
 			} catch (e) {
+				if (!mounted) return;
 				setError(t('loadUsersError'));
 			} finally {
+				if (!mounted) return;
 				setLoading(false);
 			}
 		};
 
 		void loadUsers();
+
+		const socket = getSocket();
+
+		const onSystemNotification = (event: SystemNotificationEvent) => {
+			if (event.code === 'USER_PROFILE_UPDATED' || event.code === 'USER_LOGGED_IN') {
+				void loadUsers();
+			}
+		};
+
+		const onNewTicket = () => {
+			void loadUsers();
+		};
+
+		const onAdminUserDeleted = (payload?: { userId?: number }) => {
+			if (typeof payload?.userId === 'number') {
+				setUsers((prev) => prev.filter((user) => user.id !== payload.userId));
+				return;
+			}
+
+			void loadUsers();
+		};
+
+		const onAdminUsersChanged = () => {
+			void loadUsers();
+		};
+
+		socket.on('systemNotification', onSystemNotification);
+		socket.on('newTicket', onNewTicket);
+		socket.on('adminUserDeleted', onAdminUserDeleted);
+		socket.on('adminUsersChanged', onAdminUsersChanged);
+
+		return () => {
+			mounted = false;
+			socket.off('systemNotification', onSystemNotification);
+			socket.off('newTicket', onNewTicket);
+			socket.off('adminUserDeleted', onAdminUserDeleted);
+			socket.off('adminUsersChanged', onAdminUsersChanged);
+		};
 	}, [t]);
 
 	if (loading) {

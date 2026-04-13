@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TicketsController } from './tickets.controller';
 import { TicketsService } from './tickets.service';
-import { PrismaService } from '../../prisma/prisma.service';
 import { TicketsGateway } from './tickets.gateway';
 import { JwtModule } from '@nestjs/jwt';
+import { RolesGuard } from '../auth/roles.guard';
 
 @Module({
   imports: [
@@ -12,7 +12,7 @@ import { JwtModule } from '@nestjs/jwt';
     }),
   ],
   controllers: [TicketsController],
-  providers: [TicketsService, PrismaService, TicketsGateway],
+  providers: [TicketsService, TicketsGateway, RolesGuard],
   exports: [TicketsGateway]
 })
 export class TicketsModule { }

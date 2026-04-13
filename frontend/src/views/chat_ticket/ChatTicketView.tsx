@@ -364,7 +364,6 @@ function ChatTicketView() {
 		try {
 			const created = await sendTicketMessage(ticket.id, newResponse, true);
 
-			// Affichage immédiat côté agent
 			setResponses((prev) => {
 				if (prev.some((m) => m.id === created.id)) return prev;
 				return [...prev, created];

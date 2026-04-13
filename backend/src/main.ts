@@ -45,7 +45,6 @@ async function bootstrap() {
 		prefix: '/uploads/',
 	});
 
-	// create Admin
 	try {
 		await seedAdmin();
 	} catch (e) {

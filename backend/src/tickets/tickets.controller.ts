@@ -1,10 +1,13 @@
 import { Controller, Body, Post, Get, UseGuards, Req, Patch, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { TicketsService } from './tickets.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketStatusDto } from './dto/update-ticket-status.dto';
 import { CreateChatMessageDto } from './dto/create-chat-message.dto';
 import { CreateInternalNoteDto } from './dto/create-internal-note.dto';
+import { UserRole } from '@prisma/client';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('tickets')
@@ -26,6 +29,8 @@ export class TicketsController {
     }
 
     @Get()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.AGENT, UserRole.ADMIN)
     @ApiOperation({ summary: 'Lister tous les tickets' })
     @ApiResponse({ status: 200, description: 'Liste récupérée' })
     async findAll() {

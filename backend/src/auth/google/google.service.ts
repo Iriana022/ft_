@@ -94,6 +94,11 @@ export class GoogleService {
           },
         });
 
+        this.ticketsGateway.emitAdminUsersChanged({
+          userId: created.id,
+          action: 'created',
+        });
+
         return {
           status: 'ROLE_SELECTION_REQUIRED',
           access_token: this.buildToken(created),
@@ -127,6 +132,11 @@ export class GoogleService {
             roleSelectionRequired: true,
           },
         });
+
+        this.ticketsGateway.emitAdminUsersChanged({
+          userId: user.id,
+          action: 'created',
+        });
       }
 
       const token = this.buildToken(user);
@@ -143,7 +153,6 @@ export class GoogleService {
       return { status: 'LOGIN_OK', access_token: token };
 
     } catch (error) {
-      // On log l'erreur réelle pour le debug Docker mais on renvoie une exception propre
       console.error('--- ERREUR AUTH GOOGLE ---');
       console.error(error);
       throw new UnauthorizedException(

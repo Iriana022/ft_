@@ -4,7 +4,6 @@ const isUserRole = (value: unknown): value is UserRole => {
   return value === UserRole.CLIENT || value === UserRole.AGENT || value === UserRole.ADMIN;
 };
 
-// Base64URL decode safe pour JWT
 const decodeJwtPayload = (token: string): Record<string, unknown> | null => {
   try {
     const payloadBase64Url = token.split('.')[1];
@@ -25,6 +24,7 @@ export const clearAuthStorage = (): void => {
   localStorage.removeItem('user_role');
   localStorage.removeItem('username');
   localStorage.removeItem('user_avatar');
+  window.dispatchEvent(new Event('auth-token-updated'));
 };
 
 export const isTokenExpired = (token: string | null): boolean => {

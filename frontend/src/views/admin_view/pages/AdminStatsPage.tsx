@@ -1,19 +1,104 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { jsPDF } from 'jspdf';
 import { autoTable } from 'jspdf-autotable';
 import { TicketStatus } from '../../../types';
-import { fetchTicketResolutionHistory, fetchTickets, fetchUsers } from '../../../services/tickets';
+import { fetchTicketResolutionHistory, fetchTickets, fetchUsers, type RawTicket } from '../../../services/tickets';
+import { getSocket } from '../../../services/singleton';
 import {
 	generateDailyTickets,
 	getPriorityText,
 	getStatusText,
+	upsertTicketFromSocket,
+	type SystemNotificationEvent,
 } from '../adminHelpers';
 
 export function AdminStats() {
 	const { t, i18n } = useTranslation('admin');
 	const [isExporting, setIsExporting] = useState(false);
 	const [exportError, setExportError] = useState<string | null>(null);
+	const [liveTickets, setLiveTickets] = useState<Awaited<ReturnType<typeof fetchTickets>>>([]);
+	const [liveUsersCount, setLiveUsersCount] = useState(0);
+
+	useEffect(() => {
+		let mounted = true;
+
+		const loadLiveSnapshot = async () => {
+			try {
+				const [tickets, users] = await Promise.all([
+					fetchTickets(),
+					fetchUsers(),
+				]);
+				if (!mounted) return;
+				setLiveTickets(tickets);
+				setLiveUsersCount(users.length);
+			} catch (error) {
+				console.error('Live stats loading error:', error);
+			}
+		};
+
+		void loadLiveSnapshot();
+
+		const socket = getSocket();
+
+		const onNewTicket = (payload: RawTicket) => {
+			setLiveTickets((prev) => upsertTicketFromSocket(prev, payload));
+		};
+
+		const onTicketStatusUpdated = (payload: RawTicket) => {
+			setLiveTickets((prev) => upsertTicketFromSocket(prev, payload));
+		};
+
+		const onSystemNotification = (event: SystemNotificationEvent) => {
+			if (event.code === 'USER_LOGGED_IN' || event.code === 'USER_PROFILE_UPDATED') {
+				void fetchUsers()
+					.then((users) => {
+						if (!mounted) return;
+						setLiveUsersCount(users.length);
+					})
+					.catch((error) => {
+						console.error('Live users refresh error:', error);
+					});
+			}
+		};
+
+		const onAdminUsersChanged = () => {
+			void fetchUsers()
+				.then((users) => {
+					if (!mounted) return;
+					setLiveUsersCount(users.length);
+				})
+				.catch((error) => {
+					console.error('Live users refresh error:', error);
+				});
+		};
+
+		const onAdminUserDeleted = () => {
+			void fetchUsers()
+				.then((users) => {
+					if (!mounted) return;
+					setLiveUsersCount(users.length);
+				})
+				.catch((error) => {
+					console.error('Live users refresh error:', error);
+				});
+		};
+
+		socket.on('newTicket', onNewTicket);
+		socket.on('ticketStatusUpdated', onTicketStatusUpdated);
+		socket.on('systemNotification', onSystemNotification);
+		socket.on('adminUsersChanged', onAdminUsersChanged);
+		socket.on('adminUserDeleted', onAdminUserDeleted);
+
+		return () => {
+			mounted = false;
+			socket.off('newTicket', onNewTicket);
+			socket.off('ticketStatusUpdated', onTicketStatusUpdated);
+			socket.off('systemNotification', onSystemNotification);
+			socket.off('adminUsersChanged', onAdminUsersChanged);
+			socket.off('adminUserDeleted', onAdminUserDeleted);
+		};
+	}, []);
 
 	const handleExportPdf = async () => {
 		try {
@@ -122,6 +207,9 @@ export function AdminStats() {
 				<div>
 					<h3 className="text-base text-navy font-medium">{t('sidebarStats')}</h3>
 					<p className="text-sm text-gray-500">{t('exportPdfDescription')}</p>
+					<p className="text-xs text-gray-500 mt-1">
+						{t('totalTickets')}: {liveTickets.length} · {t('users')}: {liveUsersCount}
+					</p>
 				</div>
 
 				<button

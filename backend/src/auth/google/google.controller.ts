@@ -12,7 +12,6 @@ export class GoogleController {
   googleLogin(@Res() res: Response, @Query('flow') flow?: GoogleFlow) {
     const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
     
-    // On récupère l'URI de redirection depuis le .env
     const redirectUri = process.env.GOOGLE_REDIRECT_URI;
     const clientId = process.env.GOOGLE_CLIENT_ID;
 
@@ -42,11 +41,10 @@ export class GoogleController {
   @Get('callback')
   async googleAuthRedirect(
     @Query('code') code: string,
-    @Query('state') state: string, // state contient notre "flow"
+    @Query('state') state: string,
     @Res() res: Response
   ) {
-    // On utilise PRIORITAIREMENT le FRONTEND_URL du .env
-    // Si c'est vide, on fallback sur localhost par sécurité
+ 
     const frontendUrl = process.env.FRONTEND_URL || 'https://localhost:8443';
     
     const flow: GoogleFlow = state === 'register' ? 'register' : 'login';
@@ -67,7 +65,6 @@ export class GoogleController {
         return res.redirect(`${frontendUrl}/auth/callback?token=${token}&next=select_role`);
       }      
 
-      // Succès : Redirection vers la home avec le token
       const token = encodeURIComponent(authData.access_token);
       return res.redirect(`${frontendUrl}/auth/callback?token=${token}&next=home`);
       

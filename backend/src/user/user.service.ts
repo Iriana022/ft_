@@ -26,7 +26,12 @@ export class UserService {
     }
 
     async create(data: { login: string, email: string }) {
-        return this.prisma.user.create({ data })
+        const created = await this.prisma.user.create({ data });
+        this.ticketsGateway.emitAdminUsersChanged({
+            userId: created.id,
+            action: 'created',
+        });
+        return created;
     }
 
     async findAll() {
@@ -143,6 +148,7 @@ export class UserService {
         const avatarToDelete = user.avatar;
 
         await this.hardDeleteUserAndLinkedTickets(userId);
+        this.ticketsGateway.emitUserDeleted(userId);
 
         if (avatarToDelete && this.isManagedUploadAvatar(avatarToDelete)) {
             const avatarPath = this.toUploadDiskPath(avatarToDelete);
@@ -175,6 +181,7 @@ export class UserService {
         const avatarToDelete = targetUser.avatar;
 
         await this.hardDeleteUserAndLinkedTickets(targetUserId);
+        this.ticketsGateway.emitUserDeleted(targetUserId);
 
         if (avatarToDelete && this.isManagedUploadAvatar(avatarToDelete)) {
             const avatarPath = this.toUploadDiskPath(avatarToDelete);

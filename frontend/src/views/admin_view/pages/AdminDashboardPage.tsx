@@ -31,9 +31,21 @@ export function AdminDashboard() {
 	};
 
 	useEffect(() => {
+		let mounted = true;
+
 		void loadTickets();
 		void loadUsers();
 		const socket = getSocket();
+
+		const refreshUsers = async () => {
+			try {
+				const data = await fetchUsers();
+				if (!mounted) return;
+				setUsers(data);
+			} catch (error) {
+				console.error('Erreur chargement users:', error);
+			}
+		};
 
 		const onNewTicket = (payload: RawTicket) => {
 			setTickets((prev) => upsertTicketFromSocket(prev, payload));
@@ -43,12 +55,31 @@ export function AdminDashboard() {
 			setTickets((prev) => upsertTicketFromSocket(prev, payload));
 		};
 
+		const onAdminUsersChanged = () => {
+			void refreshUsers();
+		};
+
+		const onAdminUserDeleted = () => {
+			void refreshUsers();
+		};
+
+		const onSystemNotification = () => {
+			void refreshUsers();
+		};
+
 		socket.on('newTicket', onNewTicket);
 		socket.on('ticketStatusUpdated', onTicketStatusUpdated);
+		socket.on('adminUsersChanged', onAdminUsersChanged);
+		socket.on('adminUserDeleted', onAdminUserDeleted);
+		socket.on('systemNotification', onSystemNotification);
 
 		return () => {
+			mounted = false;
 			socket.off('newTicket', onNewTicket);
 			socket.off('ticketStatusUpdated', onTicketStatusUpdated);
+			socket.off('adminUsersChanged', onAdminUsersChanged);
+			socket.off('adminUserDeleted', onAdminUserDeleted);
+			socket.off('systemNotification', onSystemNotification);
 		};
 	}, []);
 

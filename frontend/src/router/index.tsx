@@ -133,7 +133,6 @@ export const router = createBrowserRouter([
 	{
 		path: 'client',
 		element: (
-			// TODO: put ClientLayout inside the ProtectedRoute component
 			<ProtectedRoute allowedRoles={[UserRole.CLIENT]}>
 				<ClientLayout />
 			</ProtectedRoute >

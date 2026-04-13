@@ -26,7 +26,6 @@ export class TicketsService {
 		}
 
 		if (role === UserRole.AGENT) {
-			// Si un agent est assigné, seul cet agent peut voir les messages
 			if (ticket.AssignedToId !== null && ticket.AssignedToId !== userId) {
 				throw new ForbiddenException('Messages réservés à l agent assigné');
 			}
@@ -249,7 +248,10 @@ export class TicketsService {
 		}
 
 		if (status === TicketStatus.CLOSED) {
-			this.ticketsGateway.emitTicketUnreadUpdated(ticketId, 0, 0);
+			this.ticketsGateway.emitTicketUnreadUpdated(ticketId, 0, 0, {
+				authorId: updatedTicket.authorId,
+				assignedToId: updatedTicket.AssignedToId,
+			});
 			this.ticketsGateway.emitTicketClosed(ticketId);
 		}
 		return updatedTicket;
@@ -337,6 +339,10 @@ export class TicketsService {
 			result.unread.id,
 			result.unread.clientUnreadCount,
 			result.unread.agentUnreadCount,
+			{
+				authorId: ticket.authorId,
+				assignedToId: ticket.AssignedToId,
+			},
 		);
 
 		return result.message;
@@ -375,6 +381,10 @@ export class TicketsService {
 			updated.id,
 			updated.clientUnreadCount,
 			updated.agentUnreadCount,
+			{
+				authorId: ticket.authorId,
+				assignedToId: ticket.AssignedToId,
+			},
 		);
 
 		return updated;

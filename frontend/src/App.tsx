@@ -21,7 +21,30 @@ function SocketBootstrap({children}: {children: React.ReactNode}) {
 		};
 
 		const onAuthTokenUpdated = () => {
+			const token = localStorage.getItem('access_token');
+			if (!token) {
+				if (socket.connected) {
+					socket.disconnect();
+				}
+				return;
+			}
+
+			if (!socket.connected) {
+				socket.connect();
+				return;
+			}
+
 			registerRoleChannel();
+		};
+
+		const onAccountDeleted = (payload?: { userId?: number }) => {
+			console.warn('[socket] account deleted, forcing logout', payload?.userId);
+			localStorage.removeItem('access_token');
+			localStorage.removeItem('username');
+			localStorage.removeItem('user_role');
+			localStorage.removeItem('user_avatar');
+			window.dispatchEvent(new Event('auth-token-updated'));
+			window.location.replace('/login');
 		};
 		const onDisconnect = (reason: string) => console.warn('[socket] disconnected:', reason);
 		const onConnectError = (err: Error) => console.error('[socket] connect_error:', err.message);
@@ -30,15 +53,17 @@ function SocketBootstrap({children}: {children: React.ReactNode}) {
 		socket.on('connect', onConnect);
 		socket.on('disconnect', onDisconnect);
 		socket.on('connect_error', onConnectError);
+		socket.on('accountDeleted', onAccountDeleted);
 		socket.io.on('reconnect', onReconnect);
 		window.addEventListener('auth-token-updated', onAuthTokenUpdated);
 
-		if (!socket.connected)
+		if (!socket.connected && !!localStorage.getItem('access_token'))
 			socket.connect();
 		return () => {
 			socket.off('connect', onConnect);
 			socket.off('disconnect', onDisconnect);
 			socket.off('connect_error', onConnectError);
+			socket.off('accountDeleted', onAccountDeleted);
 			socket.io.off('reconnect', onReconnect);
 			window.removeEventListener('auth-token-updated', onAuthTokenUpdated);
 		};
