@@ -7,6 +7,7 @@ import {useTranslation} from 'react-i18next';
 interface TicketListProps {
 	tickets: Ticket[];
 	maxItems?: number;
+	onViewAll?: () => void;
 }
 
 const DEFAULT_AGENT_AVATAR = '/assets/avatars/avatar2.png';
@@ -16,7 +17,7 @@ const getAssignedAgentAvatar = (ticket: Ticket) => {
 	return avatar && avatar.length > 0 ? avatar : DEFAULT_AGENT_AVATAR;
 };
 
-export function TicketList({tickets, maxItems}: TicketListProps) {
+export function TicketList({tickets, maxItems, onViewAll}: TicketListProps) {
 	const {t} = useTranslation('agent');
 	const {t: tt} = useTranslation('tickets');
 	const navigate = useNavigate();
@@ -129,7 +130,11 @@ export function TicketList({tickets, maxItems}: TicketListProps) {
 
 			{maxItems && tickets.length > maxItems && (
 				<div className="p-4 text-center bg-gray-50">
-					<button className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+					<button
+						type="button"
+						onClick={onViewAll}
+						className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+					>
 						{t('viewAllTickets', {count: tickets.length})}
 					</button>
 				</div>
