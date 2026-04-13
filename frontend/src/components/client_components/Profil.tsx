@@ -5,7 +5,7 @@ import ContainerComp from '../../layout/layout_client/Container';
 import {useNavigate} from 'react-router-dom';
 import Avatar from './Avatar';
 import Footer from '../../layout/Footer';
-import {getMyProfile, updateMyProfile, uploadMyAvatar} from '../../services/profile';
+import {getMyProfile, normalizeAvatarUrl, updateMyProfile, uploadMyAvatar} from '../../services/profile';
 import {useTranslation} from 'react-i18next';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
@@ -55,7 +55,7 @@ function Profil() {
 			setIsLoading(true);
 			setError('');
 			const updated = await uploadMyAvatar(file);
-			const nextAvatar = updated?.avatar ?? avatar1;
+			const nextAvatar = normalizeAvatarUrl(updated?.avatar) ?? avatar1;
 			setAvatar(nextAvatar);
 			localStorage.setItem('user_avatar', nextAvatar);
 		} catch (err) {
@@ -69,6 +69,13 @@ function Profil() {
 	}
 
 	useEffect(() => {
+		const cachedAvatar = localStorage.getItem('user_avatar');
+		const normalizedCachedAvatar = normalizeAvatarUrl(cachedAvatar);
+		if (normalizedCachedAvatar) {
+			setAvatar(normalizedCachedAvatar);
+			localStorage.setItem('user_avatar', normalizedCachedAvatar);
+		}
+
 		const loadProfile = async () => {
 			try {
 				setIsLoading(true);
@@ -80,7 +87,7 @@ function Profil() {
 				setFirstname(data?.firstName ?? '');
 				setLastname(data?.lastName ?? '');
 				setEmail(data?.email ?? '');
-				const nextAvatar = data?.avatar ?? avatar1;
+				const nextAvatar = normalizeAvatarUrl(data?.avatar) ?? avatar1;
 				setAvatar(nextAvatar);
 				localStorage.setItem('user_avatar', nextAvatar);
 			} catch (err) {

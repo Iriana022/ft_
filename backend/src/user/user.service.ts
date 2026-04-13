@@ -1,5 +1,5 @@
 import { Injectable, ConflictException, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { unlink } from 'fs/promises';
+import { access, unlink } from 'fs/promises';
 import { basename, join } from 'path';
 import { UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -52,6 +52,23 @@ export class UserService {
         await unlink(avatarPath).catch(() => undefined);
     }
 
+    private async ensureManagedAvatarExists(userId: number, avatar: string | null | undefined) {
+        const filename = this.extractManagedUploadFilename(avatar);
+        if (!filename) return avatar ?? null;
+
+        const avatarPath = this.toUploadDiskPath(filename);
+        try {
+            await access(avatarPath);
+            return avatar ?? null;
+        } catch {
+            await this.prisma.user.update({
+                where: { id: userId },
+                data: { avatar: null },
+            }).catch(() => undefined);
+            return null;
+        }
+    }
+
     private async hardDeleteUserAndLinkedTickets(userId: number) {
         await this.prisma.user.delete({
             where: { id: userId },
@@ -92,7 +109,11 @@ export class UserService {
         if (!user) {
             throw new NotFoundException('Utilisateur introuvable');
         }
-        return user;
+
+        return {
+            ...user,
+            avatar: await this.ensureManagedAvatarExists(user.id, user.avatar),
+        };
     }
 
     async updateMe(userId: number, dto: UpdateMeDto) {
