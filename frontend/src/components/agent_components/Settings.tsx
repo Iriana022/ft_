@@ -154,7 +154,10 @@ function Settings() {
 	useEffect(() => {
 		if (!section || !validSections.includes(section as SectionId)) {
 			navigate('/agent/settings/profile', {replace: true});
+			return;
 		}
+
+		setActiveSection(section as SectionId);
 	}, [section, navigate]);
 
 	const goToSection = (id: SectionId) => {
@@ -349,7 +352,7 @@ function Settings() {
 							return (
 								<button
 									key={section.id}
-									onClick={() => setActiveSection(section.id)}
+									onClick={() => goToSection(section.id)}
 									className={`flex-1 flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-all duration-200 ${isActive ? 'bg-sky/25 text-navy' : 'text-gray-500 hover:text-navy hover:bg-sky/10'
 										}`}
 									title={section.label}
@@ -367,7 +370,7 @@ function Settings() {
 							return (
 								<button
 									key={section.id}
-									onClick={() => setActiveSection(section.id)}
+									onClick={() => goToSection(section.id)}
 									className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive ? 'bg-sky/25 text-navy' : 'text-gray-700 hover:bg-sky/10'
 										}`}
 								>
