@@ -197,11 +197,14 @@ function Header() {
 			<ContainerComp>
 				<header className="pt-10 flex justify-between">
 					<div
-						className={`fixed top-0 md:hidden w-screen h-full bg-dark z-69 ${isMenuOpened ? 'left-0' : '-left-full'
-							}`}
+						className={`fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-dark z-40 transform transition-transform duration-300 ease-out ${isMenuOpened ? 'translate-x-0' : '-translate-x-full'}`}
 					>
-						<MobileMenu />
+						<MobileMenu onClose={() => setIsMenuOpened(false)} />
 					</div>
+					<div
+						className={`fixed inset-0 bg-black/50 z-30 transition-opacity duration-300 md:hidden ${isMenuOpened ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+						onClick={() => setIsMenuOpened(false)}
+					/>
 					<div className="flex gap-[100px]">
 						<HamburgerMenu onClick={() => setIsMenuOpened((s) => !s)} isMenuOpened={isMenuOpened} />
 						<div className="absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0">
