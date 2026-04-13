@@ -1,13 +1,15 @@
-import {Camera, Globe, Mail, Save, User} from 'lucide-react';
+import {Camera, Globe, Mail, Save, Trash2, User} from 'lucide-react';
 import {useEffect, useMemo, useRef, useState, type ChangeEvent} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
-import {getMyProfile, updateMyProfile, uploadMyAvatar} from '../../services/profile';
+import {deleteMyAccount, getMyProfile, updateMyProfile, uploadMyAvatar} from '../../services/profile';
 import LanguageSelector from '../client_components/LanguageSelector';
 import {useTranslation} from 'react-i18next';
 import Notification from '../client_components/Notification';
 import {type ClientNotificationItem} from '../client_components/NotificationView';
 import {getSocket} from '../../services/singleton';
 import {fetchMyNotifications, readAllMyNotifications, type RawNotification} from '../../services/tickets';
+import ConfirmModal from '../client_components/ConfirmModal';
+import {clearAuthStorage} from '../../services/auth';
 
 type SectionId = 'profile' | 'account' | 'language';
 
@@ -122,6 +124,8 @@ function Settings() {
 	const [profile, setProfile] = useState<ProfileForm>(profileDefaults);
 	const [loadingProfile, setLoadingProfile] = useState(true);
 	const [savingProfile, setSavingProfile] = useState(false);
+	const [deletingAccount, setDeletingAccount] = useState(false);
+	const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 	const [feedback, setFeedback] = useState<string>('');
 	const [error, setError] = useState<string>('');
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -279,6 +283,22 @@ function Settings() {
 	const handleSaveLocalSection = (section: string) => {
 		clearMessages();
 		setFeedback(t('preferencesSaved', {section}));
+	};
+
+	const handleDeleteAccount = async () => {
+		try {
+			setDeletingAccount(true);
+			clearMessages();
+			await deleteMyAccount();
+
+			clearAuthStorage();
+			navigate('/login', {replace: true});
+		} catch (e: any) {
+			setError(getErrorMessage(e, t('deleteAccountError')));
+		} finally {
+			setDeletingAccount(false);
+			setDeleteModalOpen(false);
+		}
 	};
 
 	const handleAvatarClick = () => {
@@ -450,11 +470,20 @@ function Settings() {
 										</div>
 									</div>
 
-									<div className="flex justify-end mt-6">
+									<div className="flex justify-end mt-6 gap-3">
+										<button
+											type="button"
+											onClick={() => setDeleteModalOpen(true)}
+											disabled={savingProfile || deletingAccount}
+											className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center gap-2 disabled:opacity-60"
+										>
+											<Trash2 className="w-4 h-4" />
+											{deletingAccount ? t('deleting') : t('deleteAccount')}
+										</button>
 										<button
 											type="button"
 											onClick={handleSaveProfile}
-											disabled={savingProfile}
+											disabled={savingProfile || deletingAccount}
 											className="px-6 py-2 bg-navy text-white rounded-lg hover:bg-[#41708f] transition-colors font-medium flex items-center gap-2 disabled:opacity-60"
 										>
 											<Save className="w-4 h-4" />
@@ -490,11 +519,20 @@ function Settings() {
 								</span>
 							</div>
 
-							<div className="flex justify-end">
+							<div className="flex justify-end gap-3">
+								<button
+									type="button"
+									onClick={() => setDeleteModalOpen(true)}
+									disabled={savingProfile || deletingAccount}
+									className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center gap-2 disabled:opacity-60"
+								>
+									<Trash2 className="w-4 h-4" />
+									{deletingAccount ? t('deleting') : t('deleteAccount')}
+								</button>
 								<button
 									type="button"
 									onClick={handleSaveProfile}
-									disabled={savingProfile}
+									disabled={savingProfile || deletingAccount}
 									className="px-6 py-2 bg-navy text-white rounded-lg hover:bg-[#41708f] transition-colors font-medium flex items-center gap-2 disabled:opacity-60"
 								>
 									<Save className="w-4 h-4" />
@@ -524,6 +562,17 @@ function Settings() {
 					)}
 				</div>
 			</div>
+			<ConfirmModal
+				isOpen={deleteModalOpen}
+				onClose={() => {
+					if (deletingAccount) return;
+					setDeleteModalOpen(false);
+				}}
+				onConfirm={() => {
+					void handleDeleteAccount();
+				}}
+				loading={deletingAccount}
+			/>
 		</div>
 	);
 }

@@ -23,12 +23,10 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
     volumes:
-      - ./backend:/usr/src/app   # Synchronise ton code source
-      - /usr/src/app/node_modules  # Empêche ton dossier local d'écraser les packages du container
-      # - /usr/src/app/dist  # Optionnel: protège le dossier de build
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
     depends_on:
       - db
-    # On s'assure que Nest tourne en mode watch (vérifie ton package.json)
     command: npm run start:dev
 
   frontend:
@@ -43,7 +41,6 @@ services:
       - /app/node_modules
     tty: true
     stdin_open: true
-    # On force l'hôte et le polling via la commande
     command: npm run dev -- --host 0.0.0.0
 
   gateway:

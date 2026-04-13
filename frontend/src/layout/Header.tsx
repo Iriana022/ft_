@@ -12,7 +12,7 @@ import MobileMenu from '../components/client_components/MobileMenu';
 import { Link, useNavigate } from 'react-router-dom';
 import { fetchMyNotifications, readAllMyNotifications, type RawNotification } from '../services/tickets';
 import { type ClientNotificationItem } from '../components/client_components/NotificationView';
-import { getMyProfile } from '../services/profile';
+import { getMyProfile, normalizeAvatarUrl } from '../services/profile';
 import { getSocket } from '../services/singleton';
 import { useTranslation } from 'react-i18next';
 
@@ -110,14 +110,16 @@ function Header() {
 
 	useEffect(() => {
 		const cachedAvatar = localStorage.getItem('user_avatar');
-		if (cachedAvatar) {
-			setAvatar(cachedAvatar);
+		const normalizedCachedAvatar = normalizeAvatarUrl(cachedAvatar);
+		if (normalizedCachedAvatar) {
+			setAvatar(normalizedCachedAvatar);
+			localStorage.setItem('user_avatar', normalizedCachedAvatar);
 		}
 
 		const loadProfilAvatar = async () => {
 			try {
 				const data = await getMyProfile();
-				const nextAvatar = data?.avatar ?? avatar1;
+				const nextAvatar = normalizeAvatarUrl(data?.avatar) ?? avatar1;
 				setAvatar(nextAvatar);
 				localStorage.setItem('user_avatar', nextAvatar);
 			} catch (error) {

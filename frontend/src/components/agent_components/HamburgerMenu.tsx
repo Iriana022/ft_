@@ -3,7 +3,7 @@ import {useState, useEffect, useMemo} from 'react';
 import {useLocation, useNavigate} from 'react-router-dom';
 import {UserRole} from '../../types';
 import TikeoLogo from '../client_components/TikeoLogo';
-import {getMyProfile} from '../../services/profile';
+import {getMyProfile, normalizeAvatarUrl} from '../../services/profile';
 import {useTranslation} from 'react-i18next';
 import Notification from '../client_components/Notification';
 import {type ClientNotificationItem} from '../client_components/NotificationView';
@@ -112,7 +112,7 @@ export function HamburgerMenu({currentRole, isOpen, onClose}: HamburgerMenuProps
 	const username = localStorage.getItem('username') || t('defaultUser');
 
 	const [avatar, setAvatar] = useState(
-		localStorage.getItem('user_avatar') || DEFAULT_AGENT_AVATAR
+		normalizeAvatarUrl(localStorage.getItem('user_avatar')) || DEFAULT_AGENT_AVATAR
 	);
 
 	const {t: tn} = useTranslation('notifications');
@@ -185,14 +185,16 @@ export function HamburgerMenu({currentRole, isOpen, onClose}: HamburgerMenuProps
 		const loadAvatar = async () => {
 			try {
 				const cachedAvatar = localStorage.getItem('user_avatar');
-				if (cachedAvatar) {
-					setAvatar(cachedAvatar);
+				const normalizedCachedAvatar = normalizeAvatarUrl(cachedAvatar);
+				if (normalizedCachedAvatar) {
+					setAvatar(normalizedCachedAvatar);
+					localStorage.setItem('user_avatar', normalizedCachedAvatar);
 				}
 
 				const me = await getMyProfile();
 				if (!mounted) return;
 
-				const nextAvatar = me?.avatar || DEFAULT_AGENT_AVATAR;
+				const nextAvatar = normalizeAvatarUrl(me?.avatar) || DEFAULT_AGENT_AVATAR;
 				setAvatar(nextAvatar);
 				localStorage.setItem('user_avatar', nextAvatar);
 			} catch (error) {
@@ -203,10 +205,11 @@ export function HamburgerMenu({currentRole, isOpen, onClose}: HamburgerMenuProps
 		const handleAvatarUpdated = (event: Event) => {
 			const customEvent = event as CustomEvent<{avatar?: string}>;
 			const nextAvatar =
-				customEvent.detail?.avatar ||
-				localStorage.getItem('user_avatar') ||
+				normalizeAvatarUrl(customEvent.detail?.avatar) ||
+				normalizeAvatarUrl(localStorage.getItem('user_avatar')) ||
 				DEFAULT_AGENT_AVATAR;
 			setAvatar(nextAvatar);
+			localStorage.setItem('user_avatar', nextAvatar);
 		};
 
 		loadAvatar();
