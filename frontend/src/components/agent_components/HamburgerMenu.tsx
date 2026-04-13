@@ -13,6 +13,11 @@ import {
 	readAllMyNotifications,
 	type RawNotification
 } from '../../services/tickets';
+import {
+	emitNotificationsMarkedAsRead,
+	markNotificationsAsReadLocally,
+	subscribeNotificationsMarkedAsRead,
+} from '../../services/notification-sync';
 
 
 const DEFAULT_AGENT_AVATAR = '/assets/avatars/avatar2.png';
@@ -181,6 +186,12 @@ export function HamburgerMenu({currentRole, isOpen, onClose}: HamburgerMenuProps
 	}, [tn]);
 
 	useEffect(() => {
+		return subscribeNotificationsMarkedAsRead(() => {
+			setNotifications((prev) => markNotificationsAsReadLocally(prev));
+		});
+	}, []);
+
+	useEffect(() => {
 		let mounted = true;
 
 		const loadAvatar = async () => {
@@ -229,9 +240,8 @@ export function HamburgerMenu({currentRole, isOpen, onClose}: HamburgerMenuProps
 	};
 
 	const handleOpenNotifications = () => {
-		setNotifications((prev) =>
-			prev.map((n) => (n.readAt ? n : {...n, readAt: new Date().toISOString()})),
-		);
+		setNotifications((prev) => markNotificationsAsReadLocally(prev));
+		emitNotificationsMarkedAsRead();
 		void readAllMyNotifications();
 	};
 
