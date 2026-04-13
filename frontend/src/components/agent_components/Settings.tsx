@@ -4,8 +4,93 @@ import {useNavigate, useParams} from 'react-router-dom';
 import {getMyProfile, updateMyProfile, uploadMyAvatar} from '../../services/profile';
 import LanguageSelector from '../client_components/LanguageSelector';
 import {useTranslation} from 'react-i18next';
+import Notification from '../client_components/Notification';
+import {type ClientNotificationItem} from '../client_components/NotificationView';
+import {getSocket} from '../../services/singleton';
+import {fetchMyNotifications, readAllMyNotifications, type RawNotification} from '../../services/tickets';
 
 type SectionId = 'profile' | 'account' | 'language';
+
+type SystemNotificationCode =
+	| 'NEW_CLIENT_TICKET'
+	| 'USER_PROFILE_UPDATED'
+	| 'USER_LOGGED_IN'
+	| 'TICKET_STATUS_UPDATED';
+
+type SystemNotificationEvent = {
+	id: number;
+	code: SystemNotificationCode;
+	createdAt: string;
+	readAt?: string | null;
+	data?: {
+		ticketId?: number;
+		ticketTitle?: string;
+		userLogin?: string;
+		userRole?: 'CLIENT' | 'AGENT' | 'ADMIN';
+		fromStatus?: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+		toStatus?: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+		clientLogin?: string;
+	};
+};
+
+function mapSystemNotificationText(
+	event: SystemNotificationEvent,
+	tn: (key: string, options?: Record<string, unknown>) => string,
+) {
+	const userLogin = event.data?.userLogin ?? tn('unknownUser');
+	const roleLabel =
+		event.data?.userRole === 'AGENT'
+			? tn('roleAgent')
+			: event.data?.userRole === 'CLIENT'
+				? tn('roleClient')
+				: event.data?.userRole ?? '';
+	if (event.code === 'NEW_CLIENT_TICKET') {
+		return tn('newClientTicketForSupport', {
+			ticketId: event.data?.ticketId ?? '-',
+			ticketTitle: event.data?.ticketTitle ?? '',
+			userLogin,
+		});
+	}
+
+	if (event.code === 'USER_PROFILE_UPDATED') {
+		return tn('userProfileUpdatedForAdmin', {
+			userLogin,
+			userRole: roleLabel,
+		});
+	}
+
+	const statusLabel = (status?: string) => {
+		if (status === 'OPEN') return tn('statusOpen');
+		if (status === 'IN_PROGRESS') return tn('statusInProgress');
+		if (status === 'RESOLVED') return tn('statusResolved');
+		if (status === 'CLOSED') return tn('statusClosed');
+		return status ?? '-';
+	};
+
+	if (event.code === 'TICKET_STATUS_UPDATED') {
+		const fromStatus = statusLabel(event.data?.fromStatus);
+		const toStatus = statusLabel(event.data?.toStatus);
+
+		if (event.data?.clientLogin) {
+			return tn('ticketStatusChangedForAdmin', {
+				ticketId: event.data?.ticketId ?? '-',
+				clientLogin: event.data.clientLogin,
+				fromStatus,
+				toStatus,
+			});
+		}
+
+		return tn('ticketStatusChangedForClient', {
+			ticketId: event.data?.ticketId ?? '-',
+			fromStatus,
+			toStatus,
+		});
+	}
+	return tn('userLoggedInForAdmin', {
+		userLogin,
+		userRole: roleLabel,
+	});
+}
 
 interface ProfileForm {
 	firstName: string;
@@ -28,14 +113,12 @@ const profileDefaults: ProfileForm = {
 const DEFAULT_AGENT_AVATAR = '/assets/avatars/avatar2.png';
 
 function Settings() {
-	const {t} = useTranslation('profile');
+	const {t, i18n} = useTranslation('profile');
+	const {t: tn} = useTranslation('notifications');
+	const [activeSection, setActiveSection] = useState<SectionId>('profile');
 	const navigate = useNavigate();
 	const {section} = useParams<{section?: string}>();
 	const validSections: SectionId[] = ['profile', 'account', 'language'];
-	const activeSection: SectionId =
-		section && validSections.includes(section as SectionId)
-			? (section as SectionId)
-			: 'profile';
 	const [profile, setProfile] = useState<ProfileForm>(profileDefaults);
 	const [loadingProfile, setLoadingProfile] = useState(true);
 	const [savingProfile, setSavingProfile] = useState(false);
@@ -43,6 +126,20 @@ function Settings() {
 	const [error, setError] = useState<string>('');
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
+	const [notifications, setNotifications] = useState<ClientNotificationItem[]>([]);
+	const hasNotification = useMemo(
+		() => notifications.some((n) => !n.readAt),
+		[notifications],
+	);
+
+	const handleOpenNotifications = () => {
+		setNotifications((prev) =>
+			prev.map((n) => (n.readAt ? n : {...n, readAt: new Date().toISOString()})),
+		);
+		void readAllMyNotifications();
+	};
+
+	const [language, setLanguage] = useState(localStorage.getItem('lang') || i18n.language || 'fr');
 	const sections: Array<{id: SectionId; label: string; icon: typeof User}> = [
 		{id: 'profile', label: t('sectionProfile'), icon: User},
 		{id: 'account', label: t('sectionAccount'), icon: Mail},
@@ -85,7 +182,64 @@ function Settings() {
 		};
 
 		loadProfile();
-	}, []);
+	}, [t]);
+
+	useEffect(() => {
+		let mounted = true;
+		const socket = getSocket();
+
+		const mapFromApi = (row: RawNotification): SystemNotificationEvent => ({
+			id: row.id,
+			code: row.code,
+			createdAt: row.createdAt,
+			readAt: row.readAt,
+			data: row.payload as SystemNotificationEvent['data'],
+		});
+
+		const loadNotifications = async () => {
+			try {
+				const rows = await fetchMyNotifications();
+				if (!mounted) return;
+
+				setNotifications(
+					rows.map((row) => {
+						const event = mapFromApi(row);
+						return {
+							id: event.id,
+							text: mapSystemNotificationText(event, tn),
+							createdAt: event.createdAt,
+							readAt: event.readAt ?? null,
+						};
+					}),
+				);
+			} catch (error) {
+				console.error('Erreur chargement notifications settings:', error);
+			}
+		};
+
+		void loadNotifications();
+
+		const onSystemNotification = (event: SystemNotificationEvent) => {
+			const text = mapSystemNotificationText(event, tn);
+			setNotifications((old) =>
+				[
+					{
+						id: event.id,
+						text,
+						createdAt: event.createdAt,
+						readAt: event.readAt ?? null,
+					},
+					...old,
+				].slice(0, 50),
+			);
+		};
+
+		socket.on('systemNotification', onSystemNotification);
+		return () => {
+			mounted = false;
+			socket.off('systemNotification', onSystemNotification);
+		};
+	}, [tn]);
 
 	const clearMessages = () => {
 		setFeedback('');
@@ -160,29 +314,58 @@ function Settings() {
 
 	return (
 		<div className="flex-1 overflow-auto bg-cream">
-			<div className="border-b px-8 py-6 bg-white border-gray-200">
-				<h1 className="text-2xl font-bold text-gray-900">{t('settingsTitle')}</h1>
-				<p className="text-gray-600 mt-1">{t('settingsSubtitle')}</p>
+			<div className="flex items-center justify-between border-b px-4 sm:px-6 lg:px-8 py-5 sm:py-6 bg-white border-gray-200">
+				<div>
+					<h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t('settingsTitle')}</h1>
+					<p className="text-gray-600 mt-1">{t('settingsSubtitle')}</p>
+				</div>
+				<div className="hidden lg:block">
+					<Notification
+						hasNotification={hasNotification}
+						notifications={notifications}
+						onOpen={handleOpenNotifications}
+					/>
+				</div>
 			</div>
 
-			<div className="flex gap-6 p-8">
-				<div className="w-64 space-y-2">
-					{sections.map((section) => {
-						const Icon = section.icon;
-						const isActive = activeSection === section.id;
+			<div className="flex flex-col lg:flex-row gap-4 lg:gap-6 p-4 lg:p-8">
+				<div className="w-full lg:w-64">
+					<div className="lg:hidden flex justify-between gap-2 p-2 bg-white rounded-xl border border-gray-200 shadow-sm">
+						{sections.map((section) => {
+							const Icon = section.icon;
+							const isActive = activeSection === section.id;
 
-						return (
-							<button
-								key={section.id}
-								onClick={() => goToSection(section.id)}
-								className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive ? 'bg-sky/25 text-navy' : 'text-gray-700 hover:bg-sky/10'
-									}`}
-							>
-								<Icon className="w-5 h-5" />
-								<span className="font-medium">{section.label}</span>
-							</button>
-						);
-					})}
+							return (
+								<button
+									key={section.id}
+									onClick={() => setActiveSection(section.id)}
+									className={`flex-1 flex flex-col items-center gap-1 px-2 py-2 rounded-lg transition-all duration-200 ${isActive ? 'bg-sky/25 text-navy' : 'text-gray-500 hover:text-navy hover:bg-sky/10'
+										}`}
+									title={section.label}
+								>
+									<Icon className="w-5 h-5" />
+								</button>
+							);
+						})}
+					</div>
+					<div className="hidden lg:flex lg:flex-col gap-2">
+						{sections.map((section) => {
+							const Icon = section.icon;
+							const isActive = activeSection === section.id;
+
+							return (
+								<button
+									key={section.id}
+									onClick={() => setActiveSection(section.id)}
+									className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive ? 'bg-sky/25 text-navy' : 'text-gray-700 hover:bg-sky/10'
+										}`}
+								>
+									<Icon className="w-5 h-5" />
+									<span className="font-medium">{section.label}</span>
+								</button>
+							);
+						})}
+					</div>
 				</div>
 
 				<div className="flex-1 max-w-3xl">

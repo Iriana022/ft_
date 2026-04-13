@@ -1,13 +1,13 @@
-import { Ticket, AlertCircle, Clock, CheckCircle2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-import { StatCard } from '../../components/agent_components/StatCard';
-import { TicketList } from './TicketList';
-import { TicketStatus, UserRole, type Ticket as TicketType } from '../../types';
-import { fetchMyNotifications, fetchTickets, getTicketStats, normalizeTicket, readAllMyNotifications, sortTicketsForAgent, type RawNotification, type RawTicket } from '../../services/tickets';
-import { getSocket } from '../../services/singleton';
+import {Ticket, AlertCircle, Clock, CheckCircle2} from 'lucide-react';
+import {useEffect, useMemo, useState} from 'react';
+import {StatCard} from '../../components/agent_components/StatCard';
+import {TicketList} from './TicketList';
+import {TicketStatus, UserRole, type Ticket as TicketType} from '../../types';
+import {fetchMyNotifications, fetchTickets, getTicketStats, normalizeTicket, readAllMyNotifications, sortTicketsForAgent, type RawNotification, type RawTicket} from '../../services/tickets';
+import {getSocket} from '../../services/singleton';
 import {useTranslation} from 'react-i18next';
 import Notification from '../../components/client_components/Notification';
-import { type ClientNotificationItem } from '../../components/client_components/NotificationView';
+import {type ClientNotificationItem} from '../../components/client_components/NotificationView';
 
 type SystemNotificationCode =
 	| 'NEW_CLIENT_TICKET'
@@ -162,7 +162,7 @@ export function Dashboard() {
 
 	const handleOpenNotifications = () => {
 		setNotifications((prev) =>
-			prev.map((n) => (n.readAt ? n : { ...n, readAt: new Date().toISOString() })),
+			prev.map((n) => (n.readAt ? n : {...n, readAt: new Date().toISOString()})),
 		);
 		void readAllMyNotifications();
 	};
@@ -271,7 +271,7 @@ export function Dashboard() {
 						<h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t('dashboardTitle')}</h1>
 						<p className="text-gray-600 mt-1">{t('dashboardSubtitle')}</p>
 					</div>
-					<div className="flex items-center gap-3">
+					<div className="hidden lg:block flex items-center gap-3">
 						<Notification
 							hasNotification={hasNotification}
 							notifications={notifications}
