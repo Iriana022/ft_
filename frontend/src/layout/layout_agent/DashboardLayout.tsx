@@ -8,7 +8,7 @@ export function DashboardLayout() {
   const currentRole = getStoredUserRole() ?? UserRole.AGENT;
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen flex-col lg:flex-row bg-gray-50">
       <Sidebar currentRole={currentRole} />
       <div className="flex min-w-0 flex-1 flex-col">
         <main className="flex flex-1 min-h-0 flex-col">

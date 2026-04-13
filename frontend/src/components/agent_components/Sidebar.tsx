@@ -242,37 +242,39 @@ export function Sidebar({ currentRole }: SidebarProps) {
 	const filteredItems = menuItems.filter(item => item.roles.includes(currentRole));
 
 	return (
-		<aside className="w-64 border-r h-screen flex flex-col bg-navy border-gray-200">
+		<aside className="w-full lg:w-64 border-b lg:border-b-0 lg:border-r lg:h-screen flex flex-col bg-navy border-gray-200">
 			<div
 				className="p-4 flex items-center justify-between">
 				<TikeoLogo href="/client" color="text-white" size="text-4xl" />
 				<Notification hasNotification={hasNotification} notifications={notifications} onOpen={handleOpenNotifications} />
 			</div>
 			{/* Navigation */}
-			<nav className="flex-1 p-4 space-y-1">
-				{
-					filteredItems.map((item) => {
-						const Icon = item.icon;
-						const targetPath = `/agent/${item.id}`;
-						const isActive = location.pathname === targetPath;
+			<nav className="flex-1 p-3 lg:p-4 overflow-x-auto">
+				<div className="flex lg:flex-col gap-2 min-w-max lg:min-w-0">
+					{
+						filteredItems.map((item) => {
+							const Icon = item.icon;
+							const targetPath = `/agent/${item.id}`;
+							const isActive = location.pathname === targetPath;
 
-						return (
-							<button
-								key={item.id}
-								onClick={() => navigate(targetPath)}
-								className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
-								${isActive
-										? 'bg-sky/30 text-white'
-										: 'text-white hover:bg-dark/15'
-									}
-								`}
-							>
-								<Icon className="w-5 h-5" />
-								<span className="font-medium">{item.label}</span>
-							</button>
-						);
-					})
-				}
+							return (
+								<button
+									key={item.id}
+									onClick={() => navigate(targetPath)}
+									className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors whitespace-nowrap
+									${isActive
+											? 'bg-sky/30 text-white'
+											: 'text-white hover:bg-dark/15'
+										}
+									`}
+								>
+									<Icon className="w-5 h-5" />
+									<span className="font-medium">{item.label}</span>
+								</button>
+							);
+						})
+					}
+				</div>
 			</nav >
 
 			<div className="p-4 border-t border-gray-100/25">

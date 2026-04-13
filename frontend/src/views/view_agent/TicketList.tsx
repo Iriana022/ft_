@@ -49,7 +49,7 @@ export function TicketList({tickets, maxItems}: TicketListProps) {
 
 	return (
 		<div className="rounded-xl border overflow-hidden bg-white border-gray-200">
-			<div className="p-6 border-b border-gray-200">
+			<div className="p-4 sm:p-6 border-b border-gray-200">
 				<h3 className="text-lg font-bold text-gray-900">{t('recentTickets')}</h3>
 			</div>
 
@@ -57,7 +57,7 @@ export function TicketList({tickets, maxItems}: TicketListProps) {
 				{displayTickets.map((ticket) => (
 					<div
 						key={ticket.id}
-						className="p-6 transition-colors cursor-pointer hover:bg-gray-50"
+						className="p-4 sm:p-6 transition-colors cursor-pointer hover:bg-gray-50"
 						onClick={() =>
 							navigate(`/chat_ticket?ticketId=${ticket.id}`, {
 								state: {
@@ -66,9 +66,9 @@ export function TicketList({tickets, maxItems}: TicketListProps) {
 							})
 						}
 					>
-						<div className="flex items-start justify-between gap-4">
+						<div className="flex flex-col sm:flex-row items-start justify-between gap-4">
 							<div className="flex-1 min-w-0">
-								<div className="flex items-center gap-2 mb-2">
+								<div className="flex flex-wrap items-center gap-2 mb-2">
 									<span className="text-sm font-medium text-gray-500">#{ticket.id}</span>
 									<span className={`px-2 py-1 rounded-full text-xs font-medium ${statusConfig[ticket.status].color}`}>
 										{statusConfig[ticket.status].label}
@@ -89,7 +89,7 @@ export function TicketList({tickets, maxItems}: TicketListProps) {
 									{ticket.description}
 								</p>
 
-								<div className="flex items-center gap-4 text-sm text-gray-500">
+								<div className="flex flex-wrap items-center gap-3 sm:gap-4 text-sm text-gray-500">
 									<div className="flex items-center gap-1">
 										<User className="w-4 h-4" />
 										<span>{t('createdBy')} {ticket.author.login || ticket.author.email}</span>
@@ -116,7 +116,7 @@ export function TicketList({tickets, maxItems}: TicketListProps) {
 								</div>
 							</div>
 
-							<div className="flex flex-col items-end gap-2">
+							<div className="flex flex-col items-start sm:items-end gap-2">
 								<div className={`flex items-center gap-1 ${priorityConfig[ticket.priority].color}`}>
 									<AlertCircle className="w-4 h-4" />
 									<span className="text-sm font-medium">{priorityConfig[ticket.priority].label}</span>

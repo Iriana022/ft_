@@ -97,9 +97,9 @@ export function Dashboard() {
 		<div className="flex-1 overflow-auto bg-cream">
 			{/* Notification popup */}
 			{notification && (
-				<div className="fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-4 rounded-xl shadow-lg border bg-white border-indigo-500 text-gray-900 transition-all">
+				<div className="fixed top-4 right-4 left-4 sm:left-auto sm:top-6 sm:right-6 z-50 flex items-center gap-3 px-4 sm:px-5 py-3 sm:py-4 rounded-xl shadow-lg border bg-white border-indigo-500 text-gray-900 transition-all">
 					<AlertCircle className="w-5 h-5 text-indigo-500" />
-					<span className="text-sm font-medium">{notification}</span>
+					<span className="text-sm font-medium min-w-0 break-words">{notification}</span>
 					<button
 						onClick={() => setNotification(null)}
 						className="ml-2 text-xs text-gray-400 hover:text-gray-600"
@@ -110,10 +110,10 @@ export function Dashboard() {
 			)}
 
 			{/* Header */}
-			<div className="border-b px-8 py-6 bg-white border-gray-200">
+			<div className="border-b px-4 sm:px-6 lg:px-8 py-5 sm:py-6 bg-white border-gray-200">
 				<div className="flex items-center justify-between">
 					<div>
-						<h1 className="text-2xl font-bold text-gray-900">{t('dashboardTitle')}</h1>
+						<h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t('dashboardTitle')}</h1>
 						<p className="text-gray-600 mt-1">{t('dashboardSubtitle')}</p>
 					</div>
 					<div className="flex items-center gap-3">
@@ -123,9 +123,9 @@ export function Dashboard() {
 			</div>
 
 			{/* Content */}
-			<div className="p-8 space-y-6">
+			<div className="p-4 sm:p-6 lg:p-8 space-y-6">
 				{/* Stats Cards */}
-				<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+				<div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
 					<StatCard
 						title={t('totalTickets')}
 						value={stats.total}
