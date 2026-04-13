@@ -118,6 +118,7 @@ Start everything:
 
 ```bash
 git clone https://github.com/Iriana022/ft_ ft_transcendence
+cd ft_transcendence/backend/
 touch .env
 #Fill in the .env file with the information in the next section
 make

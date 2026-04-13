@@ -6,7 +6,7 @@ Dockerfilecompose = docker-compose.yml
 
 all: certs
 	@echo "$(GREEN)Starting tikeo...$(RESET)"
-	@docker compose -f $(Dockerfilecompose) up -d --build
+	@docker compose -f $(Dockerfilecompose) --env-file backend/.env up -d --build
 	@echo "$(GREEN)Waiting for database...$(RESET)"
 	@sleep 5
 	@echo "$(GREEN)Pushing schema to database...$(RESET)"
@@ -16,15 +16,15 @@ all: certs
 
 up:
 	@echo "$(GREEN)Restarting tikeo...$(RESET)"
-	@docker compose -f $(Dockerfilecompose) up -d
+	@docker compose -f $(Dockerfilecompose) --env-file backend/.env up -d
 
 down:
 	@echo "$(RED)Stopping tikeo...$(RESET)"
-	@docker compose -f $(Dockerfilecompose) down
+	@docker compose -f $(Dockerfilecompose) --env-file backend/.env down
 
 fclean: down
 	@echo "$(RED)Stopping and cleaning tikeo...$(RESET)"
-	@docker compose -f $(Dockerfilecompose) rm -f -s -v
+	@docker compose -f $(Dockerfilecompose) --env-file backend/.env rm -f -s -v
 	@docker system prune -af
 
 clear-volume:
