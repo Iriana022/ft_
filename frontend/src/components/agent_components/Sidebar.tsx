@@ -240,12 +240,13 @@ export function Sidebar({ currentRole }: SidebarProps) {
 	];
 
 	const filteredItems = menuItems.filter(item => item.roles.includes(currentRole));
+	const dashboardPath = currentRole === UserRole.ADMIN ? '/admin' : '/agent/dashboard';
 
 	return (
 		<aside className="w-full lg:w-64 border-b lg:border-b-0 lg:border-r lg:h-screen flex flex-col bg-navy border-gray-200">
 			<div
 				className="p-4 flex items-center justify-between">
-				<TikeoLogo href="/client" color="text-white" size="text-4xl" />
+				<TikeoLogo href={dashboardPath} color="text-white" size="text-4xl" />
 				<Notification hasNotification={hasNotification} notifications={notifications} onOpen={handleOpenNotifications} />
 			</div>
 			{/* Navigation */}
