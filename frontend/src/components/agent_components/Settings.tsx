@@ -8,6 +8,11 @@ import Notification from '../client_components/Notification';
 import {type ClientNotificationItem} from '../client_components/NotificationView';
 import {getSocket} from '../../services/singleton';
 import {fetchMyNotifications, readAllMyNotifications, type RawNotification} from '../../services/tickets';
+import {
+	emitNotificationsMarkedAsRead,
+	markNotificationsAsReadLocally,
+	subscribeNotificationsMarkedAsRead,
+} from '../../services/notification-sync';
 
 type SectionId = 'profile' | 'account' | 'language';
 
@@ -133,9 +138,8 @@ function Settings() {
 	);
 
 	const handleOpenNotifications = () => {
-		setNotifications((prev) =>
-			prev.map((n) => (n.readAt ? n : {...n, readAt: new Date().toISOString()})),
-		);
+		setNotifications((prev) => markNotificationsAsReadLocally(prev));
+		emitNotificationsMarkedAsRead();
 		void readAllMyNotifications();
 	};
 
@@ -183,6 +187,12 @@ function Settings() {
 
 		loadProfile();
 	}, [t]);
+
+	useEffect(() => {
+		return subscribeNotificationsMarkedAsRead(() => {
+			setNotifications((prev) => markNotificationsAsReadLocally(prev));
+		});
+	}, []);
 
 	useEffect(() => {
 		let mounted = true;

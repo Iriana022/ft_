@@ -14,6 +14,11 @@ import {
 	readAllMyNotifications,
 	type RawNotification
 } from '../../services/tickets';
+import {
+	emitNotificationsMarkedAsRead,
+	markNotificationsAsReadLocally,
+	subscribeNotificationsMarkedAsRead,
+} from '../../services/notification-sync';
 import {useTranslation} from 'react-i18next';
 import TikeoLogo from '../../components/client_components/TikeoLogo';
 
@@ -166,10 +171,15 @@ export function DashboardLayout() {
 		};
 	}, [tn]);
 
+	useEffect(() => {
+		return subscribeNotificationsMarkedAsRead(() => {
+			setNotifications((prev) => markNotificationsAsReadLocally(prev));
+		});
+	}, []);
+
 	const handleOpenNotifications = () => {
-		setNotifications((prev) =>
-			prev.map((n) => (n.readAt ? n : {...n, readAt: new Date().toISOString()})),
-		);
+		setNotifications((prev) => markNotificationsAsReadLocally(prev));
+		emitNotificationsMarkedAsRead();
 		void readAllMyNotifications();
 	};
 

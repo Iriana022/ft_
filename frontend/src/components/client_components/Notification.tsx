@@ -8,12 +8,17 @@ interface NotificationProps {
 }
 
 function Notification(props: NotificationProps) {
+	const handleReadNotifications = () => {
+		props.onOpen?.();
+	};
+
 	return (
 		<div className="dropdown dropdown-end">
 			<div
 				tabIndex={0}
 				role="button"
-				onClick={props.onOpen}
+				onClick={handleReadNotifications}
+				onBlur={handleReadNotifications}
 				className="
 					relative
 					w-9 h-9

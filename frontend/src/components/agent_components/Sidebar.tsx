@@ -13,6 +13,11 @@ import {
 	readAllMyNotifications,
 	type RawNotification
 } from '../../services/tickets';
+import {
+	emitNotificationsMarkedAsRead,
+	markNotificationsAsReadLocally,
+	subscribeNotificationsMarkedAsRead,
+} from '../../services/notification-sync';
 
 
 const DEFAULT_AGENT_AVATAR = '/assets/avatars/avatar2.png';
@@ -179,6 +184,12 @@ export function Sidebar({currentRole}: SidebarProps) {
 	}, [tn]);
 
 	useEffect(() => {
+		return subscribeNotificationsMarkedAsRead(() => {
+			setNotifications((prev) => markNotificationsAsReadLocally(prev));
+		});
+	}, []);
+
+	useEffect(() => {
 		let mounted = true;
 
 		const loadAvatar = async () => {
@@ -227,9 +238,8 @@ export function Sidebar({currentRole}: SidebarProps) {
 	};
 
 	const handleOpenNotifications = () => {
-		setNotifications((prev) =>
-			prev.map((n) => (n.readAt ? n : {...n, readAt: new Date().toISOString()})),
-		);
+		setNotifications((prev) => markNotificationsAsReadLocally(prev));
+		emitNotificationsMarkedAsRead();
 		void readAllMyNotifications();
 	};
 	const menuItems = [
