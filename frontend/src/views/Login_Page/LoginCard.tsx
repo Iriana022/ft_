@@ -46,7 +46,7 @@ export function LoginCard() {
 	}, [location.search]);
 
 	const handleGoogleLogin = () => {
-		window.location.href = 'https://localhost:8443/api/auth/google/login?flow=login';
+		window.location.href = `${window.location.origin}/api/auth/google/login?flow=login`;
 	};
 
 	const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {

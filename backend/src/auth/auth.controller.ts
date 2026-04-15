@@ -1,5 +1,6 @@
 import { Controller, Get, UseGuards, Req, Body, Post, ConflictException, UnauthorizedException, Res } from '@nestjs/common';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { OptionalJwtAuthGuard } from './optional-jwt-auth.guard';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -36,12 +37,15 @@ export class AuthController {
   }
 
   @Get('me')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiBearerAuth('bearer')
   @ApiOperation({ summary: 'Récupérer le profil courant' })
-  @ApiResponse({ status: 200, description: 'Profil récupéré' })
-  @ApiResponse({ status: 401, description: 'Non authentifié' })
+  @ApiResponse({ status: 200, description: 'Profil récupéré ou null si non authentifié' })
   getProfile(@Req() req) {
+    if (!req.user) {
+      return null;
+    }
+
     return req.user;
   }
 

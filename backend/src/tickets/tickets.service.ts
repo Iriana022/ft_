@@ -116,7 +116,7 @@ export class TicketsService {
 			include: {author: true}
 		});
 		this.ticketsGateway.emitNewTIcket(ticket);
-		if (ticket.author.role === UserRole.CLIENT) {
+		if (ticket?.author?.role === UserRole.CLIENT) {
 			void this.ticketsGateway.emitSupportNotificationNewClientTicket({
 				ticketId: ticket.id,
 				ticketTitle: ticket.title,

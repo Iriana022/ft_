@@ -1,6 +1,6 @@
-import { Controller, Get, Query, Res, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Get, Query, Res, InternalServerErrorException, Req } from '@nestjs/common';
 import { GoogleService } from './google.service';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { setAuthCookie } from '../auth-cookie';
 
 type GoogleFlow = 'login' | 'register';
@@ -43,10 +43,17 @@ export class GoogleController {
   async googleAuthRedirect(
     @Query('code') code: string,
     @Query('state') state: string,
+    @Req() req: Request,
     @Res() res: Response
   ) {
  
-    const frontendUrl = process.env.FRONTEND_URL || 'https://localhost:8443';
+    const forwardedProtoHeader = req.headers['x-forwarded-proto'];
+    const forwardedProto = Array.isArray(forwardedProtoHeader)
+      ? forwardedProtoHeader[0]
+      : forwardedProtoHeader;
+    const protocol = forwardedProto || req.protocol || 'https';
+    const host = req.get('host') || 'localhost:8443';
+    const frontendUrl = process.env.FRONTEND_URL || `${protocol}://${host}`;
     
     const flow: GoogleFlow = state === 'register' ? 'register' : 'login';
 

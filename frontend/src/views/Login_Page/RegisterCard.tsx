@@ -27,7 +27,7 @@ export function RegisterCard() {
 	};
 
 	const handleGoogleRegister = () => {
-		window.location.href = 'https://localhost:8443/api/auth/google/login?flow=register';
+		window.location.href = `${window.location.origin}/api/auth/google/login?flow=register`;
 	};
 
 	const handleCreateAccount = async () => {
