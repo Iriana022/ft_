@@ -2,6 +2,7 @@ import {Camera, Globe, Mail, Save, Trash2, User} from 'lucide-react';
 import {useEffect, useMemo, useRef, useState, type ChangeEvent} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
 import {deleteMyAccount, getMyProfile, updateMyProfile, uploadMyAvatar} from '../../services/profile';
+import {clearAuthStorage} from '../../services/auth';
 import LanguageSelector from '../client_components/LanguageSelector';
 import {useTranslation} from 'react-i18next';
 import Notification from '../client_components/Notification';
@@ -13,6 +14,7 @@ import {
 	markNotificationsAsReadLocally,
 	subscribeNotificationsMarkedAsRead,
 } from '../../services/notification-sync';
+import {getCookie} from '../../services/cookies';
 
 type SectionId = 'profile' | 'account' | 'language';
 
@@ -146,7 +148,7 @@ function Settings() {
 		void readAllMyNotifications();
 	};
 
-	const [language, setLanguage] = useState(localStorage.getItem('lang') || i18n.language || 'fr');
+	const [language, setLanguage] = useState(getCookie('lang') || i18n.language || 'fr');
 	const sections: Array<{id: SectionId; label: string; icon: typeof User}> = [
 		{id: 'profile', label: t('sectionProfile'), icon: User},
 		{id: 'account', label: t('sectionAccount'), icon: Mail},
@@ -328,7 +330,6 @@ function Settings() {
 
 			if (nextAvatar) {
 				setProfile((prev) => ({...prev, avatar: nextAvatar}));
-				localStorage.setItem('user_avatar', nextAvatar);
 				window.dispatchEvent(
 					new CustomEvent('agent-avatar-updated', {
 						detail: {avatar: nextAvatar},

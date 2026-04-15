@@ -12,14 +12,14 @@ export class TicketsService {
 	constructor(private prisma: PrismaService, private ticketsGateway: TicketsGateway) {}
 
 	private assertTicketMessageAccess(
-		ticket: {authorId: number; AssignedToId: number | null},
+		ticket: {authorId: number | null; AssignedToId: number | null},
 		userId: number,
 		role: UserRole,
 	) {
 		if (role === UserRole.ADMIN) return;
 
 		if (role === UserRole.CLIENT) {
-			if (ticket.authorId !== userId) {
+			if (ticket.authorId === null || ticket.authorId !== userId) {
 				throw new ForbiddenException('Accès interdit à ce ticket');
 			}
 			return;
@@ -110,7 +110,8 @@ export class TicketsService {
 				title: dto.title,
 				description: dto.description,
 				priority: dto.priority,
-				authorId
+				authorId,
+				assignedAgentDeleted: false,
 			},
 			include: {author: true}
 		});
@@ -204,11 +205,13 @@ export class TicketsService {
 					status: dto.status as never,
 					...(shouldUnlockChat ? {
 						chatUnlocked: true,
-						AssignedToId: agentId
+						AssignedToId: agentId,
+						assignedAgentDeleted: false,
 					} : {}),
 					...(shouldReopenTicket ? {
 						chatUnlocked: false,
 						AssignedToId: null,
+						assignedAgentDeleted: false,
 					} : {}),
 					...(shouldCloseChat ? {
 						chatUnlocked: false,
@@ -237,7 +240,7 @@ export class TicketsService {
 		});
 
 		this.ticketsGateway.emitStatusTicket(updatedTicket);
-		if (ticket.status !== status && updatedTicket.author.role === UserRole.CLIENT) {
+		if (ticket.status !== status && updatedTicket.author?.role === UserRole.CLIENT && updatedTicket.authorId !== null) {
 			void this.ticketsGateway.emitTicketStatusChangedNotification({
 				clientUserId: updatedTicket.authorId,
 				clientLogin: updatedTicket.author.login ?? updatedTicket.author.email,
@@ -388,5 +391,40 @@ export class TicketsService {
 		);
 
 		return updated;
+	}
+
+	async deleteTicketByAdmin(ticketId: number, actorId: number) {
+		const actor = await this.prisma.user.findUnique({
+			where: {id: actorId},
+			select: {id: true, role: true},
+		});
+
+		if (!actor || actor.role !== UserRole.ADMIN) {
+			throw new ForbiddenException('Seuls les administrateurs peuvent supprimer un ticket');
+		}
+
+		const ticket = await this.prisma.ticket.findUnique({
+			where: {id: ticketId},
+			select: {
+				id: true,
+				authorId: true,
+				AssignedToId: true,
+			},
+		});
+
+		if (!ticket) {
+			throw new NotFoundException('Ticket not found');
+		}
+
+		await this.prisma.ticket.delete({
+			where: {id: ticketId},
+		});
+
+		this.ticketsGateway.emitTicketDeleted(ticketId, {
+			authorId: ticket.authorId,
+			assignedToId: ticket.AssignedToId,
+		});
+
+		return {ok: true};
 	}
 }

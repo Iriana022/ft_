@@ -2,7 +2,7 @@ import { UserIcon, BriefcaseIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
-import { getHomeRouteByRole } from '../../services/auth';
+import { getHomeRouteByRole, refreshSession } from '../../services/auth';
 import { UserRole } from '../../types';
 import {useTranslation} from 'react-i18next';
 
@@ -18,15 +18,14 @@ export function SelectRole() {
 			setError('');
 
 			const response = await api.post('/auth/select-role', { role });
-			const accessToken = response.data?.access_token;
-
-			if (accessToken) {
-				localStorage.setItem('access_token', accessToken);
-				window.dispatchEvent(new Event('auth-token-updated'));
+			if (response.data?.ok === false) {
+				setError(t('selectRoleError'));
+				return;
 			}
-			localStorage.setItem('user_role', role);
 
-			navigate(getHomeRouteByRole(role), { replace: true });
+			window.dispatchEvent(new Event('auth-token-updated'));
+			const user = await refreshSession(true);
+			navigate(getHomeRouteByRole(user?.role ?? role), { replace: true });
 		} catch {
 			setError(t('selectRoleError'));
 		} finally {

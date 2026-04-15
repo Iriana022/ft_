@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import api from '../../services/api';
-import { clearAuthStorage, getHomeRouteByRole, getRoleFromToken } from '../../services/auth';
+import { clearAuthStorage, getHomeRouteByRole, refreshSession } from '../../services/auth';
 
 export function GoogleCallback() {
     const [searchParams] = useSearchParams();
@@ -9,7 +8,6 @@ export function GoogleCallback() {
 
     useEffect(() => {
         const error = searchParams.get('error');
-        const token = searchParams.get('token');
         const next = searchParams.get('next');
 
         if (error === 'email_exists_google') {
@@ -17,43 +15,31 @@ export function GoogleCallback() {
             navigate('/login?error=email_exists_google', { replace: true });
             return;
         }
-        if (token) {
-            localStorage.setItem('access_token', token);
-            window.dispatchEvent(new Event('auth-token-updated'));
-            localStorage.removeItem('user_avatar');
-            if (next === 'select_role') {
-                localStorage.removeItem('user_role');
-                navigate('/select_role', { replace: true });
-                return;
-            }
-            const handleProfileSync = async () => {
-                try {
-                    const meResponse = await api.get('/auth/me');
-                    const username = meResponse.data?.username;
-                    const role = meResponse.data?.role ?? getRoleFromToken(token);
-                    
-                    if (username) localStorage.setItem('username', username);
-                    if (role) localStorage.setItem('user_role', role);
-                    navigate(getHomeRouteByRole(role));
-                } catch (profileErr) {
-                    console.warn('Erreur profil après Google:', profileErr);
-                    const role = getRoleFromToken(token);
-                    if (role) {
-                        localStorage.setItem('user_role', role);
-                        navigate(getHomeRouteByRole(role), { replace: true });
-                        return;
-                    }
+
+        const syncGoogleSession = async () => {
+            try {
+                const user = await refreshSession(true);
+                if (!user?.role) {
                     clearAuthStorage();
                     navigate('/login?error=google_failed', { replace: true });
+                    return;
                 }
-            };
 
-            handleProfileSync();
-        } else {
-            clearAuthStorage();
-            navigate('/login?error=google_failed', { replace: true });
-            return;
-        }
+                window.dispatchEvent(new Event('auth-token-updated'));
+
+                if (next === 'select_role') {
+                    navigate('/select_role', { replace: true });
+                    return;
+                }
+
+                navigate(getHomeRouteByRole(user.role), { replace: true });
+            } catch {
+                clearAuthStorage();
+                navigate('/login?error=google_failed', { replace: true });
+            }
+        };
+
+        void syncGoogleSession();
     }, [searchParams, navigate]);
 
     return (

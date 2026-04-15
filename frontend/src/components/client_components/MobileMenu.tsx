@@ -3,6 +3,9 @@ import {TicketIcon} from '@heroicons/react/24/outline';
 import {Cog8ToothIcon} from '@heroicons/react/24/outline';
 import Avatar from './Avatar';
 import {useNavigate} from 'react-router-dom';
+import {useEffect, useState} from 'react';
+import {getMyProfile} from '../../services/profile';
+import {logout} from '../../services/auth';
 import {useTranslation} from 'react-i18next';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
@@ -15,18 +18,31 @@ function MobileMenu({onClose}: MobileMenuProps) {
 	const navigate = useNavigate();
 	const {t} = useTranslation('nav');
 	const {t: tc} = useTranslation('common');
-	const username = localStorage.getItem('username') || 'User';
+	const [username, setUsername] = useState('User');
+
+	useEffect(() => {
+		let mounted = true;
+
+		void getMyProfile()
+			.then((profile) => {
+				if (!mounted) return;
+				setUsername(profile?.login || 'User');
+			})
+			.catch(() => {
+			});
+
+		return () => {
+			mounted = false;
+		};
+	}, []);
 
 	const handleNavigate = (path: string) => {
 		navigate(path);
 		onClose?.();
 	};
 
-	const handleLogout = () => {
-		localStorage.removeItem('access_token');
-		localStorage.removeItem('username');
-		localStorage.removeItem('user_role');
-		window.dispatchEvent(new Event('auth-token-updated'));
+	const handleLogout = async () => {
+		await logout();
 		navigate('/login');
 		onClose?.();
 	};

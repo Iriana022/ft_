@@ -190,7 +190,7 @@ export function Dashboard() {
 				const data = await fetchTickets();
 
 				const clientTickets = data.filter(
-					(ticket) => ticket.author.role === UserRole.CLIENT
+					(ticket) => !ticket.author || ticket.author.role === UserRole.CLIENT
 				);
 				setTickets(sortTicketsForAgent(clientTickets));
 			} catch (error) {
@@ -204,7 +204,7 @@ export function Dashboard() {
 
 		const handleNewTicket = (payload: RawTicket) => {
 			const ticket = normalizeTicket(payload);
-			if (ticket.author.role === UserRole.CLIENT) {
+			if (!ticket.author || ticket.author.role === UserRole.CLIENT) {
 				setTickets((prev) => sortTicketsForAgent([ticket, ...prev]));
 				setNotification(t('newTicketIncoming', {title: ticket.title}));
 				if (notificationTimer) clearTimeout(notificationTimer);
@@ -214,7 +214,7 @@ export function Dashboard() {
 
 		const handleTicketStatusUpdated = (payload: RawTicket) => {
 			const updatedTicket = normalizeTicket(payload);
-			if (updatedTicket.author.role !== UserRole.CLIENT) return;
+			if (updatedTicket.author && updatedTicket.author.role !== UserRole.CLIENT) return;
 
 			setTickets((prev) => {
 				const existingIndex = prev.findIndex((ticket) => ticket.id === updatedTicket.id);
@@ -229,6 +229,11 @@ export function Dashboard() {
 				};
 				return sortTicketsForAgent(next);
 			});
+		};
+
+		const handleTicketDeleted = (payload?: {ticketId?: number}) => {
+			if (typeof payload?.ticketId !== 'number') return;
+			setTickets((prev) => prev.filter((ticket) => ticket.id !== payload.ticketId));
 		};
 
 		const handleticketUnreadUpdated = (payload: {
@@ -252,10 +257,12 @@ export function Dashboard() {
 		socket.on('newTicket', handleNewTicket);
 		socket.on('ticketStatusUpdated', handleTicketStatusUpdated);
 		socket.on('ticketUnreadUpdated', handleticketUnreadUpdated);
+		socket.on('ticketDeleted', handleTicketDeleted);
 		return () => {
 			socket.off('newTicket', handleNewTicket);
 			socket.off('ticketStatusUpdated', handleTicketStatusUpdated);
 			socket.off('ticketUnreadUpdated', handleticketUnreadUpdated);
+			socket.off('ticketDeleted', handleTicketDeleted);
 			if (notificationTimer)
 				clearTimeout(notificationTimer);
 		};

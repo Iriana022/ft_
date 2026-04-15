@@ -4,6 +4,7 @@ import {useLocation, useNavigate} from 'react-router-dom';
 import {UserRole} from '../../types';
 import TikeoLogo from '../client_components/TikeoLogo';
 import {getMyProfile, normalizeAvatarUrl} from '../../services/profile';
+import {logout} from '../../services/auth';
 import {useTranslation} from 'react-i18next';
 import Notification from '../client_components/Notification';
 import {type ClientNotificationItem} from '../client_components/NotificationView';
@@ -115,11 +116,9 @@ export function HamburgerMenu({currentRole, isOpen, onClose}: HamburgerMenuProps
 	const {t: tc} = useTranslation('common');
 	const navigate = useNavigate();
 	const location = useLocation()
-	const username = localStorage.getItem('username') || t('defaultUser');
+	const [username, setUsername] = useState(t('defaultUser'));
 
-	const [avatar, setAvatar] = useState(
-		normalizeAvatarUrl(localStorage.getItem('user_avatar')) || DEFAULT_AGENT_AVATAR
-	);
+	const [avatar, setAvatar] = useState(DEFAULT_AGENT_AVATAR);
 
 	const {t: tn} = useTranslation('notifications');
 	const [notifications, setNotifications] = useState<ClientNotificationItem[]>([]);
@@ -196,19 +195,12 @@ export function HamburgerMenu({currentRole, isOpen, onClose}: HamburgerMenuProps
 
 		const loadAvatar = async () => {
 			try {
-				const cachedAvatar = localStorage.getItem('user_avatar');
-				const normalizedCachedAvatar = normalizeAvatarUrl(cachedAvatar);
-				if (normalizedCachedAvatar) {
-					setAvatar(normalizedCachedAvatar);
-					localStorage.setItem('user_avatar', normalizedCachedAvatar);
-				}
-
 				const me = await getMyProfile();
 				if (!mounted) return;
 
+				setUsername(me?.login || t('defaultUser'));
 				const nextAvatar = normalizeAvatarUrl(me?.avatar) || DEFAULT_AGENT_AVATAR;
 				setAvatar(nextAvatar);
-				localStorage.setItem('user_avatar', nextAvatar);
 			} catch (error) {
 				console.error('Erreur chargement avatar sidebar:', error);
 			}
@@ -218,10 +210,8 @@ export function HamburgerMenu({currentRole, isOpen, onClose}: HamburgerMenuProps
 			const customEvent = event as CustomEvent<{avatar?: string}>;
 			const nextAvatar =
 				normalizeAvatarUrl(customEvent.detail?.avatar) ||
-				normalizeAvatarUrl(localStorage.getItem('user_avatar')) ||
 				DEFAULT_AGENT_AVATAR;
 			setAvatar(nextAvatar);
-			localStorage.setItem('user_avatar', nextAvatar);
 		};
 
 		loadAvatar();
@@ -233,12 +223,8 @@ export function HamburgerMenu({currentRole, isOpen, onClose}: HamburgerMenuProps
 		};
 	}, []);
 
-	const handleLogout = () => {
-		localStorage.removeItem('access_token');
-		localStorage.removeItem('username');
-		localStorage.removeItem('user_role');
-		localStorage.removeItem('user_avatar');
-		window.dispatchEvent(new Event('auth-token-updated'));
+	const handleLogout = async () => {
+		await logout();
 		navigate('/login');
 	};
 

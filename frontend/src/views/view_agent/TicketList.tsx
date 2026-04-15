@@ -3,11 +3,14 @@ import {TicketStatus, TicketPriority} from '../../types';
 import {Clock, User, AlertCircle} from 'lucide-react';
 import {useNavigate} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
+import {getTicketAssignedLabel, getTicketAuthorLabel} from '../../services/tickets';
 
 interface TicketListProps {
 	tickets: Ticket[];
 	maxItems?: number;
 	onViewAll?: () => void;
+	onStatusChange?: (ticketId: number, status: TicketStatus) => void;
+	statusUpdatingTicketId?: number | null;
 }
 
 const DEFAULT_AGENT_AVATAR = '/assets/avatars/avatar2.png';
@@ -17,7 +20,7 @@ const getAssignedAgentAvatar = (ticket: Ticket) => {
 	return avatar && avatar.length > 0 ? avatar : DEFAULT_AGENT_AVATAR;
 };
 
-export function TicketList({tickets, maxItems, onViewAll}: TicketListProps) {
+export function TicketList({tickets, maxItems, onViewAll, onStatusChange, statusUpdatingTicketId}: TicketListProps) {
 	const {t} = useTranslation('agent');
 	const {t: tt} = useTranslation('tickets');
 	const navigate = useNavigate();
@@ -93,7 +96,7 @@ export function TicketList({tickets, maxItems, onViewAll}: TicketListProps) {
 								<div className="flex flex-wrap items-center gap-3 sm:gap-4 text-sm text-gray-500">
 									<div className="flex items-center gap-1">
 										<User className="w-4 h-4" />
-										<span>{t('createdBy')} {ticket.author.login || ticket.author.email}</span>
+										<span>{t('createdBy')} {getTicketAuthorLabel(ticket, tt('deletedUser'))}</span>
 									</div>
 
 									<div className="flex items-center gap-1">
@@ -101,17 +104,17 @@ export function TicketList({tickets, maxItems, onViewAll}: TicketListProps) {
 										<span>{formatDate(ticket.createdAt)}</span>
 									</div>
 
-									{ticket.assignedTo && (
+									{(ticket.assignedTo || ticket.assignedAgentDeleted) && (
 										<div className="flex items-center gap-1">
 											<img
 												src={getAssignedAgentAvatar(ticket)}
-												alt={ticket.assignedTo.login || ticket.assignedTo.email || tt('unknownAgent')}
+												alt={getTicketAssignedLabel(ticket, tt('unassigned'), tt('deletedAgent'))}
 												className="w-5 h-5 rounded-full"
 												onError={(e) => {
 													e.currentTarget.src = DEFAULT_AGENT_AVATAR;
 												}}
 											/>
-											<span>{t('assignedTo')} {ticket.assignedTo.login || ticket.assignedTo.email || tt('unknownAgent')}</span>
+											<span>{t('assignedTo')} {getTicketAssignedLabel(ticket, tt('unassigned'), tt('deletedAgent'))}</span>
 										</div>
 									)}
 								</div>
@@ -122,6 +125,23 @@ export function TicketList({tickets, maxItems, onViewAll}: TicketListProps) {
 									<AlertCircle className="w-4 h-4" />
 									<span className="text-sm font-medium">{priorityConfig[ticket.priority].label}</span>
 								</div>
+								{onStatusChange && (
+									<select
+										value={ticket.status}
+										disabled={statusUpdatingTicketId === ticket.id}
+										onClick={(event) => event.stopPropagation()}
+										onChange={(event) => {
+											event.stopPropagation();
+											onStatusChange(ticket.id, event.target.value as TicketStatus);
+										}}
+										className="px-2 py-1 rounded border border-gray-300 text-sm bg-white"
+									>
+										<option value={TicketStatus.OPEN}>{tt('statusOpen')}</option>
+										<option value={TicketStatus.IN_PROGRESS}>{tt('statusInProgress')}</option>
+										<option value={TicketStatus.RESOLVED}>{tt('statusResolved')}</option>
+										<option value={TicketStatus.CLOSED}>{tt('statusClosed')}</option>
+									</select>
+								)}
 							</div>
 						</div>
 					</div>

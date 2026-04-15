@@ -14,6 +14,7 @@ import { fetchMyNotifications, readAllMyNotifications, type RawNotification } fr
 import { type ClientNotificationItem } from '../components/client_components/NotificationView';
 import { getMyProfile, normalizeAvatarUrl } from '../services/profile';
 import { getSocket } from '../services/singleton';
+import { logout } from '../services/auth';
 import { useTranslation } from 'react-i18next';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
@@ -99,29 +100,17 @@ function Header() {
 	const { t: tc } = useTranslation('common');
 	const { t: tn } = useTranslation('notifications');
 
-	const handleLogout = () => {
-		localStorage.removeItem('access_token');
-		localStorage.removeItem('username');
-		localStorage.removeItem('user_role');
-		localStorage.removeItem('user_avatar');
-		window.dispatchEvent(new Event('auth-token-updated'));
+	const handleLogout = async () => {
+		await logout();
 		navigate('/login');
 	};
 
 	useEffect(() => {
-		const cachedAvatar = localStorage.getItem('user_avatar');
-		const normalizedCachedAvatar = normalizeAvatarUrl(cachedAvatar);
-		if (normalizedCachedAvatar) {
-			setAvatar(normalizedCachedAvatar);
-			localStorage.setItem('user_avatar', normalizedCachedAvatar);
-		}
-
 		const loadProfilAvatar = async () => {
 			try {
 				const data = await getMyProfile();
 				const nextAvatar = normalizeAvatarUrl(data?.avatar) ?? avatar1;
 				setAvatar(nextAvatar);
-				localStorage.setItem('user_avatar', nextAvatar);
 			} catch (error) {
 				console.error('Error on loading header avatar:', error);
 			}

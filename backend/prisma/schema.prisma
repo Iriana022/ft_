@@ -56,8 +56,8 @@ model ChatMessage {
     ticketId  Int
     ticket    Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
-    authorId  Int
-    author    User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+    authorId  Int?
+    author    User?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
 }
 
 
@@ -94,11 +94,12 @@ model Ticket {
 	chatUnlocked	      Boolean   		@default(false)
   clientUnreadCount   Int           @default(0)
   agentUnreadCount    Int           @default(0)
+  assignedAgentDeleted Boolean      @default(false)
 
-	author			        User			    @relation("CreatedBy", fields: [authorId], references: [id], onDelete: Cascade)
-	authorId		        Int
+  author			        User?			    @relation("CreatedBy", fields: [authorId], references: [id], onDelete: SetNull)
+  authorId		        Int?
 
-	AssignedTo		      User?			    @relation("AssignedTo", fields: [AssignedToId], references: [id], onDelete: Cascade)
+  AssignedTo		      User?			    @relation("AssignedTo", fields: [AssignedToId], references: [id], onDelete: SetNull)
 	AssignedToId	      Int?
 
 	messages            ChatMessage[]
@@ -114,8 +115,8 @@ model TicketInternalNote {
   ticketId  Int
   ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
-  authorId  Int
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  Int?
+  author    User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
   @@index([ticketId, createdAt])
 }
@@ -129,8 +130,8 @@ model TicketStatusHistory {
   ticketId   Int
   ticket     Ticket       @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
-  changedById Int
-  changedBy   User        @relation("TicketStatusChangedBy", fields: [changedById], references: [id], onDelete: Cascade)
+  changedById Int?
+  changedBy   User?       @relation("TicketStatusChangedBy", fields: [changedById], references: [id], onDelete: SetNull)
 
   @@index([ticketId, changedAt])
   @@index([toStatus, changedAt])

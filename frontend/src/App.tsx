@@ -2,17 +2,17 @@ import {RouterProvider} from 'react-router-dom'
 import {router} from './router';
 import {useEffect} from 'react';
 import {getSocket} from './services/singleton';
-import api from './services/api';
-import {clearAuthStorage} from './services/auth';
+import {clearAuthStorage, refreshSession} from './services/auth';
 
 function SocketBootstrap({children}: {children: React.ReactNode}) {
 
 	useEffect(() => {
 		const socket = getSocket();
 		let sessionCheckIntervalId: number | null = null;
+		const publicPaths = new Set(['/login', '/register', '/auth/callback', '/']);
 
 		const redirectToLoginIfSignedOut = () => {
-			if (localStorage.getItem('access_token')) {
+			if (publicPaths.has(window.location.pathname)) {
 				return;
 			}
 
@@ -21,31 +21,14 @@ function SocketBootstrap({children}: {children: React.ReactNode}) {
 			}
 		};
 
-		const verifySessionAgainstServer = async () => {
-			if (!localStorage.getItem('access_token')) {
-				return;
-			}
-
-			try {
-				await api.get('auth/me');
-			} catch {
-			}
-		};
-
 		const registerRoleChannel = () => {
-			const token = localStorage.getItem('access_token');
-			if (!token)
-				return;
-			socket.emit('registerRoleChannel', {token});
+			socket.emit('registerRoleChannel', {});
 		};
 
-		const onConnect = () => {
-			registerRoleChannel();
-		};
+		const syncSocketWithSession = async () => {
+			const user = await refreshSession(true);
 
-		const onAuthTokenUpdated = () => {
-			const token = localStorage.getItem('access_token');
-			if (!token) {
+			if (!user) {
 				if (socket.connected) {
 					socket.disconnect();
 				}
@@ -61,6 +44,14 @@ function SocketBootstrap({children}: {children: React.ReactNode}) {
 			registerRoleChannel();
 		};
 
+		const onConnect = () => {
+			registerRoleChannel();
+		};
+
+		const onAuthTokenUpdated = () => {
+			void syncSocketWithSession();
+		};
+
 		const onAccountDeleted = () => {
 			clearAuthStorage();
 			redirectToLoginIfSignedOut();
@@ -68,7 +59,7 @@ function SocketBootstrap({children}: {children: React.ReactNode}) {
 
 		const onVisibilityChange = () => {
 			if (document.visibilityState === 'visible') {
-				void verifySessionAgainstServer();
+				void syncSocketWithSession();
 			}
 		};
 		const onConnectError = (err: Error) => console.error('[socket] connect_error:', err.message);
@@ -80,12 +71,10 @@ function SocketBootstrap({children}: {children: React.ReactNode}) {
 		document.addEventListener('visibilitychange', onVisibilityChange);
 
 		sessionCheckIntervalId = window.setInterval(() => {
-			void verifySessionAgainstServer();
+			void syncSocketWithSession();
 		}, 15000);
 
-		if (!socket.connected && !!localStorage.getItem('access_token'))
-			socket.connect();
-		void verifySessionAgainstServer();
+		void syncSocketWithSession();
 		return () => {
 			socket.off('connect', onConnect);
 			socket.off('connect_error', onConnectError);

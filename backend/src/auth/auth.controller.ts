@@ -1,9 +1,11 @@
-import { Controller, Get, UseGuards, Req, Body, Post, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, UseGuards, Req, Body, Post, ConflictException, UnauthorizedException, Res } from '@nestjs/common';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
+import type { Response } from 'express';
+import { clearAuthCookie, setAuthCookie } from './auth-cookie';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -46,13 +48,14 @@ export class AuthController {
   @Post('login')
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiOperation({ summary: 'Connexion utilisateur' })
-  @ApiResponse({ status: 200, description: 'Connexion réussie (JWT renvoyé)' })
+  @ApiResponse({ status: 200, description: 'Connexion réussie (cookie HTTP-only posé)' })
   @ApiResponse({ status: 401, description: 'Identifiants invalides' })
-  async login(@Body() dto: any) {
+  async login(@Body() dto: any, @Res({ passthrough: true }) res: Response) {
     try {
       const user = await this.authService.validateLocalUser(dto.email, dto.password);
       const result = await this.authService.login(user);
-      return { ok: true, ...result };
+      setAuthCookie(res, result.access_token);
+      return { ok: true };
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         return {
@@ -73,7 +76,18 @@ export class AuthController {
   async selectRole(
     @Req() req,
     @Body() dto: { role: 'CLIENT' | 'AGENT' },
+    @Res({ passthrough: true }) res: Response,
   ) {
-    return this.authService.completeGoogleRoleSelection(req.user.userId, dto.role);
+    const result = await this.authService.completeGoogleRoleSelection(req.user.userId, dto.role);
+    setAuthCookie(res, result.access_token);
+    return { ok: true, role: dto.role };
+  }
+
+  @Post('logout')
+  @ApiOperation({ summary: 'Déconnexion utilisateur' })
+  @ApiResponse({ status: 200, description: 'Déconnexion réussie' })
+  logout(@Res({ passthrough: true }) res: Response) {
+    clearAuthCookie(res);
+    return { ok: true };
   }
 }

@@ -1,9 +1,10 @@
 import {type MouseEvent, useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {MagnifyingGlassIcon} from '@heroicons/react/24/solid';
+import {EyeIcon, TrashIcon} from '@heroicons/react/24/outline';
 import TicketFilter from '../../../components/client_components/TicketFilter';
 import {TicketPriority, TicketStatus, type Ticket} from '../../../types';
-import {fetchTickets, type RawTicket} from '../../../services/tickets';
+import {deleteTicketByAdmin, fetchTickets, getTicketAuthorLabel, type RawTicket, updateTicketStatus} from '../../../services/tickets';
 import {getSocket} from '../../../services/singleton';
 import {
 	getPriorityColor,
@@ -12,6 +13,7 @@ import {
 	getStatusText,
 	upsertTicketFromSocket,
 } from '../adminHelpers';
+import {useNavigate} from 'react-router-dom';
 
 interface TicketsFooterProps {
 	currentPage: number,
@@ -88,6 +90,9 @@ export function AdminTickets() {
 	const [tickets, setTickets] = useState<Ticket[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [statusUpdatingTicketId, setStatusUpdatingTicketId] = useState<number | null>(null);
+	const [deletingTicketId, setDeletingTicketId] = useState<number | null>(null);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		const loadTickets = async () => {
@@ -116,12 +121,19 @@ export function AdminTickets() {
 			setTickets((prev) => upsertTicketFromSocket(prev, payload));
 		};
 
+		const onTicketDeleted = (payload?: {ticketId?: number}) => {
+			if (typeof payload?.ticketId !== 'number') return;
+			setTickets((prev) => prev.filter((ticket) => ticket.id !== payload.ticketId));
+		};
+
 		socket.on('newTicket', onNewTicket);
 		socket.on('ticketStatusUpdated', onTicketStatusUpdated);
+		socket.on('ticketDeleted', onTicketDeleted);
 
 		return () => {
 			socket.off('newTicket', onNewTicket);
 			socket.off('ticketStatusUpdated', onTicketStatusUpdated);
+			socket.off('ticketDeleted', onTicketDeleted);
 		};
 	}, [t]);
 
@@ -134,8 +146,8 @@ export function AdminTickets() {
 
 		return tickets.filter((ticket) => {
 			const ticketId = 'tk-' + ticket.id;
-			const authorLogin = (ticket.author.login ?? '').toLowerCase();
-			const authorEmail = (ticket.author.email ?? '').toLowerCase();
+			const authorLogin = (ticket.author?.login ?? '').toLowerCase();
+			const authorEmail = (ticket.author?.email ?? '').toLowerCase();
 			const matchesSearch =
 				!hasSearch ||
 				ticketId.includes(normalizedSearch) ||
@@ -180,6 +192,36 @@ export function AdminTickets() {
 		setCurrentPage(1);
 	};
 
+	const handleStatusChange = async (ticketId: number, nextStatus: TicketStatus) => {
+		try {
+			setStatusUpdatingTicketId(ticketId);
+			const updated = await updateTicketStatus(ticketId, nextStatus);
+			setTickets((prev) => prev.map((ticket) => ticket.id === updated.id ? updated : ticket));
+		} catch (e) {
+			console.error('Erreur mise a jour statut ticket admin:', e);
+			setError(t('updateTicketStatusError'));
+		} finally {
+			setStatusUpdatingTicketId(null);
+		}
+	};
+
+	const handleDeleteTicket = async (ticketId: number) => {
+		if (!window.confirm(t('deleteTicketConfirm'))) {
+			return;
+		}
+
+		try {
+			setDeletingTicketId(ticketId);
+			await deleteTicketByAdmin(ticketId);
+			setTickets((prev) => prev.filter((ticket) => ticket.id !== ticketId));
+		} catch (e) {
+			console.error('Erreur suppression ticket admin:', e);
+			setError(t('deleteTicketError'));
+		} finally {
+			setDeletingTicketId(null);
+		}
+	};
+
 	if (loading) {
 		return <div className="p-4">{t('loadingTickets')}</div>;
 	}
@@ -220,6 +262,7 @@ export function AdminTickets() {
 								<th className="px-5 pb-3 font-medium whitespace-nowrap">{t('priorityColumn')}</th>
 								<th className="px-5 pb-3 font-medium whitespace-nowrap">{t('clientColumn')}</th>
 								<th className="px-5 pb-3 font-medium whitespace-nowrap">{t('dateColumn')}</th>
+								<th className="px-5 pb-3 font-medium whitespace-nowrap">{t('actionsColumn')}</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -248,10 +291,42 @@ export function AdminTickets() {
 											</span>
 										</td>
 										<td className="px-5 py-3 whitespace-nowrap">
-											{ticket.author.login ?? ticket.author.email}
+											{getTicketAuthorLabel(ticket, t('deletedUserLabel'))}
 										</td>
 										<td className="px-5 py-3 text-gray-500 whitespace-nowrap">
 											{new Date(ticket.createdAt).toLocaleDateString(i18n.language).replace(/\//g, '-')}
+										</td>
+										<td className="px-5 py-3 whitespace-nowrap">
+											<div className="flex items-center gap-2">
+												<select
+													value={ticket.status}
+													disabled={statusUpdatingTicketId === ticket.id || deletingTicketId === ticket.id}
+													onChange={(event) => void handleStatusChange(ticket.id, event.target.value as TicketStatus)}
+													className="px-2 py-1 rounded border border-gray-300 text-xs bg-white"
+												>
+													<option value={TicketStatus.OPEN}>{t('statusOpen')}</option>
+													<option value={TicketStatus.IN_PROGRESS}>{t('statusInProgress')}</option>
+													<option value={TicketStatus.RESOLVED}>{t('statusResolved')}</option>
+													<option value={TicketStatus.CLOSED}>{t('statusClosed')}</option>
+												</select>
+												<button
+													type="button"
+													onClick={() => navigate('/chat_ticket?ticketId=' + ticket.id, {state: {ticket}})}
+													className="p-2 rounded hover:bg-gray-100"
+													aria-label={t('openTicketAction')}
+												>
+													<EyeIcon className="w-4 h-4 text-navy" />
+												</button>
+												<button
+													type="button"
+													onClick={() => void handleDeleteTicket(ticket.id)}
+													disabled={deletingTicketId === ticket.id}
+													className="p-2 rounded hover:bg-red-50 disabled:opacity-50"
+													aria-label={t('deleteTicketAction')}
+												>
+													<TrashIcon className="w-4 h-4 text-red-500" />
+												</button>
+											</div>
 										</td>
 									</tr>
 								))

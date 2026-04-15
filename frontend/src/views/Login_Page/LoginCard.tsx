@@ -3,7 +3,7 @@ import {useNavigate, useLocation} from 'react-router-dom';
 import {Button} from '../../components/login_components/button';
 import Separator from '../../components/login_components/Separator';
 import api from '../../services/api';
-import {getHomeRouteByRole, getRoleFromToken} from '../../services/auth';
+import {getHomeRouteByRole, refreshSession} from '../../services/auth';
 import GoogleButton from '../../components/login_components/GoogleButton';
 import {
 	EnvelopeIcon,
@@ -60,30 +60,15 @@ export function LoginCard() {
 				setError(response.data?.message || "Identifiants incorrects");
 				return;
 			}
+			window.dispatchEvent(new Event('auth-token-updated'));
 
-			const {access_token} = response.data;
-			if (!access_token) {
+			const sessionUser = await refreshSession(true);
+			if (!sessionUser?.role) {
 				setError("Identifiants incorrects");
 				return;
 			}
 
-			localStorage.setItem('access_token', access_token);
-			window.dispatchEvent(new Event('auth-token-updated'));
-
-			try {
-				const meResponse = await api.get('/auth/me');
-				const username = meResponse.data?.username;
-				const role = meResponse.data?.role ?? getRoleFromToken(access_token);
-
-				if (username) localStorage.setItem('username', username);
-				if (role) localStorage.setItem('user_role', role);
-
-				navigate(getHomeRouteByRole(role));
-			} catch {
-				const role = getRoleFromToken(access_token);
-				if (role) localStorage.setItem('user_role', role);
-				navigate(getHomeRouteByRole(role));
-			}
+			navigate(getHomeRouteByRole(sessionUser.role));
 
 		} catch (err: any) {
 			setError(err.response?.data?.message || "Identifiants incorrects");

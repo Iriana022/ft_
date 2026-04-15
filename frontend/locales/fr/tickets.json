@@ -52,5 +52,7 @@
   "daysAgo": "Il y a {{count}} j",
   "unreadMessagesTitle": "{{count}} message(s) non lu(s)",
   "unknownAgent": "Agent",
-  "unknownUser": "Inconnu"
+  "unknownUser": "Inconnu",
+  "deletedUser": "Utilisateur supprime",
+  "deletedAgent": "Agent supprime"
 }

@@ -17,6 +17,9 @@ import TikeoLogo from '../../../components/client_components/TikeoLogo';
 import Avatar from '../../../components/client_components/Avatar';
 import Separator from '../../../components/login_components/Separator';
 import {useNavigate} from 'react-router-dom';
+import {logout} from '../../../services/auth';
+import {useEffect, useState} from 'react';
+import {getMyProfile, normalizeAvatarUrl} from '../../../services/profile';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -70,6 +73,33 @@ interface DrawerSideContentProps {
 export function DrawerSideContent(props: DrawerSideContentProps) {
 	const {t} = useTranslation('admin');
 	const navigate = useNavigate();
+	const [avatar, setAvatar] = useState(avatar1);
+
+	useEffect(() => {
+		let mounted = true;
+
+		const loadAvatar = async () => {
+			try {
+				const profile = await getMyProfile();
+				if (!mounted) return;
+				setAvatar(normalizeAvatarUrl(profile?.avatar) ?? avatar1);
+			} catch {
+			}
+		};
+
+		const handleAdminAvatarUpdated = (event: Event) => {
+			const customEvent = event as CustomEvent<{avatar?: string}>;
+			setAvatar(normalizeAvatarUrl(customEvent.detail?.avatar) ?? avatar1);
+		};
+
+		void loadAvatar();
+		window.addEventListener('admin-avatar-updated', handleAdminAvatarUpdated);
+
+		return () => {
+			mounted = false;
+			window.removeEventListener('admin-avatar-updated', handleAdminAvatarUpdated);
+		};
+	}, []);
 
 	const handleNavClick = () => {
 		if (window.innerWidth < 1024) {
@@ -77,12 +107,8 @@ export function DrawerSideContent(props: DrawerSideContentProps) {
 		}
 	};
 
-	const handleLogout = () => {
-		localStorage.removeItem('access_token');
-		localStorage.removeItem('username');
-		localStorage.removeItem('user_role');
-		localStorage.removeItem('user_avatar');
-		window.dispatchEvent(new Event('auth-token-updated'));
+	const handleLogout = async () => {
+		await logout();
 		navigate('/login');
 	};
 
@@ -168,7 +194,7 @@ export function DrawerSideContent(props: DrawerSideContentProps) {
 				className="mt-auto pb-10 w-full flex flex-col items-center is-drawer-close:items-center is-drawer-open:items-start"
 			>
 				<div onClick={() => { navigate('profile'); props.setIsOpen(false); }}>
-					<Avatar src={avatar1} size="md" />
+					<Avatar src={avatar} size="md" />
 				</div>
 				<div className="flex flex-col mt-2 is-drawer-close:hidden">
 					<span className="text-sm text-white">{t('adminLabel')}</span>

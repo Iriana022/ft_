@@ -4,6 +4,7 @@ import LanguageSelector from "../../components/client_components/LanguageSelecto
 import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {deleteMyAccount} from "../../services/profile";
+import {clearAuthStorage} from '../../services/auth';
 import ConfirmModal from "../../components/client_components/ConfirmModal";
 import {useTranslation} from 'react-i18next';
 
@@ -19,12 +20,7 @@ function ClientSettings() {
 			setIsDeleting(true);
 			setError('');
 			await deleteMyAccount();
-
-			localStorage.removeItem('access_token');
-			localStorage.removeItem('username');
-			localStorage.removeItem('user_role');
-			localStorage.removeItem('user_avatar');
-			window.dispatchEvent(new Event('auth-token-updated'));
+			clearAuthStorage();
 
 			navigate('/login');
 		} catch (e) {

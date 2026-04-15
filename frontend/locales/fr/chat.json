@@ -42,6 +42,8 @@
   "priorityUrgent": "Urgente",
   "createdBy": "Créé par",
   "unknownUser": "Inconnu",
+  "deletedUser": "Utilisateur supprime",
+  "deletedAgent": "Agent supprime",
   "ticketChannelClosed": "Ce canal de messagerie est fermé.",
   "clientChannelPending": "Le canal de messagerie s'ouvrira quand un agent prendra en charge votre ticket.",
   "writeMessagePlaceholder": "Écrire un message...",
