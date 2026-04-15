@@ -39,7 +39,6 @@ function Profil() {
 
 			const savedUsername = updated?.login ?? username.trim();
 			setUsername(savedUsername);
-			localStorage.setItem('username', savedUsername);
 		} catch (err) {
 			console.error('Erreur sauvegarde profil:', err);
 			setError(t('saveProfileError'));
@@ -57,7 +56,6 @@ function Profil() {
 			const updated = await uploadMyAvatar(file);
 			const nextAvatar = normalizeAvatarUrl(updated?.avatar) ?? avatar1;
 			setAvatar(nextAvatar);
-			localStorage.setItem('user_avatar', nextAvatar);
 		} catch (err) {
 			console.error('Error on uploading your avatar:', err);
 			setError(t('avatarChangeError'));
@@ -69,13 +67,6 @@ function Profil() {
 	}
 
 	useEffect(() => {
-		const cachedAvatar = localStorage.getItem('user_avatar');
-		const normalizedCachedAvatar = normalizeAvatarUrl(cachedAvatar);
-		if (normalizedCachedAvatar) {
-			setAvatar(normalizedCachedAvatar);
-			localStorage.setItem('user_avatar', normalizedCachedAvatar);
-		}
-
 		const loadProfile = async () => {
 			try {
 				setIsLoading(true);
@@ -89,7 +80,6 @@ function Profil() {
 				setEmail(data?.email ?? '');
 				const nextAvatar = normalizeAvatarUrl(data?.avatar) ?? avatar1;
 				setAvatar(nextAvatar);
-				localStorage.setItem('user_avatar', nextAvatar);
 			} catch (err) {
 				console.error('Error loading profile:', err);
 				setError(t('loadProfileError'));

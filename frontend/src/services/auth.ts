@@ -1,100 +1,120 @@
+import axios from 'axios';
 import { UserRole } from '../types';
+
+export type SessionUser = {
+  userId: number;
+  username: string;
+  role: UserRole;
+  avatar?: string | null;
+};
+
+const sessionApi = axios.create({
+  baseURL: `${window.location.origin}/api/`,
+  withCredentials: true,
+});
 
 const isUserRole = (value: unknown): value is UserRole => {
   return value === UserRole.CLIENT || value === UserRole.AGENT || value === UserRole.ADMIN;
 };
 
-const decodeJwtPayload = (token: string): Record<string, unknown> | null => {
-  try {
-    const payloadBase64Url = token.split('.')[1];
-    if (!payloadBase64Url) return null;
+let cachedSessionUser: SessionUser | null = null;
+let hasResolvedSession = false;
+let pendingSessionRequest: Promise<SessionUser | null> | null = null;
 
-    const base64 = payloadBase64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
+const notifySessionChanged = (): void => {
+  window.dispatchEvent(new Event('auth-token-updated'));
+};
 
-    const payloadJson = atob(padded);
-    return JSON.parse(payloadJson) as Record<string, unknown>;
-  } catch {
-    return null;
-  }
+const normalizeSessionUser = (value: unknown): SessionUser | null => {
+  if (!value || typeof value !== 'object') return null;
+
+  const payload = value as Record<string, unknown>;
+  const userId = payload.userId;
+  const username = payload.username;
+  const role = payload.role;
+  const avatar = payload.avatar;
+
+  if (!isUserRole(role)) return null;
+  if (typeof userId !== 'number' || !Number.isInteger(userId) || userId <= 0) return null;
+  if (typeof username !== 'string' || username.length === 0) return null;
+
+  return {
+    userId,
+    username,
+    role,
+    avatar: typeof avatar === 'string' ? avatar : null,
+  };
 };
 
 export const clearAuthStorage = (notify: boolean = true): void => {
-  const hadSessionData =
-    !!localStorage.getItem('access_token') ||
-    !!localStorage.getItem('user_role') ||
-    !!localStorage.getItem('username') ||
-    !!localStorage.getItem('user_avatar');
+  const hadSession = cachedSessionUser !== null || hasResolvedSession;
+  cachedSessionUser = null;
+  hasResolvedSession = false;
+  pendingSessionRequest = null;
 
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('user_role');
-  localStorage.removeItem('username');
-  localStorage.removeItem('user_avatar');
-
-  if (notify && hadSessionData) {
-    window.dispatchEvent(new Event('auth-token-updated'));
+  if (notify && hadSession) {
+    notifySessionChanged();
   }
 };
 
-export const isTokenExpired = (token: string | null): boolean => {
-  if (!token) return true;
+export const refreshSession = async (force: boolean = false): Promise<SessionUser | null> => {
+  if (!force && hasResolvedSession) {
+    return cachedSessionUser;
+  }
 
-  const payload = decodeJwtPayload(token);
-  if (!payload) return true;
+  if (pendingSessionRequest) {
+    return pendingSessionRequest;
+  }
 
-  const exp = payload.exp;
-  if (typeof exp !== 'number') return true;
+  pendingSessionRequest = sessionApi
+    .get('/auth/me')
+    .then((response) => {
+      cachedSessionUser = normalizeSessionUser(response.data);
+      return cachedSessionUser;
+    })
+    .catch(() => {
+      cachedSessionUser = null;
+      return null;
+    })
+    .finally(() => {
+      hasResolvedSession = true;
+      pendingSessionRequest = null;
+    });
 
-  const nowInSeconds = Math.floor(Date.now() / 1000);
-  return exp <= nowInSeconds;
+  return pendingSessionRequest;
+};
+
+export const logout = async (): Promise<void> => {
+  try {
+    await sessionApi.post('/auth/logout');
+  } catch {
+  } finally {
+    clearAuthStorage();
+  }
 };
 
 export const hasValidSession = (): boolean => {
-  const token = localStorage.getItem('access_token');
-  if (!token) {
-    clearAuthStorage(false);
-    return false;
-  }
-
-  if (isTokenExpired(token)) {
-    clearAuthStorage();
-    return false;
-  }
-  return true;
+  return cachedSessionUser !== null;
 };
 
-export const getRoleFromToken = (token: string | null): UserRole | null => {
-  if (!token) return null;
-
-  const payload = decodeJwtPayload(token);
-  const role = payload?.role;
-
-  return isUserRole(role) ? role : null;
-};
-
-export const getUserIdFromToken = (token: string | null): number | null => {
-  if (!token) return null;
-
-  const payload = decodeJwtPayload(token);
-  const sub = payload?.sub;
-
-  return typeof sub === 'number' ? sub : null;
+export const getSessionUser = (): SessionUser | null => {
+  return cachedSessionUser;
 };
 
 export const getStoredUserRole = (): UserRole | null => {
-  if (!hasValidSession()) return null;
+  return cachedSessionUser?.role ?? null;
+};
 
-  const roleFromStorage = localStorage.getItem('user_role');
-  if (isUserRole(roleFromStorage)) {
-    return roleFromStorage;
-  }
+export const getStoredUserId = (): number | null => {
+  return cachedSessionUser?.userId ?? null;
+};
 
-  const roleFromToken = getRoleFromToken(localStorage.getItem('access_token'));
-  if (roleFromToken) {
-    localStorage.setItem('user_role', roleFromToken);
-  }
+export const getStoredUsername = (): string | null => {
+  return cachedSessionUser?.username ?? null;
+};
 
-  return roleFromToken;
+export const getStoredAvatar = (): string | null => {
+  return cachedSessionUser?.avatar ?? null;
 };
 
 export const getHomeRouteByRole = (role: UserRole | null): string => {

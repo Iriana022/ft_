@@ -3,7 +3,7 @@ import {Search, Filter} from 'lucide-react';
 import {TicketStatus, TicketPriority, UserRole} from '../../types';
 import type {Ticket} from '../../types';
 import {TicketList} from './TicketList';
-import {fetchTickets, normalizeTicket, sortTicketsForAgent, fetchMyNotifications, readAllMyNotifications, type RawTicket, type RawNotification} from '../../services/tickets';
+import {fetchTickets, normalizeTicket, sortTicketsForAgent, fetchMyNotifications, readAllMyNotifications, type RawTicket, type RawNotification, updateTicketStatus} from '../../services/tickets';
 import {getSocket} from '../../services/singleton';
 import {
 	emitNotificationsMarkedAsRead,
@@ -103,6 +103,7 @@ export function TicketsPage() {
 	const [searchTerm, setSearchTerm] = useState('');
 	const [statusFilter, setStatusFilter] = useState<TicketStatus | 'ALL'>(TicketStatus.OPEN);
 	const [priorityFilter, setPriorityFilter] = useState<TicketPriority | 'ALL'>('ALL');
+	const [updatingStatusTicketId, setUpdatingStatusTicketId] = useState<number | null>(null);
 
 	const [notifications, setNotifications] = useState<ClientNotificationItem[]>([]);
 	const hasNotification = useMemo(
@@ -183,7 +184,7 @@ export function TicketsPage() {
 		const loadTickets = async () => {
 			try {
 				const data = await fetchTickets();
-				setTickets(sortTicketsForAgent(data.filter((ticket) => ticket.author.role === UserRole.CLIENT)));
+				setTickets(sortTicketsForAgent(data.filter((ticket) => !ticket.author || ticket.author.role === UserRole.CLIENT)));
 			} catch (error) {
 				console.error('Erreur chargement tickets:', error);
 			} finally {
@@ -208,7 +209,7 @@ export function TicketsPage() {
 
 		const onTicketStatusUpdated = (payload: RawTicket) => {
 			const updatedTicket = normalizeTicket(payload);
-			if (updatedTicket.author.role !== UserRole.CLIENT) return;
+			if (updatedTicket.author && updatedTicket.author.role !== UserRole.CLIENT) return;
 
 			setTickets((prev) => {
 				const exists = prev.some((ticket) => ticket.id === updatedTicket.id);
@@ -219,14 +220,33 @@ export function TicketsPage() {
 			});
 		};
 
+		const onTicketDeleted = (payload?: {ticketId?: number}) => {
+			if (typeof payload?.ticketId !== 'number') return;
+			setTickets((prev) => prev.filter((ticket) => ticket.id !== payload.ticketId));
+		};
+
 		loadTickets();
 		socket.on('ticketStatusUpdated', onTicketStatusUpdated);
 		socket.on('ticketUnreadUpdated', onUnread);
+		socket.on('ticketDeleted', onTicketDeleted);
 		return () => {
 			socket.off('ticketStatusUpdated', onTicketStatusUpdated);
 			socket.off('ticketUnreadUpdated', onUnread);
+			socket.off('ticketDeleted', onTicketDeleted);
 		};
 	}, []);
+
+	const handleStatusChange = async (ticketId: number, status: TicketStatus) => {
+		try {
+			setUpdatingStatusTicketId(ticketId);
+			const updated = await updateTicketStatus(ticketId, status);
+			setTickets((prev) => sortTicketsForAgent(prev.map((ticket) => ticket.id === updated.id ? updated : ticket)));
+		} catch (error) {
+			console.error('Erreur modification statut ticket:', error);
+		} finally {
+			setUpdatingStatusTicketId(null);
+		}
+	};
 
 	const filteredTickets = tickets.filter(ticket => {
 		const matchesSearch = ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -325,7 +345,11 @@ export function TicketsPage() {
 
 						{/* Tickets List */}
 						{filteredTickets.length > 0 ? (
-							<TicketList tickets={filteredTickets} />
+							<TicketList
+								tickets={filteredTickets}
+								onStatusChange={handleStatusChange}
+								statusUpdatingTicketId={updatingStatusTicketId}
+							/>
 						) : (
 							<div className="rounded-xl border p-12 text-center bg-white border-gray-200">
 								<div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 bg-gray-100">

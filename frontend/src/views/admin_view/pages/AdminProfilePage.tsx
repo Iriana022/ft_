@@ -1,6 +1,6 @@
 import {useEffect, useMemo, useRef, useState, type ChangeEvent} from 'react';
 import {Camera, Save} from 'lucide-react';
-import {getMyProfile, updateMyProfile, uploadMyAvatar} from '../../../services/profile';
+import {getMyProfile, normalizeAvatarUrl, updateMyProfile, uploadMyAvatar} from '../../../services/profile';
 import {useTranslation} from 'react-i18next';
 import LanguageSelector from '../../../components/client_components/LanguageSelector';
 
@@ -42,12 +42,13 @@ function AdminProfilePage() {
 			try {
 				setLoadingProfile(true);
 				const me = await getMyProfile();
+				const nextAvatar = normalizeAvatarUrl(me?.avatar) ?? '';
 				setProfile({
 					firstName: me?.firstName ?? '',
 					lastName: me?.lastName ?? '',
 					login: me?.login ?? '',
 					email: me?.email ?? '',
-					avatar: me?.avatar ?? '',
+					avatar: nextAvatar,
 					role: me?.role ?? '',
 				});
 			} catch (e) {
@@ -108,11 +109,15 @@ function AdminProfilePage() {
 		try {
 			clearMessages();
 			const updated = await uploadMyAvatar(file);
-			const nextAvatar = updated?.avatar ?? '';
+			const nextAvatar = normalizeAvatarUrl(updated?.avatar) ?? '';
 
 			if (nextAvatar) {
 				setProfile((prev) => ({...prev, avatar: nextAvatar}));
-				localStorage.setItem('user_avatar', nextAvatar);
+				window.dispatchEvent(
+					new CustomEvent('admin-avatar-updated', {
+						detail: {avatar: nextAvatar},
+					}),
+				);
 			}
 
 			setFeedback(t('avatarUpdated'));

@@ -59,6 +59,11 @@ export function AdminDashboard() {
 			setTickets((prev) => upsertTicketFromSocket(prev, payload));
 		};
 
+		const onTicketDeleted = (payload?: {ticketId?: number}) => {
+			if (typeof payload?.ticketId !== 'number') return;
+			setTickets((prev) => prev.filter((ticket) => ticket.id !== payload.ticketId));
+		};
+
 		const onAdminUsersChanged = () => {
 			void refreshUsers();
 		};
@@ -73,6 +78,7 @@ export function AdminDashboard() {
 
 		socket.on('newTicket', onNewTicket);
 		socket.on('ticketStatusUpdated', onTicketStatusUpdated);
+		socket.on('ticketDeleted', onTicketDeleted);
 		socket.on('adminUsersChanged', onAdminUsersChanged);
 		socket.on('adminUserDeleted', onAdminUserDeleted);
 		socket.on('systemNotification', onSystemNotification);
@@ -81,6 +87,7 @@ export function AdminDashboard() {
 			mounted = false;
 			socket.off('newTicket', onNewTicket);
 			socket.off('ticketStatusUpdated', onTicketStatusUpdated);
+			socket.off('ticketDeleted', onTicketDeleted);
 			socket.off('adminUsersChanged', onAdminUsersChanged);
 			socket.off('adminUserDeleted', onAdminUserDeleted);
 			socket.off('systemNotification', onSystemNotification);

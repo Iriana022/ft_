@@ -1,4 +1,4 @@
-import { Controller, Body, Post, Get, UseGuards, Req, Patch, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Body, Post, Get, UseGuards, Req, Patch, Param, ParseIntPipe, Query, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { TicketsService } from './tickets.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -134,6 +134,16 @@ export class TicketsController {
     ) {
         const parsedDays = days ? Number(days) : 7;
         return this.ticketsService.getTicketResolutionHistory(parsedDays, req.user.role as any);
+    }
+
+    @Delete(':id')
+    @UseGuards(JwtAuthGuard)
+    @HttpCode(HttpStatus.OK)
+    async deleteTicket(
+        @Param('id', ParseIntPipe) id: number,
+        @Req() req: { user: { userId: number } },
+    ) {
+        return this.ticketsService.deleteTicketByAdmin(id, req.user.userId);
     }
 
 }

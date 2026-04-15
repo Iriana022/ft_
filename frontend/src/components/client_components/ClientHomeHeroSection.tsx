@@ -2,6 +2,7 @@ import {useState, useEffect} from 'react';
 import Button from './Button';
 import {PlusCircleIcon} from '@heroicons/react/24/outline';
 import CreateTicketView from './CreateTicketView';
+import {getMyProfile} from '../../services/profile';
 import {useTranslation} from 'react-i18next';
 
 const heroImage = '/assets/hero_image.png'
@@ -17,10 +18,19 @@ function ClientHomeHeroSection(props: ClientHomeHeroSectionProps) {
 	const {t} = useTranslation("client_home");
 
 	useEffect(() => {
-		const storedUsername = localStorage.getItem('username');
-		if (storedUsername) {
-			setUsername(storedUsername);
-		}
+		let mounted = true;
+
+		void getMyProfile()
+			.then((profile) => {
+				if (!mounted) return;
+				if (profile?.login) setUsername(profile.login);
+			})
+			.catch(() => {
+			});
+
+		return () => {
+			mounted = false;
+		};
 	}, []);
 
 	const handleClick = () => {

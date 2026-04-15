@@ -53,11 +53,18 @@ function ClientHome() {
 				),
 			);
 		};
+
+		const handleTicketDeleted = (payload?: {ticketId?: number}) => {
+			if (typeof payload?.ticketId !== 'number') return;
+			setTickets((prev) => prev.filter((ticket) => ticket.id !== payload.ticketId));
+		};
 		socket.on('ticketStatusUpdated', handleticketStatusUpdated);
 		socket.on('ticketUnreadUpdated', handleticketUnreadUpdated);
+		socket.on('ticketDeleted', handleTicketDeleted);
 		return () => {
 			socket.off('ticketStatusUpdated', handleticketStatusUpdated);
 			socket.off('ticketUnreadUpdated', handleticketUnreadUpdated);
+			socket.off('ticketDeleted', handleTicketDeleted);
 		};
 	}, [loadTickets]);
 

@@ -108,8 +108,7 @@ function ChatTicketViewClient() {
 		const socket = getSocket();
 
 		const joinRoom = () => {
-			const token = localStorage.getItem('access_token') ?? undefined;
-			socket.emit('joinTicket', {ticketId, token});
+			socket.emit('joinTicket', {ticketId});
 		};
 
 		const onnewMessage = (message: ChatMessage) => {
@@ -142,10 +141,16 @@ function ChatTicketViewClient() {
 			}
 		};
 
+		const onTicketDeleted = (payload?: {ticketId?: number}) => {
+			if (!payload?.ticketId || payload.ticketId !== ticketId) return;
+			navigate(-1);
+		};
+
 		socket.on('connect', joinRoom);
 		socket.on('newMessage', onnewMessage);
 		socket.on('ticketStatusUpdated', onticketStatusUpdated);
 		socket.on('ticketClosed', onticketClosed);
+		socket.on('ticketDeleted', onTicketDeleted);
 		if (socket.connected)
 			joinRoom();
 		return () => {
@@ -154,8 +159,9 @@ function ChatTicketViewClient() {
 			socket.off('newMessage', onnewMessage);
 			socket.off('ticketStatusUpdated', onticketStatusUpdated);
 			socket.off('ticketClosed', onticketClosed);
+			socket.off('ticketDeleted', onTicketDeleted);
 		}
-	}, [ticketId]);
+	}, [ticketId, navigate]);
 
 	const handleSendMessage = async () => {
 		if (!newMessage.trim() || !canSendMessage || isClosed) return;
@@ -209,7 +215,7 @@ function ChatTicketViewClient() {
 								<div className="chat-image avatar">
 									<img
 										src={getMessageAvatar(msg)}
-										alt={msg.author.login ?? msg.author.email ?? 'User avatar'}
+										alt={msg.author?.login ?? msg.author?.email ?? t('unknownUser')}
 										className="w-8 h-8 rounded-full object-cover"
 										onError={(e) => {
 											e.currentTarget.src = msg.isFromSupport

@@ -8,7 +8,7 @@ import {
 } from 'recharts';
 import Separator from '../../../components/login_components/Separator';
 import {type HeroIconType, type Ticket, StatCardType} from '../../../types';
-import {fetchTickets, fetchTicketResolutionHistory, type RawTicket, type TicketResolutionHistoryItem} from '../../../services/tickets';
+import {fetchTickets, fetchTicketResolutionHistory, getTicketAuthorLabel, type RawTicket, type TicketResolutionHistoryItem} from '../../../services/tickets';
 import {getSocket} from '../../../services/singleton';
 import {isWithinDateRange} from '../../../services/dateRange';
 import {
@@ -135,12 +135,19 @@ export function TicketsActivities({fromDate = '', toDate = ''}: DateRangeProps) 
 				.catch((err) => console.error('Erreur chargement historique résolution:', err));
 		};
 
+		const onTicketDeleted = (payload?: {ticketId?: number}) => {
+			if (typeof payload?.ticketId !== 'number') return;
+			setTickets((prev) => prev.filter((ticket) => ticket.id !== payload.ticketId));
+		};
+
 		socket.on('newTicket', onNewTicket);
 		socket.on('ticketStatusUpdated', onTicketStatusUpdated);
+		socket.on('ticketDeleted', onTicketDeleted);
 
 		return () => {
 			socket.off('newTicket', onNewTicket);
 			socket.off('ticketStatusUpdated', onTicketStatusUpdated);
+			socket.off('ticketDeleted', onTicketDeleted);
 		};
 	}, [t]);
 
@@ -246,12 +253,19 @@ export function RecentTickets({fromDate = '', toDate = ''}: DateRangeProps) {
 			setTickets((prev) => upsertTicketFromSocket(prev, payload));
 		};
 
+		const onTicketDeleted = (payload?: {ticketId?: number}) => {
+			if (typeof payload?.ticketId !== 'number') return;
+			setTickets((prev) => prev.filter((ticket) => ticket.id !== payload.ticketId));
+		};
+
 		socket.on('newTicket', onNewTicket);
 		socket.on('ticketStatusUpdated', onTicketStatusUpdated);
+		socket.on('ticketDeleted', onTicketDeleted);
 
 		return () => {
 			socket.off('newTicket', onNewTicket);
 			socket.off('ticketStatusUpdated', onTicketStatusUpdated);
+			socket.off('ticketDeleted', onTicketDeleted);
 		};
 	}, [t]);
 
@@ -293,7 +307,7 @@ export function RecentTickets({fromDate = '', toDate = ''}: DateRangeProps) {
 									<tr key={ticket.id} className="border-b hover:bg-cream/70 transition">
 										<td className="px-5 py-3 text-navy">TK-{ticket.id}</td>
 										<td className="px-5 py-3">{ticket.title}</td>
-										<td className="px-5 py-3">{ticket.author?.login ?? 'N/A'}</td>
+										<td className="px-5 py-3">{getTicketAuthorLabel(ticket, t('deletedUserLabel'))}</td>
 										<td className="px-5 py-3">
 											<span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(ticket.status)[0]} ${getStatusColor(ticket.status)[1]}`}>
 												{getStatusText(ticket.status, t)}

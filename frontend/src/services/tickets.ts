@@ -11,13 +11,14 @@ export type RawUser = Omit<User, 'createdAt'> & {
 export type RawTicket = Omit<Ticket, 'createdAt' | 'updatedAt' | 'author' | 'assignedTo' | 'assignedToId'> & {
 	createdAt: string | Date;
 	updatedAt: string | Date;
-	author: RawUser;
-	assignedTo?: RawUser;
-	AssignedTo?: RawUser;
-	assignedToId?: number;
-	AssignedToId?: number;
+	author?: RawUser | null;
+	assignedTo?: RawUser | null;
+	AssignedTo?: RawUser | null;
+	assignedToId?: number | null;
+	AssignedToId?: number | null;
 	clientUnreadCount?: number;
 	agentUnreadCount?: number;
+	assignedAgentDeleted?: boolean;
 };
 
 const uploadsApiPrefix = '/api/uploads/';
@@ -39,8 +40,8 @@ const normalizeAvatarUrl = (avatar?: string | null) => {
 	return uploadsApiPrefix + value;
 };
 
-const normalizeUser = (user: RawUser): User => {
-	if (!user) return user;
+const normalizeUser = (user?: RawUser | null): User | null => {
+	if (!user) return null;
 
 	return {
 		...user,
@@ -59,7 +60,7 @@ const normalizeUser = (user: RawUser): User => {
 
 export type RawTicketInternalNote = Omit<TicketInternalNote, 'createdAt' | 'author'> & {
 	createdAt: string | Date;
-	author: RawUser;
+	author?: RawUser | null;
 };
 
 export type RawTicketResolutionHistoryItem = {
@@ -105,7 +106,32 @@ export const normalizeTicket = (ticket: RawTicket): Ticket => {
 		assignedToId: ticket.assignedToId ?? ticket.AssignedToId,
 		clientUnreadCount: ticket.clientUnreadCount ?? 0,
 		agentUnreadCount: ticket.agentUnreadCount ?? 0,
+		assignedAgentDeleted: ticket.assignedAgentDeleted ?? false,
 	};
+};
+
+export const getTicketAuthorLabel = (
+	ticket: Pick<Ticket, 'author'>,
+	fallback: string,
+): string => {
+	if (!ticket.author) return fallback;
+	return ticket.author.login ?? ticket.author.email ?? fallback;
+};
+
+export const getTicketAssignedLabel = (
+	ticket: Pick<Ticket, 'assignedTo' | 'assignedAgentDeleted'>,
+	unassignedLabel: string,
+	deletedLabel: string,
+): string => {
+	if (ticket.assignedTo) {
+		return ticket.assignedTo.login ?? ticket.assignedTo.email ?? deletedLabel;
+	}
+
+	if (ticket.assignedAgentDeleted) {
+		return deletedLabel;
+	}
+
+	return unassignedLabel;
 };
 
 export const sortTicketsForAgent = (tickets: Ticket[]): Ticket[] => {
@@ -145,6 +171,10 @@ export const fetchUsers = async (): Promise<User[]> => {
 
 export const deleteUserByAdmin = async (userId: number): Promise<void> => {
 	await api.delete('/user/' + userId);
+};
+
+export const deleteTicketByAdmin = async (ticketId: number): Promise<void> => {
+	await api.delete('/tickets/' + ticketId);
 };
 
 export const getTicketInternalNotes = async (ticketId: number): Promise<TicketInternalNote[]> => {

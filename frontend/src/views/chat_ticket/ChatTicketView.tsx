@@ -23,10 +23,12 @@ import {
 	normalizeTicket,
 	getTicketInternalNotes,
 	createTicketInternalNote,
+	getTicketAssignedLabel,
+	getTicketAuthorLabel,
 	type RawTicket,
 } from '../../services/tickets';
 import {getSocket} from '../../services/singleton';
-import {getUserIdFromToken} from '../../services/auth';
+import {refreshSession} from '../../services/auth';
 import {useTranslation} from 'react-i18next';
 
 type LocationState = {
@@ -79,7 +81,7 @@ function ChatTicketView() {
 	const navigate = useNavigate();
 	const location = useLocation() as {state?: LocationState};
 	const [searchParams] = useSearchParams();
-	const currentUserId = getUserIdFromToken(localStorage.getItem('access_token'));
+	const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 	const [activeTab, setActiveTab] = useState<'responses' | 'notes'>('responses');
 	const [newResponse, setNewResponse] = useState('');
 	const [newNote, setNewNote] = useState('');
@@ -148,6 +150,19 @@ function ChatTicketView() {
 
 	const isClosedTicket = ticket.status === TicketStatus.CLOSED;
 
+	useEffect(() => {
+		let mounted = true;
+
+		void refreshSession().then((user) => {
+			if (!mounted) return;
+			setCurrentUserId(user?.userId ?? null);
+		});
+
+		return () => {
+			mounted = false;
+		};
+	}, []);
+
 
 	useEffect(() => {
 		if (!ticket.id) return;
@@ -180,8 +195,7 @@ function ChatTicketView() {
 		const socket = getSocket();
 
 		const joinInternal = () => {
-			const token = localStorage.getItem('access_token') ?? undefined;
-			socket.emit('joinInternalNotes', {ticketId: ticket.id, token});
+			socket.emit('joinInternalNotes', {ticketId: ticket.id});
 		};
 
 		const onInternalNoteCreated = (note: TicketInternalNote) => {
@@ -258,12 +272,19 @@ function ChatTicketView() {
 			}
 		};
 
+		const onTicketDeleted = (payload?: {ticketId?: number}) => {
+			if (payload?.ticketId !== ticket.id) return;
+			navigate(-1);
+		};
+
 		socket.on('ticketStatusUpdated', onTicketStatusUpdated);
+		socket.on('ticketDeleted', onTicketDeleted);
 
 		return () => {
 			socket.off('ticketStatusUpdated', onTicketStatusUpdated);
+			socket.off('ticketDeleted', onTicketDeleted);
 		};
-	}, [ticket.id]);
+	}, [ticket.id, navigate]);
 	useEffect(() => {
 		if (!ticket.id)
 			return;
@@ -304,8 +325,7 @@ function ChatTicketView() {
 		const socket = getSocket();
 
 		const joinRoom = () => {
-			const token = localStorage.getItem('access_token') ?? undefined;
-			socket.emit('joinTicket', {ticketId: ticket.id, token});
+			socket.emit('joinTicket', {ticketId: ticket.id});
 		};
 
 		const onNewMessage = (message: ChatMessage) => {
@@ -441,7 +461,7 @@ function ChatTicketView() {
 							<div className="flex items-center gap-2">
 								<User className="h-4 w-4" />
 								<span>
-									{t('createdBy')} <strong>{ticket.author.login || t('unknownUser')}</strong>
+									{t('createdBy')} <strong>{getTicketAuthorLabel(ticket, t('deletedUser'))}</strong>
 								</span>
 							</div>
 							<div className="flex items-center gap-1">
@@ -551,7 +571,7 @@ function ChatTicketView() {
 														<div className="flex items-start gap-3">
 															<img
 																src={getResponseAvatar(response)}
-																alt={response.author.login ?? response.author.email ?? 'User avatar'}
+																alt={response.author?.login ?? response.author?.email ?? t('deletedUser')}
 																className="h-10 w-10 rounded-full object-cover border border-gray-200 bg-gray-100"
 																onError={(e) => {
 																	e.currentTarget.src = response.isFromSupport
@@ -562,7 +582,7 @@ function ChatTicketView() {
 															<div className="flex-1">
 																<div className="mb-1 flex items-center gap-2">
 																	<span className="font-semibold text-gray-900">
-																		{response.author.login ?? response.author.email}
+																		{response.author?.login ?? response.author?.email ?? t('deletedUser')}
 																	</span>
 																	{response.isFromSupport && (
 																		<span className="rounded px-2 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-700">
@@ -618,7 +638,7 @@ function ChatTicketView() {
 											{notes.map((note) => (
 												<div key={note.id} className="rounded-lg border p-4 bg-yellow-50/50 border-yellow-200">
 													<div className="mb-1 flex items-center gap-2">
-														<span className="font-semibold text-gray-900">{note.author.login ?? note.author.email}</span>
+														<span className="font-semibold text-gray-900">{note.author?.login ?? note.author?.email ?? t('deletedUser')}</span>
 														<Lock className="h-3 w-3 text-yellow-600" />
 														<span className="text-sm text-gray-500">{formatDateShort(note.createdAt)}</span>
 													</div>
@@ -696,7 +716,7 @@ function ChatTicketView() {
 										</div>
 									</div>
 								) : (
-									<p className="text-sm text-gray-500">{t('unassigned')}</p>
+									<p className="text-sm text-gray-500">{getTicketAssignedLabel(ticket, t('unassigned'), t('deletedAgent'))}</p>
 								)}
 							</div>
 							<div>

@@ -1,6 +1,7 @@
 import { Controller, Get, Query, Res, InternalServerErrorException } from '@nestjs/common';
 import { GoogleService } from './google.service';
 import type { Response } from 'express';
+import { setAuthCookie } from '../auth-cookie';
 
 type GoogleFlow = 'login' | 'register';
 
@@ -61,12 +62,12 @@ export class GoogleController {
       }
 
       if (authData.status === 'ROLE_SELECTION_REQUIRED') {
-        const token = encodeURIComponent(authData.access_token);
-        return res.redirect(`${frontendUrl}/auth/callback?token=${token}&next=select_role`);
+        setAuthCookie(res, authData.access_token);
+        return res.redirect(`${frontendUrl}/auth/callback?next=select_role`);
       }      
 
-      const token = encodeURIComponent(authData.access_token);
-      return res.redirect(`${frontendUrl}/auth/callback?token=${token}&next=home`);
+      setAuthCookie(res, authData.access_token);
+      return res.redirect(`${frontendUrl}/auth/callback?next=home`);
       
     } catch (error) {
       console.error('Erreur Callback Google:', error);

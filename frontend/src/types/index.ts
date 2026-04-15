@@ -26,8 +26,8 @@ export interface TicketInternalNote {
 	content: string;
 	createdAt: Date;
 	ticketId: number;
-	authorId: number;
-	author: User;
+	authorId?: number | null;
+	author?: User | null;
 }
 
 export enum TicketPriority {
@@ -55,10 +55,11 @@ export interface Ticket {
 	priority: TicketPriority;
 	createdAt: Date;
 	updatedAt: Date;
-	author: User;
-	authorId: number;
-	assignedTo?: User;
-	assignedToId?: number;
+	author?: User | null;
+	authorId?: number | null;
+	assignedTo?: User | null;
+	assignedToId?: number | null;
+	assignedAgentDeleted: boolean;
 	clientUnreadCount: number;
 	agentUnreadCount: number;
 }
@@ -85,7 +86,7 @@ export interface ChatMessage {
 	createdAt: Date;
 	isFromSupport: boolean;
 	ticketId: number;
-	authorId: number;
-	author: User;
+	authorId?: number | null;
+	author?: User | null;
 }
 

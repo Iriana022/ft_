@@ -33,6 +33,7 @@ import esAdmin from '../locales/es/admin.json';
 import frLegal from '../locales/fr/legal.json';
 import enLegal from '../locales/en/legal.json';
 import esLegal from '../locales/es/legal.json';
+import {getCookie} from './services/cookies';
 
 i18n
 	.use(initReactI18next)
@@ -78,7 +79,7 @@ i18n
 				legal: esLegal,
 			},
 		},
-		lng: localStorage.getItem("lang") || 'fr',
+		lng: getCookie('lang') || 'fr',
 		fallbackLng: 'en',
 		ns: ['common', 'auth', 'nav', 'client_home', 'tickets', 'chat', 'agent', 'profile', 'notifications', 'admin', 'legal'],
 		defaultNS: 'common',

@@ -7,6 +7,7 @@ import {type ClientNotificationItem} from '../../../components/client_components
 import {fetchMyNotifications, readAllMyNotifications, type RawNotification} from '../../../services/tickets';
 import {getSocket} from '../../../services/singleton';
 import {mapSystemNotificationText, type SystemNotificationEvent} from '../adminHelpers';
+import {getMyProfile, normalizeAvatarUrl} from '../../../services/profile';
 
 const avatar1 = '/assets/avatars/avatar1.jpg';
 
@@ -20,6 +21,7 @@ export function AdminHeader() {
 	const {t} = useTranslation('admin');
 	const {t: tn} = useTranslation('notifications');
 	const [notifications, setNotifications] = useState<ClientNotificationItem[]>([]);
+	const [avatar, setAvatar] = useState(avatar1);
 
 	const navigate = useNavigate();
 
@@ -27,6 +29,32 @@ export function AdminHeader() {
 		() => notifications.some((n) => !n.readAt),
 		[notifications],
 	);
+
+	useEffect(() => {
+		let mounted = true;
+
+		const loadAvatar = async () => {
+			try {
+				const profile = await getMyProfile();
+				if (!mounted) return;
+				setAvatar(normalizeAvatarUrl(profile?.avatar) ?? avatar1);
+			} catch {
+			}
+		};
+
+		const handleAdminAvatarUpdated = (event: Event) => {
+			const customEvent = event as CustomEvent<{avatar?: string}>;
+			setAvatar(normalizeAvatarUrl(customEvent.detail?.avatar) ?? avatar1);
+		};
+
+		void loadAvatar();
+		window.addEventListener('admin-avatar-updated', handleAdminAvatarUpdated);
+
+		return () => {
+			mounted = false;
+			window.removeEventListener('admin-avatar-updated', handleAdminAvatarUpdated);
+		};
+	}, []);
 
 	useEffect(() => {
 		let mounted = true;
@@ -101,7 +129,7 @@ export function AdminHeader() {
 				<Notification hasNotification={hasNotification} notifications={notifications} onOpen={handleOpenNotifications} />
 				<VerticalSeparator />
 				<div onClick={() => navigate("profile")}>
-					<Avatar src={avatar1} size="sm" />
+					<Avatar src={avatar} size="sm" />
 				</div>
 			</div>
 		</div >

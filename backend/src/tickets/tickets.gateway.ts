@@ -6,6 +6,7 @@ import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationCode, TicketStatus, UserRole } from '@prisma/client';
+import { extractTokenFromCookieHeader } from '../auth/auth-cookie';
 
 type SystemNotificationCode =
     | 'NEW_CLIENT_TICKET'
@@ -31,7 +32,8 @@ type SystemNotificationEvent = {
 
 @WebSocketGateway({
     cors: {
-        origin: '*',
+        origin: true,
+        credentials: true,
     },
     path: '/socket.io'
 })
@@ -89,10 +91,10 @@ export class TicketsGateway implements OnGatewayConnection, OnGatewayDisconnect 
 
     @SubscribeMessage('registerRoleChannel')
     async handleRegisterRoleChannel(
-        @MessageBody() data: { token?: string },
+        @MessageBody() _data: Record<string, unknown>,
         @ConnectedSocket() client: Socket,
     ) {
-        const user = await this.resolveUserFromToken(data.token);
+        const user = await this.resolveUserFromClient(client);
 
         for (const room of client.rooms) {
             if (room.startsWith('role-')) {
@@ -240,7 +242,13 @@ export class TicketsGateway implements OnGatewayConnection, OnGatewayDisconnect 
         this.server.to(this.roleRoom(UserRole.ADMIN)).emit('adminUsersChanged', payload ?? {});
     }
 
-    private async resolveUserFromToken(token?: string): Promise<{ userId: number; role: UserRole }> {
+    private async resolveUserFromClient(client: Socket): Promise<{ userId: number; role: UserRole }> {
+        const cookieHeader = client.handshake.headers.cookie;
+        const normalizedCookieHeader = Array.isArray(cookieHeader)
+            ? cookieHeader.join(';')
+            : cookieHeader;
+        const token = extractTokenFromCookieHeader(normalizedCookieHeader);
+
         if (!token) {
             throw new WsException('Unauthorized');
         }
@@ -282,10 +290,10 @@ export class TicketsGateway implements OnGatewayConnection, OnGatewayDisconnect 
 
     @SubscribeMessage('joinTicket')
     async handleJoinTicket(
-        @MessageBody() data: { ticketId: number; token?: string },
+        @MessageBody() data: { ticketId: number },
         @ConnectedSocket() client: Socket,
     ) {
-        const user = await this.resolveUserFromToken(data.token);
+        const user = await this.resolveUserFromClient(client);
 
         const ticket = await this.prisma.ticket.findUnique({
             where: { id: data.ticketId },
@@ -326,10 +334,10 @@ export class TicketsGateway implements OnGatewayConnection, OnGatewayDisconnect 
 
     @SubscribeMessage('joinInternalNotes')
     async handleJoinInternalNotes(
-        @MessageBody() data: { ticketId: number; token?: string },
+        @MessageBody() data: { ticketId: number },
         @ConnectedSocket() client: Socket,
     ) {
-        const user = await this.resolveUserFromToken(data.token);
+        const user = await this.resolveUserFromClient(client);
 
         if (user.role !== UserRole.AGENT && user.role !== UserRole.ADMIN) {
             throw new WsException('Access denied');
@@ -384,6 +392,32 @@ export class TicketsGateway implements OnGatewayConnection, OnGatewayDisconnect 
 
     emitTicketClosed(ticketId: number) {
         this.server.to(`ticket-${ticketId}`).emit('ticketClosed', { ticketId });
+    }
+
+    emitTicketDeleted(
+        ticketId: number,
+        participants?: { authorId?: number | null; assignedToId?: number | null },
+    ) {
+        const payload = { ticketId };
+
+        const targetRooms = new Set<string>([
+            this.roleRoom(UserRole.AGENT),
+            this.roleRoom(UserRole.ADMIN),
+        ]);
+
+        const authorId = this.toFiniteUserId(participants?.authorId);
+        if (authorId !== null) {
+            targetRooms.add(this.userRoom(authorId));
+        }
+
+        const assignedToId = this.toFiniteUserId(participants?.assignedToId);
+        if (assignedToId !== null) {
+            targetRooms.add(this.userRoom(assignedToId));
+        }
+
+        for (const room of targetRooms) {
+            this.server.to(room).emit('ticketDeleted', payload);
+        }
     }
 
     emitTicketUnreadUpdated(

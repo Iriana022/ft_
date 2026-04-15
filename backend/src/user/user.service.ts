@@ -75,6 +75,38 @@ export class UserService {
         });
     }
 
+    private async detachTicketReferencesForDeletedUser(userId: number) {
+        await this.prisma.$transaction(async (tx) => {
+            await tx.ticket.updateMany({
+                where: { authorId: userId },
+                data: { authorId: null },
+            });
+
+            await tx.ticket.updateMany({
+                where: { AssignedToId: userId },
+                data: {
+                    AssignedToId: null,
+                    assignedAgentDeleted: true,
+                },
+            });
+
+            await tx.chatMessage.updateMany({
+                where: { authorId: userId },
+                data: { authorId: null },
+            });
+
+            await tx.ticketInternalNote.updateMany({
+                where: { authorId: userId },
+                data: { authorId: null },
+            });
+
+            await tx.ticketStatusHistory.updateMany({
+                where: { changedById: userId },
+                data: { changedById: null },
+            });
+        });
+    }
+
     async create(data: { login: string, email: string }) {
         const created = await this.prisma.user.create({ data });
         this.ticketsGateway.emitAdminUsersChanged({
@@ -200,6 +232,7 @@ export class UserService {
         }
         const avatarToDelete = user.avatar;
 
+        await this.detachTicketReferencesForDeletedUser(userId);
         await this.hardDeleteUserAndLinkedTickets(userId);
         this.ticketsGateway.emitUserDeleted(userId);
 
@@ -230,6 +263,7 @@ export class UserService {
 
         const avatarToDelete = targetUser.avatar;
 
+        await this.detachTicketReferencesForDeletedUser(targetUserId);
         await this.hardDeleteUserAndLinkedTickets(targetUserId);
         this.ticketsGateway.emitUserDeleted(targetUserId);
 

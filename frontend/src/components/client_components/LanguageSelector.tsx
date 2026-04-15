@@ -1,6 +1,7 @@
 import {useState, useRef, useEffect} from "react";
 import {ChevronDownIcon} from "@heroicons/react/24/outline";
 import i18n from "../../i18n";
+import {getCookie, setCookie} from '../../services/cookies';
 
 const esFlag = '/assets/es.png';
 const frFlag = '/assets/fr.png';
@@ -21,7 +22,7 @@ const languages: Lang[] = [
 function LanguageSelector() {
 	const [open, setOpen] = useState(false);
 	const [current, setCurrent] = useState<Lang>(() => {
-		const savedLang = localStorage.getItem("lang");
+		const savedLang = getCookie('lang');
 		return languages.find(l => l.code === savedLang) || languages[0];
 	});
 	const ref = useRef<HTMLDivElement | null>(null);
@@ -37,7 +38,7 @@ function LanguageSelector() {
 	function selectLang(lang: Lang) {
 		setCurrent(lang);
 		i18n.changeLanguage(lang.code);
-		localStorage.setItem("lang", lang.code);
+		setCookie('lang', lang.code);
 		setOpen(false);
 	}
 
